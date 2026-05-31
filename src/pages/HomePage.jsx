@@ -6,6 +6,11 @@ import './HomePage.css';
 export default function HomePage({ onUserLogin, onGameSelect, user }) {
   const [loading, setLoading] = useState(false);
   const [gameMode, setGameMode] = useState(null);
+  
+  // Nouveaux états pour la gestion des joueurs à l'accueil
+  const [localPlayers, setLocalPlayers] = useState([]);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [gameName, setGameName] = useState('Partie de Billard');
 
   const handleAnonLogin = async () => {
     setLoading(true);
@@ -29,16 +34,52 @@ export default function HomePage({ onUserLogin, onGameSelect, user }) {
     setLoading(false);
   };
 
+  // Ajoute un joueur dans la liste locale temporaire
+  const handleAddLocalPlayer = (e) => {
+    e.preventDefault();
+    if (!newPlayerName.trim()) return;
+    
+    // On évite les doublons de noms
+    if (localPlayers.includes(newPlayerName.trim())) {
+      alert('Ce nom de joueur existe déjà');
+      return;
+    }
+
+    setLocalPlayers([...localPlayers, newPlayerName.trim()]);
+    setNewPlayerName('');
+  };
+
+  // Retire un joueur de la liste locale avant de lancer
+  const handleRemoveLocalPlayer = (indexToRemove) => {
+    setLocalPlayers(localPlayers.filter((_, index) => index !== indexToRemove));
+  };
+
   const handleCreateGame = async () => {
+    if (localPlayers.length === 0) {
+      alert('Veuillez ajouter au moins un joueur pour lancer la partie.');
+      return;
+    }
+
     setLoading(true);
     try {
+      // Transformation du tableau de noms en un objet structuré pour Firebase Realtime Database
+      // Exemple : { "p1": { name: "John", score: 0 }, "p2": { name: "Alice", score: 0 } }
+      const playersObject = {};
+      localPlayers.forEach((name, index) => {
+        playersObject[`p_${Date.now()}_${index}`] = {
+          name: name,
+          score: 0
+        };
+      });
+
       const gameId = await createGame({
-        gameName: 'Partie de Billard',
-        players: [],
+        gameName: gameName.trim() || 'Partie de Billard',
+        players: playersObject,
         scores: {},
         maxPlayers: 20,
         status: 'active',
       });
+      
       onGameSelect(gameId);
     } catch (error) {
       alert('Erreur création partie: ' + error.message);
@@ -89,10 +130,54 @@ export default function HomePage({ onUserLogin, onGameSelect, user }) {
         ) : gameMode === 'new' ? (
           <div className="create-game-section">
             <h3 className="section-title">Nouvelle partie</h3>
-            <button onClick={handleCreateGame} disabled={loading} className="btn-billard-primary create-button">
-              {loading ? 'Création...' : 'Créer une partie'}
+            
+            {/* Configuration du nom de la partie */}
+            <div className="form-group mb-4">
+              <input 
+                type="text" 
+                value={gameName}
+                onChange={(e) => setGameName(e.target.value)}
+                placeholder="Nom de la partie (ex: Tournoi Salon)" 
+                className="join-input"
+              />
+            </div>
+
+            {/* Saisie des joueurs */}
+            <form onSubmit={handleAddLocalPlayer} className="add-player-home-form" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+              <input 
+                type="text" 
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                placeholder="Nom du joueur" 
+                className="join-input"
+                style={{ marginBottom: 0 }}
+              />
+              <button type="submit" className="btn-billard-primary" style={{ padding: '0 20px' }}>+</button>
+            </form>
+
+            {/* Liste des joueurs ajoutés */}
+            {localPlayers.length > 0 && (
+              <div className="local-players-list" style={{ background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'left' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Joueurs sur la ligne de départ :</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {localPlayers.map((name, index) => (
+                    <span key={index} style={{ background: '#fff', color: '#333', padding: '4px 10px', borderRadius: '15px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      {name}
+                      <button type="button" onClick={() => handleRemoveLocalPlayer(index)} style={{ border: 'none', background: 'none', color: '#ff4d4d', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}>×</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button 
+              onClick={handleCreateGame} 
+              disabled={loading || localPlayers.length === 0} 
+              className="btn-billard-primary create-button"
+            >
+              {loading ? 'Création...' : `Lancer la partie (${localPlayers.length} joueur${localPlayers.length > 1 ? 's' : ''})`}
             </button>
-            <button onClick={() => setGameMode(null)} className="btn-billard-secondary back-button">Retour</button>
+            <button onClick={() => { setGameMode(null); setLocalPlayers([]); }} className="btn-billard-secondary back-button">Retour</button>
           </div>
         ) : (
           <div className="join-game-section">
