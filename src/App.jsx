@@ -30,11 +30,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-24 bg-[#0d5136]">
-      <div className="pb-10">
-        {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
-        {tab === 'stats' && <StatsPage roomId={roomId} />}
-        {tab === 'logs' && <LogsPage roomId={roomId} />}
-      </div>
+      {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
+      {tab === 'stats' && <StatsPage roomId={roomId} />}
+      {tab === 'logs' && <LogsPage roomId={roomId} />}
 
       <nav className="fixed bottom-0 w-full bg-black/90 border-t border-[#dfb743] flex justify-center gap-8 p-4 z-50">
         {['jeu', 'stats', 'logs'].map(t => (
