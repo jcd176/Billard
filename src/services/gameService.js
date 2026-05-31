@@ -1,37 +1,21 @@
-import { ref, set, update, push, increment } from 'firebase/database';
+import { ref, update, increment, push, set } from 'firebase/database';
 import { database } from './firebase';
 
-// Cette fonction manque à l'appel, c'est pour ça que ça bloque
-export const createRoom = async (name) => {
-  const roomRef = push(ref(database, 'rooms'));
-  await set(roomRef, { 
-    name, 
-    scores: { p1: 0, p2: 0, p3: 0, p4: 0 },
-    status: 'active' 
-  });
-  return roomRef.key;
-};
-
-export const updateScore = (roomId, playerId, points) => {
-  update(ref(database, `rooms/${roomId}/scores`), { [playerId]: points });
-};
-
-export const declareWinner = async (roomId, winnerId, currentScores) => {
+export const declareWinner = async (roomId, winnerId, isBlackBall, scores) => {
   const updates = {};
-  updates[`profiles/${winnerId}/wins`] = increment(1);
+  const winPoints = isBlackBall ? 2 : 1; // Bonus bille noire
   
-  Object.entries(currentScores).forEach(([id, score]) => {
-    updates[`profiles/${id}/totalPoints`] = increment(score);
-    if (id !== winnerId) updates[`profiles/${id}/losses`] = increment(1);
-    updates[`rooms/${roomId}/scores/${id}`] = 0;
+  // Incrément victoires
+  updates[`profiles/${winnerId}/wins`] = increment(1);
+  updates[`rooms/${roomId}/logs`] = push({ 
+    msg: `Victoire de ${winnerId} ${isBlackBall ? '(Bille noire)' : ''}`, 
+    time: Date.now() 
+  });
+  
+  // Mise à jour scores
+  Object.entries(scores).forEach(([id, s]) => {
+    updates[`rooms/${roomId}/scores/${id}`] = 0; // Reset manche
   });
   
   await update(ref(database), updates);
-};
-// Ajoutez ceci à votre fichier gameService.js existant
-export const subscribeToProfiles = (callback) => {
-  const profilesRef = ref(database, 'profiles');
-  return onValue(profilesRef, (snapshot) => {
-    callback(snapshot.val() || {});
-  });
 };
