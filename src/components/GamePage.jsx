@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../services/firebase';
-import { declareWinner, updateScore } from '../services/gameService';
+// Notez l'ajout de addLog dans l'importation
+import { declareWinner, updateScore, addLog } from '../services/gameService';
 
 export default function GamePage({ roomId, onLeave }) {
   const [data, setData] = useState(null);
@@ -21,13 +22,29 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {Object.entries(data.scores).map(([id, score]) => (
+        {data.scores && Object.entries(data.scores).map(([id, score]) => (
           <div key={id} className="bg-[#2c1a13] p-5 rounded-2xl border border-[#dfb743]/20">
             <p className="text-xs uppercase opacity-60 mb-2">{id}</p>
             <div className="text-5xl font-mono mb-4">{score}</div>
             <div className="flex gap-2">
-              <button onClick={() => updateScore(roomId, id, score + 1)} className="flex-1 bg-[#dfb743] text-black font-bold py-2 rounded">+</button>
-              <button onClick={() => declareWinner(roomId, id, data.scores)} className="flex-1 bg-green-700 py-2 rounded">Win</button>
+              <button 
+                onClick={() => {
+                  updateScore(roomId, id, score + 1);
+                  addLog(roomId, id, `a marqué 1 point (total: ${score + 1})`);
+                }} 
+                className="flex-1 bg-[#dfb743] text-black font-bold py-2 rounded"
+              >
+                +
+              </button>
+              <button 
+                onClick={() => {
+                  declareWinner(roomId, id, data.scores);
+                  addLog(roomId, id, "a remporté la manche !");
+                }} 
+                className="flex-1 bg-green-700 py-2 rounded"
+              >
+                Win
+              </button>
             </div>
           </div>
         ))}
