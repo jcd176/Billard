@@ -18,7 +18,7 @@ export default function LoginPage() {
         <div className="flex flex-col gap-6">
           <button 
             onClick={signInWithGoogle}
-            className="w-full bg-[#dfb743] text-black font-bold py-4 rounded-lg hover:bg-[#c6a23a] transition-all transform hover:scale-105"
+            className="w-full bg-[#dfb743] text-black font-bold py-4 rounded-lg hover:bg-[#c6a23a] transition-all"
           >
             Connexion Google
           </button>
