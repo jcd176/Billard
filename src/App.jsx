@@ -3,12 +3,12 @@ import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
 
 function App() {
-  const [currentRoomId, setCurrentRoomId] = useState(null);
+  const [roomId, setRoomId] = useState(null);
 
-  if (!currentRoomId) {
-    return <LandingPage onJoinRoom={setCurrentRoomId} />;
-  }
-
-  return <GamePage roomId={currentRoomId} onLeave={() => setCurrentRoomId(null)} />;
+  return roomId ? (
+    <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />
+  ) : (
+    <LandingPage onJoinRoom={setRoomId} />
+  );
 }
 export default App;
