@@ -3,7 +3,7 @@ import { setupJazennesGame } from './services/gameService';
 import GamePage from './components/GamePage';
 import StatsPage from './components/StatsPage';
 import ProfilesPage from './components/ProfilesPage';
-import './index.css';
+import './styles/index.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('match');
