@@ -15,32 +15,41 @@ export default function App() {
 
   useEffect(() => {
     const auth = getAuth();
-    // Écoute en temps réel de l'état de connexion
+    // Écoute de l'état de connexion Firebase
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      // Gestion utilisateur Google ou Local
+      const localUser = localStorage.getItem('localUser');
+      if (currentUser) {
+        setUser(currentUser);
+      } else if (localUser) {
+        setUser({ displayName: localUser });
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
     return unsubscribe;
   }, []);
 
-  // Afficher un écran de chargement pendant la vérification Firebase
   if (loading) return <div className="text-white text-center mt-20">Chargement...</div>;
 
-  // 1. Si pas d'utilisateur, on affiche la page de connexion
+  // 1. Page de connexion si non connecté
   if (!user) return <LoginPage />;
 
-  // 2. Si utilisateur connecté mais pas de salle choisie
-  if (!roomId) return <LandingPage onJoin={setRoomId} />;
+  // 2. Page d'accueil pour choisir/créer une salle si connecté mais sans salle
+  if (!roomId) return <LandingPage onJoinRoom={setRoomId} />;
 
-  // 3. Application principale une fois connecté et dans une salle
+  // 3. Application principale avec navigation par onglets
   return (
     <div className="min-h-screen pb-20 bg-[#0d5136]">
-      {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
-      {tab === 'stats' && <StatsPage roomId={roomId} />}
-      {tab === 'profils' && <ProfilesPage />}
-      {tab === 'logs' && <LogsPage roomId={roomId} />}
+      <div className="pb-10">
+        {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
+        {tab === 'stats' && <StatsPage roomId={roomId} />}
+        {tab === 'profils' && <ProfilesPage />}
+        {tab === 'logs' && <LogsPage roomId={roomId} />}
+      </div>
 
-      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-gold flex justify-around p-3">
+      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-gold flex justify-around p-3 z-50">
         {['jeu', 'stats', 'profils', 'logs'].map(t => (
           <button 
             key={t} 
