@@ -1,100 +1,105 @@
-import { ref, set, update, onValue, remove, push, get } from 'firebase/database';
+import { ref, set, update, onValue, push, get, increment } from 'firebase/database';
 import { database } from './firebase';
 
-export const createGame = async (gameData) => {
-  try {
-    const gamesRef = ref(database, 'games');
-    const newGameRef = push(gamesRef);
-    const gameId = newGameRef.key;
-    
-    // Sécurisation stricte de l'objet des joueurs pour éviter les rejets Realtime Database
-    const initialPlayers = gameData.players && Object.keys(gameData.players).length > 0 
-      ? gameData.players 
-      : { initialized: true };
+// 1. Initialiser ou récupérer les profils fixes de Jazennes
+export const getOrCreateProfiles = async () => {
+  const profilesRef = ref(database, 'profiles');
+  const snapshot = await get(profilesRef);
+  
+  if (!snapshot.exists()) {
+    // Profils initiaux s'ils n'existent pas encore dans la base
+    const initialProfiles = {
+      "p_jc": { id: "p_jc", name: "Jc", wins: 0, losses: 0, totalPoints: 0 },
+      "p_joyce": { id: "p_joyce", name: "Joyce", wins: 0, losses: 0, totalPoints: 0 },
+      "p_paola": { id: "p_paola", name: "Paola", wins: 0, losses: 0, totalPoints: 0 },
+      "p_herve": { id: "p_herve", name: "Hervé", wins: 0, losses: 0, totalPoints: 0 }
+    };
+    await set(profilesRef, initialProfiles);
+    return initialProfiles;
+  }
+  return snapshot.val();
+};
 
-    await set(newGameRef, {
-      id: gameId,
-      gameName: gameData.gameName || 'Partie de Billard',
-      status: gameData.status || 'active',
-      maxPlayers: gameData.maxPlayers || 20,
-      players: initialPlayers,
-      scores: gameData.scores || {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    
-    return gameId;
+// 2. Mettre à jour le nom d'un profil
+export const updateProfileName = async (profileId, newName) => {
+  try {
+    const nameRef = ref(database, `profiles/${profileId}`);
+    await update(nameRef, { name: newName });
   } catch (error) {
-    console.error('Erreur création partie:', error);
+    console.error('Erreur modification nom profil:', error);
     throw error;
   }
 };
 
-export const subscribeToGame = (gameId, callback) => {
-  const gameRef = ref(database, `games/${gameId}`);
+// 3. Récupérer ou créer la partie persistante "Jazennes"
+export const setupJazennesGame = async () => {
+  const gameRef = ref(database, 'games/jazennes');
+  const snapshot = await get(gameRef);
+  
+  if (!snapshot.exists()) {
+    const profiles = await getOrCreateProfiles();
+    const cleanScores = {};
+    Object.keys(profiles).forEach(id => { cleanScores[id] = 0; });
+
+    await set(gameRef, {
+      id: "jazennes",
+      gameName: "Partie Jazennes",
+      status: "active",
+      scores: cleanScores,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+};
+
+// 4. Écouter les changements de la partie en temps réel
+export const subscribeToJazennes = (callback) => {
+  const gameRef = ref(database, 'games/jazennes');
   return onValue(gameRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.val());
-    } else {
-      callback(null);
-    }
+    callback(snapshot.exists() ? snapshot.val() : null);
   });
 };
 
-export const updateScores = async (gameId, scores) => {
-  try {
-    const scoresRef = ref(database, `games/${gameId}/scores`);
-    await update(scoresRef, scores);
-  } catch (error) {
-    console.error('Erreur mise à jour scores:', error);
-    throw error;
-  }
+// 5. Écouter les profils globaux en temps réel (pour l'onglet stats)
+export const subscribeToProfiles = (callback) => {
+  const profilesRef = ref(database, 'profiles');
+  return onValue(profilesRef, (snapshot) => {
+    callback(snapshot.exists() ? snapshot.val() : {});
+  });
 };
 
-export const addPlayer = async (gameId, playerData) => {
-  try {
-    const playersRef = ref(database, `games/${gameId}/players`);
-    const newPlayerRef = push(playersRef);
-    await set(newPlayerRef, {
-      ...playerData,
-      joinedAt: new Date().toISOString(),
-    });
-    return newPlayerRef.key;
-  } catch (error) {
-    console.error('Erreur ajout joueur:', error);
-    throw error;
-  }
+// 6. Enregistrer les scores actuels en temps réel
+export const updateLiveScores = async (scores) => {
+  const scoresRef = ref(database, 'games/jazennes/scores');
+  await set(scoresRef, scores);
+  await update(ref(database, 'games/jazennes'), { updatedAt: new Date().toISOString() });
 };
 
-export const removePlayer = async (gameId, playerId) => {
+// 7. Clôturer une manche : Incrémente les stats globales et remet les scores du match à 0
+export const declareWinner = async (winnerId, currentScores) => {
   try {
-    const playerRef = ref(database, `games/${gameId}/players/${playerId}`);
-    await remove(playerRef);
-  } catch (error) {
-    console.error('Erreur suppression joueur:', error);
-    throw error;
-  }
-};
+    const profiles = await getOrCreateProfiles();
+    const updates = {};
 
-export const resetGame = async (gameId) => {
-  try {
-    const gameRef = ref(database, `games/${gameId}`);
-    const snapshot = await get(gameRef);
+    // Le vainqueur prend +1 victoire
+    updates[`profiles/${winnerId}/wins`] = increment(1);
     
-    if (snapshot.exists()) {
-      const game = snapshot.val();
-      const resetScores = {};
-      Object.keys(game.scores || {}).forEach(playerId => {
-        resetScores[playerId] = 0;
-      });
+    // Les autres prennent +1 défaite, et on ajoute les points accumulés à tout le monde
+    Object.keys(profiles).forEach(id => {
+      const pointsMarques = currentScores[id] || 0;
+      updates[`profiles/${id}/totalPoints`] = increment(pointsMarques);
       
-      await update(gameRef, {
-        scores: resetScores,
-        updatedAt: new Date().toISOString(),
-      });
-    }
+      if (id !== winnerId) {
+        updates[`profiles/${id}/losses`] = increment(1);
+      }
+      // Réinitialisation du score de la partie en cours
+      updates[`games/jazennes/scores/${id}`] = 0;
+    });
+
+    updates['games/jazennes/updatedAt'] = new Date().toISOString();
+    await update(ref(database), updates);
   } catch (error) {
-    console.error('Erreur réinitialisation partie:', error);
+    console.error('Erreur lors de la validation de la manche:', error);
     throw error;
   }
 };
