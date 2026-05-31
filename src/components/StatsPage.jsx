@@ -1,37 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { subscribeToProfiles } from '../services/gameService';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../services/firebase';
 
-function StatsPage() {
-  const [stats, setStats] = useState([]);
+export default function StatsPage({ roomId }) {
+  const [scores, setScores] = useState({});
 
   useEffect(() => {
-    const unsubscribe = subscribeToProfiles((data) => {
-      if (!data) return;
-      const formatted = Object.entries(data).map(([id, p]) => ({
-        id,
-        name: p.name || "Joueur",
-        wins: p.wins || 0,
-        losses: p.losses || 0,
-        points: p.totalPoints || 0
-      }));
-      setStats(formatted.sort((a, b) => b.wins - a.wins));
-    });
-    return () => unsubscribe();
-  }, []);
+    onValue(ref(database, `rooms/${roomId}/scores`), (s) => setScores(s.val() || {}));
+  }, [roomId]);
+
+  const sortedPlayers = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="p-6 bg-billiard-green min-h-screen">
-      <h2 className="text-3xl font-serif text-gold mb-6 text-center">Classement Général</h2>
-      <div className="bg-dark-wood p-6 rounded-2xl border border-gold shadow-2xl">
-        {stats.map((p) => (
-          <div key={p.id} className="flex justify-between items-center py-3 border-b border-gold/20 text-white">
-            <span className="font-bold text-lg">{p.name}</span>
-            <span className="text-gold">{p.wins} V / {p.losses} D</span>
-          </div>
-        ))}
-      </div>
+    <div className="p-4 text-white">
+      <h2 className="text-[#dfb743] text-2xl font-bold mb-6">Classement</h2>
+      <table className="w-full">
+        <thead>
+          <tr className="text-[#dfb743] border-b border-[#dfb743]/30">
+            <th className="py-2 text-left">Joueur</th>
+            <th className="py-2 text-center">Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedPlayers.map(([name, score], i) => (
+            <tr key={name} className="border-b border-white/10">
+              <td className="py-3 font-bold">{i + 1}. {name}</td>
+              <td className="py-3 text-center text-[#dfb743] text-xl">{score}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
-
-export default StatsPage;
