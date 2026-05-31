@@ -4,7 +4,6 @@ import LoginPage from './components/LoginPage';
 import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
 import StatsPage from './components/StatsPage';
-import ProfilesPage from './components/ProfilesPage';
 import LogsPage from './components/LogsPage';
 
 export default function App() {
@@ -34,17 +33,12 @@ export default function App() {
       <div className="pb-10">
         {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
         {tab === 'stats' && <StatsPage roomId={roomId} />}
-        {tab === 'profils' && <ProfilesPage />}
         {tab === 'logs' && <LogsPage roomId={roomId} />}
       </div>
 
-      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-gold flex justify-center gap-6 p-4 z-50">
-        {['jeu', 'stats', 'profils', 'logs'].map(t => (
-          <button 
-            key={t} 
-            onClick={() => setTab(t)} 
-            className={`capitalize font-medium transition-colors ${tab === t ? 'text-[#dfb743] font-bold' : 'text-white hover:text-[#dfb743]/80'}`}
-          >
+      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-[#dfb743] flex justify-center gap-8 p-4 z-50">
+        {['jeu', 'stats', 'logs'].map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`capitalize font-bold ${tab === t ? 'text-[#dfb743]' : 'text-white'}`}>
             {t}
           </button>
         ))}
