@@ -6,6 +6,7 @@ function StatsPage() {
 
   useEffect(() => {
     const unsubscribe = subscribeToProfiles((data) => {
+      if (!data) return;
       const formatted = Object.entries(data).map(([id, p]) => ({
         id,
         name: p.name || "Joueur",
@@ -34,7 +35,3 @@ function StatsPage() {
 }
 
 export default StatsPage;
-// Ajoutez cette fonction à la fin de src/services/gameService.js
-export const subscribeToProfiles = (callback) => {
-  return subscribeTo('profiles', callback);
-};
