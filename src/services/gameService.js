@@ -1,21 +1,15 @@
-import { ref, update, increment, push, set } from 'firebase/database';
+import { ref, push, set, update, increment, onValue } from 'firebase/database';
 import { database } from './firebase';
+
+export const createRoom = async (name) => {
+  const roomRef = push(ref(database, 'rooms'));
+  await set(roomRef, { name, createdAt: Date.now(), scores: {} });
+  return roomRef.key;
+};
 
 export const declareWinner = async (roomId, winnerId, isBlackBall, scores) => {
   const updates = {};
-  const winPoints = isBlackBall ? 2 : 1; // Bonus bille noire
-  
-  // Incrément victoires
   updates[`profiles/${winnerId}/wins`] = increment(1);
-  updates[`rooms/${roomId}/logs`] = push({ 
-    msg: `Victoire de ${winnerId} ${isBlackBall ? '(Bille noire)' : ''}`, 
-    time: Date.now() 
-  });
-  
-  // Mise à jour scores
-  Object.entries(scores).forEach(([id, s]) => {
-    updates[`rooms/${roomId}/scores/${id}`] = 0; // Reset manche
-  });
-  
+  // Ajoutez ici la logique de mise à jour des scores selon vos besoins
   await update(ref(database), updates);
 };
