@@ -2,148 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --billard-green: #0B5E2F;
-  --billard-blue: #1E3A8A;
-  --billard-black: #1F2937;
-  --billard-gold: #F59E0B;
-}
-
+/* 1. Fond d'écran immersif avec votre image */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #0B5E2F 0%, #1E3A8A 100%);
-  min-height: 100vh;
-}
-
-@keyframes felt-shimmer {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.felt-background {
-  background: radial-gradient(circle, rgba(11, 94, 47, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-  animation: felt-shimmer 6s ease-in-out infinite;
-}
-
-.btn-billard {
-  @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.btn-billard-primary {
-  @apply btn-billard bg-billard-gold text-billard-black hover:bg-yellow-400 hover:shadow-lg;
-}
-
-.btn-billard-secondary {
-  @apply btn-billard bg-billard-green text-white hover:bg-emerald-700 hover:shadow-lg;
-}
-
-.btn-billard-danger {
-  @apply btn-billard bg-red-600 text-white hover:bg-red-700 hover:shadow-lg;
-}
-@layer utilities {
-  /* Tapis vert de billard texturé */
-  .bg-billiard-green {
-    background-color: #0d5136;
-    background-image: radial-gradient(circle at 50% 30%, #136a48 0%, #0a3d28 100%);
-  }
-
-  /* Bois sombre pour l'arrière-plan des cartes */
-  .bg-dark-wood {
-    background-color: #2c1a13;
-    background-image: linear-gradient(135deg, #362017 0%, #22140e 100%);
-  }
-
-  /* Cadre en bois rustique autour du site */
-  .wood-frame {
-    border: 8px solid #1a0f0a;
-    outline: 2px solid #d4af37;
-    outline-offset: -5px;
-  }
-
-  /* Couleur Ivoire pour les textes */
-  .text-ivory {
-    color: #f6f5f0;
-  }
-
-  /* Couleur Or de Billard */
-  .text-gold {
-    color: #dfb743;
-  }
-  .border-gold {
-    border-color: #dfb743;
-  }
-  .bg-gold {
-    background-color: #dfb743;
-  }
-
-  /* Bille de billard animée */
-  .billiard-ball {
-    width: 60px;
-    height: 60px;
-    background: radial-gradient(circle at 30% 30%, #333 0%, #000 80%);
-    border-radius: 50%;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-    position: relative;
-  }
-}
-/* Fond texturé Billard */
-.bg-billiard-green {
-  background: #0d5136;
-  background-image: radial-gradient(circle, #15734d 0%, #0d5136 100%);
-}
-
-/* Bille de billard */
-.billiard-ball {
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle at 30% 30%, #444, #000);
-  border-radius: 50%;
-  border: 4px solid #fff;
-}
-
-/* Styles bois sombre */
-.bg-dark-wood {
-  background: #2c1a13;
-}
-body {
-  background: #0d5136; /* Vert tapis */
-  background-image: radial-gradient(circle at 50% 50%, #15734d, #0d5136);
+  background-image: url('URL_DE_VOTRE_IMAGE_image_95bc7a.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   min-height: 100vh;
   color: white;
   font-family: 'Segoe UI', sans-serif;
+  margin: 0;
 }
 
-.billiard-card {
-  background: #2c1a13; /* Bois sombre */
-  border: 2px solid #dfb743; /* Or */
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-}
-
-.gold-text { color: #dfb743; }
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body { 
-  background-color: #0d5136; 
-  background-image: url('https://www.transparenttextures.com/patterns/felt.png'); 
-  color: white; 
-}
-
+/* 2. Couleurs et composants Billard Party */
 .bg-billiard-green { background-color: #0d5136; }
-.bg-dark-wood { background-color: #2c1a13; }
+.bg-dark-wood { background-color: rgba(44, 26, 19, 0.95); }
 .text-gold { color: #dfb743; }
 .border-gold { border-color: #dfb743; }
+
+/* 3. Carte "Billard Party" moderne (Glassmorphism) */
+.billard-panel {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  border: 2px solid #dfb743;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. Boutons modernes */
+.btn-gold {
+  background-color: #dfb743;
+  color: #2c1a13;
+  font-weight: bold;
+  padding: 12px 24px;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.btn-gold:hover {
+  transform: scale(1.05);
+  background-color: #f59e0b;
+}
