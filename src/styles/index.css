@@ -98,3 +98,22 @@ body {
     position: relative;
   }
 }
+/* Fond texturé Billard */
+.bg-billiard-green {
+  background: #0d5136;
+  background-image: radial-gradient(circle, #15734d 0%, #0d5136 100%);
+}
+
+/* Bille de billard */
+.billiard-ball {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 30% 30%, #444, #000);
+  border-radius: 50%;
+  border: 4px solid #fff;
+}
+
+/* Styles bois sombre */
+.bg-dark-wood {
+  background: #2c1a13;
+}
