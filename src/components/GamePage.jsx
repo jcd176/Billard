@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../services/firebase';
-// Notez l'ajout de addLog dans l'importation
 import { declareWinner, updateScore, addLog } from '../services/gameService';
 
 export default function GamePage({ roomId, onLeave }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
+    // Vérification de sécurité pour éviter les erreurs si roomId est undefined
+    if (!roomId) return;
+    
     const unsub = onValue(ref(database, `rooms/${roomId}`), (s) => setData(s.val()));
     return unsub;
   }, [roomId]);
@@ -17,7 +19,7 @@ export default function GamePage({ roomId, onLeave }) {
   return (
     <div className="min-h-screen bg-[#0d5136] p-4 text-white">
       <div className="flex justify-between items-center mb-8 border-b border-[#dfb743]/30 pb-4">
-        <h2 className="text-2xl font-serif text-[#dfb743]">{data.name}</h2>
+        <h2 className="text-2xl font-serif text-[#dfb743]">{data.name || "Partie"}</h2>
         <button onClick={onLeave} className="text-sm bg-black/30 px-3 py-1 rounded-full">Quitter</button>
       </div>
 
@@ -30,7 +32,7 @@ export default function GamePage({ roomId, onLeave }) {
               <button 
                 onClick={() => {
                   updateScore(roomId, id, score + 1);
-                  addLog(roomId, id, `a marqué 1 point (total: ${score + 1})`);
+                  addLog(roomId, id, `a marqué 1 point`);
                 }} 
                 className="flex-1 bg-[#dfb743] text-black font-bold py-2 rounded"
               >
@@ -38,7 +40,8 @@ export default function GamePage({ roomId, onLeave }) {
               </button>
               <button 
                 onClick={() => {
-                  declareWinner(roomId, id, data.scores);
+                  // Paramètres corrigés : roomId, winnerId, winnerName, isBlackBall, scores
+                  declareWinner(roomId, id, id, false, data.scores);
                   addLog(roomId, id, "a remporté la manche !");
                 }} 
                 className="flex-1 bg-green-700 py-2 rounded"
