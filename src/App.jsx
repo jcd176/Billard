@@ -16,7 +16,8 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-height-screen bg-billiard-green">
+      /* CORRECTION : Remplacement de "min-height-screen" par "min-h-screen" (norme Tailwind) */
+      <div className="flex items-center justify-center min-h-screen bg-billiard-green">
         <div className="billiard-ball text-white animate-bounce flex items-center justify-center text-2xl font-bold">8</div>
       </div>
     );
