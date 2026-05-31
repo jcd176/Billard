@@ -117,3 +117,19 @@ body {
 .bg-dark-wood {
   background: #2c1a13;
 }
+body {
+  background: #0d5136; /* Vert tapis */
+  background-image: radial-gradient(circle at 50% 50%, #15734d, #0d5136);
+  min-height: 100vh;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.billiard-card {
+  background: #2c1a13; /* Bois sombre */
+  border: 2px solid #dfb743; /* Or */
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.gold-text { color: #dfb743; }
