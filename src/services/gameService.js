@@ -28,3 +28,10 @@ export const declareWinner = async (roomId, winnerId, currentScores) => {
   
   await update(ref(database), updates);
 };
+// Ajoutez ceci à votre fichier gameService.js existant
+export const subscribeToProfiles = (callback) => {
+  const profilesRef = ref(database, 'profiles');
+  return onValue(profilesRef, (snapshot) => {
+    callback(snapshot.val() || {});
+  });
+};
