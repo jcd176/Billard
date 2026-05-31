@@ -1,49 +1,34 @@
-.app-container {
-  min-height: 100vh;
-}
-@layer utilities {
-  /* Tapis vert de billard texturé */
-  .bg-billiard-green {
-    background-color: #0d5136;
-    background-image: radial-gradient(circle at 50% 30%, #136a48 0%, #0a3d28 100%);
-  }
+import React, { useState } from 'react';
+import LandingPage from './components/LandingPage';
+import GamePage from './components/GamePage';
+import StatsPage from './components/StatsPage';
+import ProfilesPage from './components/ProfilesPage';
 
-  /* Bois sombre pour l'arrière-plan des cartes */
-  .bg-dark-wood {
-    background-color: #2c1a13;
-    background-image: linear-gradient(135deg, #362017 0%, #22140e 100%);
-  }
+export default function App() {
+  const [roomId, setRoomId] = useState(null);
+  const [tab, setTab] = useState('jeu');
 
-  /* Cadre en bois rustique autour du site */
-  .wood-frame {
-    border: 8px solid #1a0f0a;
-    outline: 2px solid #d4af37;
-    outline-offset: -5px;
-  }
+  // Si aucune salle n'est choisie, on affiche l'accueil
+  if (!roomId) return <LandingPage onJoin={setRoomId} />;
 
-  /* Couleur Ivoire pour les textes */
-  .text-ivory {
-    color: #f6f5f0;
-  }
-
-  /* Couleur Or de Billard */
-  .text-gold {
-    color: #dfb743;
-  }
-  .border-gold {
-    border-color: #dfb743;
-  }
-  .bg-gold {
-    background-color: #dfb743;
-  }
-
-  /* Bille de billard animée */
-  .billiard-ball {
-    width: 60px;
-    height: 60px;
-    background: radial-gradient(circle at 30% 30%, #333 0%, #000 80%);
-    border-radius: 50%;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-    position: relative;
-  }
+  // Sinon, on affiche la partie avec la navigation en bas
+  return (
+    <div className="min-h-screen">
+      {tab === 'jeu' && <GamePage roomId={roomId} />}
+      {tab === 'stats' && <StatsPage roomId={roomId} />}
+      {tab === 'profils' && <ProfilesPage />}
+      
+      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-[#dfb743] flex justify-around p-4">
+        {['jeu', 'stats', 'profils'].map(t => (
+          <button 
+            key={t} 
+            onClick={() => setTab(t)} 
+            className={`capitalize font-bold ${tab === t ? 'text-[#dfb743]' : 'text-white'}`}
+          >
+            {t}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
 }
