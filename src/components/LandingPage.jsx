@@ -4,24 +4,23 @@ import { createRoom } from '../services/gameService';
 export default function LandingPage({ onJoinRoom }) {
   const [name, setName] = useState('');
 
-  const handleCreate = async () => {
-    if (!name) return;
-    const id = await createRoom(name);
-    onJoinRoom(id);
-  };
-
   return (
-    <div className="min-h-screen bg-billiard-green flex flex-col items-center justify-center p-6 text-center">
-      <div className="billiard-ball mb-8 animate-bounce shadow-2xl"></div>
-      <h1 className="text-5xl font-serif text-gold mb-10 drop-shadow-md">Jazennes Billard Club</h1>
-      <div className="bg-dark-wood p-8 rounded-3xl border-4 border-gold shadow-2xl w-full max-w-sm">
+    <div className="min-h-screen bg-[#0d5136] flex flex-col items-center justify-center p-6 text-white font-sans">
+      {/* Image Bille 8 Premium */}
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f0/Billiard_ball_8.svg" 
+           alt="Bille 8" className="w-32 h-32 mb-8 drop-shadow-2xl animate-fade-in" />
+      
+      <h1 className="text-4xl font-serif text-[#dfb743] mb-8 uppercase tracking-widest">Partie de Billard</h1>
+      
+      <div className="bg-[#2c1a13] p-8 rounded-3xl border border-[#dfb743]/30 shadow-2xl w-full max-w-sm">
         <input 
-          className="w-full p-4 mb-4 rounded-xl bg-black/30 border border-gold text-white"
-          placeholder="Nom de la salle..."
+          className="w-full p-4 mb-4 rounded-xl bg-black/40 border border-[#dfb743] text-white placeholder-white/30"
+          placeholder="Nom de la partie (ex: Jazennes)..."
           onChange={(e) => setName(e.target.value)}
         />
-        <button onClick={handleCreate} className="w-full bg-gold text-dark-wood font-bold py-3 rounded-xl hover:scale-105 transition-transform">
-          Créer la partie
+        <button onClick={() => name && createRoom(name).then(onJoinRoom)} 
+                className="w-full bg-[#dfb743] text-[#2c1a13] font-bold py-4 rounded-xl hover:bg-white transition-all">
+          Lancer la partie
         </button>
       </div>
     </div>
