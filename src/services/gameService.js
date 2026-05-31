@@ -12,7 +12,6 @@ export const addLog = (roomId, userName, action) => {
   push(logsRef, { user: userName, action: action, time: Date.now() });
 };
 
-// AJOUTEZ CETTE FONCTION :
 export const updateScore = async (roomId, playerId, newScore) => {
   const scoreRef = ref(database, `rooms/${roomId}/scores/${playerId}`);
   await set(scoreRef, newScore);
@@ -28,5 +27,12 @@ export const declareWinner = async (roomId, winnerId, winnerName, isBlackBall, s
 
 export const subscribeTo = (path, callback) => {
   const pathRef = ref(database, path);
-  return onValue(pathRef, (snapshot) => { callback(snapshot.val()); });
+  return onValue(pathRef, (snapshot) => { 
+    callback(snapshot.val()); 
+  });
+};
+
+// Fonction ajoutée ici pour être utilisée par StatsPage
+export const subscribeToProfiles = (callback) => {
+  return subscribeTo('profiles', callback);
 };
