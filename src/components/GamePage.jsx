@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { database } from '../services/firebase';
 import { declareWinner, addLog } from '../services/gameService';
 
@@ -12,6 +12,14 @@ export default function GamePage({ roomId, onLeave }) {
     if (!roomId) return;
     return onValue(ref(database, `rooms/${roomId}`), (s) => setData(s.val()));
   }, [roomId]);
+
+  const addPlayer = () => {
+    const name = prompt("Nom du nouveau joueur :");
+    if (name) {
+      update(ref(database, `rooms/${roomId}/scores`), { [name]: 0 });
+      addLog(roomId, "Système", `${name} a rejoint la partie`);
+    }
+  };
 
   const recordMatch = () => {
     if (winner && loser && winner !== loser) {
@@ -28,8 +36,12 @@ export default function GamePage({ roomId, onLeave }) {
     <div className="p-4 bg-[#0d5136] min-h-screen text-white pb-24">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#dfb743] font-serif text-2xl">{data.name}</h2>
-        <button onClick={onLeave} className="text-2xl text-[#dfb743]">⏻</button>
+        <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white">⏻</button>
       </div>
+
+      <button onClick={addPlayer} className="w-full mb-6 py-3 border border-[#dfb743] text-[#dfb743] rounded-lg hover:bg-[#dfb743] hover:text-black transition font-bold">
+        + Ajouter un joueur
+      </button>
 
       <div className="bg-[#1a1a1a] p-6 rounded-xl border border-[#dfb743]/30 mb-8 shadow-xl">
         <h3 className="text-[#dfb743] font-bold text-lg mb-4">Enregistrer un match</h3>
