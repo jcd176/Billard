@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --billard-green: #0B5E2F;
+  --billard-blue: #1E3A8A;
+  --billard-black: #1F2937;
+  --billard-gold: #F59E0B;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #0B5E2F 0%, #1E3A8A 100%);
+  min-height: 100vh;
+}
+
+@keyframes felt-shimmer {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.felt-background {
+  background: radial-gradient(circle, rgba(11, 94, 47, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: felt-shimmer 6s ease-in-out infinite;
+}
+
+.btn-billard {
+  @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-billard-primary {
+  @apply btn-billard bg-billard-gold text-billard-black hover:bg-yellow-400 hover:shadow-lg;
+}
+
+.btn-billard-secondary {
+  @apply btn-billard bg-billard-green text-white hover:bg-emerald-700 hover:shadow-lg;
+}
+
+.btn-billard-danger {
+  @apply btn-billard bg-red-600 text-white hover:bg-red-700 hover:shadow-lg;
+}
