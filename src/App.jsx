@@ -3,27 +3,29 @@ import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
 import StatsPage from './components/StatsPage';
 import ProfilesPage from './components/ProfilesPage';
+import LogsPage from './components/LogsPage';
 
 export default function App() {
-  const [user, setUser] = useState(null); // Gestion simple de session
-  const [activeTab, setActiveTab] = useState('match');
-  const [roomId, setRoomId] = useState(null);
+  const [user, setUser] = useState(null); // Authentification
+  const [roomId, setRoomId] = useState(null); // Gestion partie
+  const [tab, setTab] = useState('jeu');
 
-  if (!user) return <LandingPage onLogin={setUser} />;
+  if (!user) return <div className="p-10 text-center"><h1 className="text-gold text-3xl">Connexion...</h1></div>;
+  if (!roomId) return <LandingPage onJoin={setRoomId} />;
 
   return (
-    <div className="min-h-screen bg-billiard-green p-4">
-      <main className="max-w-2xl mx-auto">
-        {activeTab === 'match' && <GamePage roomId={roomId} />}
-        {activeTab === 'stats' && <StatsPage />}
-        {activeTab === 'profiles' && <ProfilesPage />}
-      </main>
+    <div className="min-h-screen pb-20">
+      {tab === 'jeu' && <GamePage roomId={roomId} />}
+      {tab === 'stats' && <StatsPage roomId={roomId} />}
+      {tab === 'profils' && <ProfilesPage />}
+      {tab === 'logs' && <LogsPage roomId={roomId} />}
 
-      {/* Barre de navigation fixe */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-dark-wood p-4 flex justify-around border-t-2 border-gold">
-        <button onClick={() => setActiveTab('match')} className="text-gold">Match</button>
-        <button onClick={() => setActiveTab('stats')} className="text-gold">Stats</button>
-        <button onClick={() => setActiveTab('profiles')} className="text-gold">Profils</button>
+      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-gold flex justify-around p-3">
+        {['jeu', 'stats', 'profils', 'logs'].map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`capitalize ${tab === t ? 'text-gold font-bold' : 'text-white'}`}>
+            {t}
+          </button>
+        ))}
       </nav>
     </div>
   );
