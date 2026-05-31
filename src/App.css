@@ -1,3 +1,49 @@
 .app-container {
   min-height: 100vh;
 }
+@layer utilities {
+  /* Tapis vert de billard texturé */
+  .bg-billiard-green {
+    background-color: #0d5136;
+    background-image: radial-gradient(circle at 50% 30%, #136a48 0%, #0a3d28 100%);
+  }
+
+  /* Bois sombre pour l'arrière-plan des cartes */
+  .bg-dark-wood {
+    background-color: #2c1a13;
+    background-image: linear-gradient(135deg, #362017 0%, #22140e 100%);
+  }
+
+  /* Cadre en bois rustique autour du site */
+  .wood-frame {
+    border: 8px solid #1a0f0a;
+    outline: 2px solid #d4af37;
+    outline-offset: -5px;
+  }
+
+  /* Couleur Ivoire pour les textes */
+  .text-ivory {
+    color: #f6f5f0;
+  }
+
+  /* Couleur Or de Billard */
+  .text-gold {
+    color: #dfb743;
+  }
+  .border-gold {
+    border-color: #dfb743;
+  }
+  .bg-gold {
+    background-color: #dfb743;
+  }
+
+  /* Bille de billard animée */
+  .billiard-ball {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 30% 30%, #333 0%, #000 80%);
+    border-radius: 50%;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+    position: relative;
+  }
+}
