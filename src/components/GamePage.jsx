@@ -1,41 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../services/firebase';
-import { declareWinner } from '../services/gameService';
+import { declareWinner, updateScore } from '../services/gameService';
 
 export default function GamePage({ roomId, onLeave }) {
-  const [roomData, setRoomData] = useState(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    // On écoute la salle spécifique passée en props
-    const roomRef = ref(database, `rooms/${roomId}`);
-    const unsubscribe = onValue(roomRef, (snapshot) => {
-      setRoomData(snapshot.val());
-    });
-    return () => unsubscribe();
+    const unsub = onValue(ref(database, `rooms/${roomId}`), (s) => setData(s.val()));
+    return unsub;
   }, [roomId]);
 
-  if (!roomData) return <div className="text-white">Chargement de la salle...</div>;
-
-  const handleEndRound = (winnerId) => {
-    declareWinner(roomId, winnerId, roomData.scores);
-  };
+  if (!data) return <div className="text-white text-center mt-20">Chargement...</div>;
 
   return (
-    <div className="min-h-screen bg-billiard-green p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-serif text-gold underline">{roomData.name}</h2>
-        <button onClick={onLeave} className="bg-red-900 text-white px-4 py-2 rounded-lg">Quitter</button>
+    <div className="min-h-screen bg-[#0d5136] p-4 text-white">
+      <div className="flex justify-between items-center mb-8 border-b border-[#dfb743]/30 pb-4">
+        <h2 className="text-2xl font-serif text-[#dfb743]">{data.name}</h2>
+        <button onClick={onLeave} className="text-sm bg-black/30 px-3 py-1 rounded-full">Quitter</button>
       </div>
-      
-      <div className="grid gap-4">
-        {Object.entries(roomData.scores || {}).map(([id, score]) => (
-          <div key={id} className="bg-dark-wood p-6 rounded-2xl border-2 border-gold flex justify-between items-center text-white">
-            <span className="text-xl font-bold">{id}</span>
-            <span className="text-4xl font-mono">{score}</span>
-            <button onClick={() => handleEndRound(id)} className="bg-gold text-black font-bold px-4 py-2 rounded-lg">
-              Vainqueur
-            </button>
+
+      <div className="grid grid-cols-2 gap-4">
+        {Object.entries(data.scores).map(([id, score]) => (
+          <div key={id} className="bg-[#2c1a13] p-5 rounded-2xl border border-[#dfb743]/20">
+            <p className="text-xs uppercase opacity-60 mb-2">{id}</p>
+            <div className="text-5xl font-mono mb-4">{score}</div>
+            <div className="flex gap-2">
+              <button onClick={() => updateScore(roomId, id, score + 1)} className="flex-1 bg-[#dfb743] text-black font-bold py-2 rounded">+</button>
+              <button onClick={() => declareWinner(roomId, id, data.scores)} className="flex-1 bg-green-700 py-2 rounded">Win</button>
+            </div>
           </div>
         ))}
       </div>
