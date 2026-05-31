@@ -34,3 +34,7 @@ function StatsPage() {
 }
 
 export default StatsPage;
+// Ajoutez cette fonction à la fin de src/services/gameService.js
+export const subscribeToProfiles = (callback) => {
+  return subscribeTo('profiles', callback);
+};
