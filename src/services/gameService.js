@@ -7,9 +7,18 @@ export const createGame = async (gameData) => {
     const newGameRef = push(gamesRef);
     const gameId = newGameRef.key;
     
+    // Sécurisation stricte de l'objet des joueurs pour éviter les rejets Realtime Database
+    const initialPlayers = gameData.players && Object.keys(gameData.players).length > 0 
+      ? gameData.players 
+      : { initialized: true };
+
     await set(newGameRef, {
-      ...gameData,
       id: gameId,
+      gameName: gameData.gameName || 'Partie de Billard',
+      status: gameData.status || 'active',
+      maxPlayers: gameData.maxPlayers || 20,
+      players: initialPlayers,
+      scores: gameData.scores || {},
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
