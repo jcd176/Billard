@@ -10,12 +10,8 @@ export default function ProfilesPage() {
     onValue(profilesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Transforme l'objet Firebase en tableau exploitable
         const list = Object.entries(data).map(([id, info]) => ({
-          id,
-          name: info.name || "Joueur inconnu", // On affiche le nom, pas l'ID
-          wins: info.wins || 0,
-          losses: info.losses || 0
+          id, name: info.name || "Joueur", wins: info.wins || 0, losses: info.losses || 0
         }));
         setProfiles(list);
       }
@@ -23,22 +19,26 @@ export default function ProfilesPage() {
   }, []);
 
   return (
-    <div className="p-6">
-      <h2 className="text-3xl font-serif text-gold mb-8 border-b border-gold/30 pb-2">Joueurs du Club</h2>
-      <div className="grid gap-4">
-        {profiles.map((p) => (
-          <div key={p.id} className="bg-dark-wood p-5 rounded-2xl border border-gold/40 shadow-xl flex items-center justify-between">
-            <div>
-              {/* ICI : On affiche uniquement le nom, pas l'ID */}
-              <h3 className="text-2xl font-bold text-white">{p.name}</h3>
-              <p className="text-gold text-sm">Victoires: {p.wins} | Défaites: {p.losses}</p>
-            </div>
-            <div className="w-12 h-12 bg-black rounded-full border-2 border-gold flex items-center justify-center font-bold">
-              {p.name.substring(0, 1)}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="p-6 text-white">
+      <h2 className="text-3xl font-serif text-[#dfb743] mb-8 border-b border-[#dfb743]/30 pb-2">Joueurs du Club</h2>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="text-[#dfb743] border-b border-[#dfb743]/30">
+            <th className="py-3 text-left">Joueur</th>
+            <th className="py-3 text-center">Victoires</th>
+            <th className="py-3 text-center">Défaites</th>
+          </tr>
+        </thead>
+        <tbody>
+          {profiles.map((p) => (
+            <tr key={p.id} className="border-b border-white/10 hover:bg-white/5">
+              <td className="py-4 font-bold">{p.name}</td>
+              <td className="py-4 text-center">{p.wins}</td>
+              <td className="py-4 text-center">{p.losses}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
