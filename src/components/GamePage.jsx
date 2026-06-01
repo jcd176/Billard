@@ -12,7 +12,8 @@ export default function GamePage({ roomId, onLeave }) {
     return onValue(ref(database, `rooms/${roomId}`), (s) => setData(s.val()));
   }, [roomId]);
 
-  const addPlayer = (name) => {
+  const addPlayer = () => {
+    const name = prompt("Nom du nouveau joueur :");
     if (name) {
       update(ref(database, `rooms/${roomId}/scores`), { [name]: { v: 0, d: 0 } });
       addLog(roomId, name, "a rejoint la partie");
@@ -45,7 +46,7 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor:'pointer' }}>Quitter</button>
       </div>
 
-      <button onClick={() => addPlayer(prompt("Nom du joueur :"))} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
+      <button onClick={addPlayer} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
 
       <div className="card">
         <h2>Enregistrer un match</h2>
@@ -80,8 +81,6 @@ export default function GamePage({ roomId, onLeave }) {
         <h2>Historique de la session</h2>
         {logs.slice().reverse().map((l, i) => {
           const date = new Date(l.time);
-          const dateStr = date.toLocaleDateString([], {day:'2-digit', month:'2-digit'});
-          const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
           return (
             <div key={i} style={{fontSize:'12px', borderBottom:'1px solid #333', padding:'8px 0', display:'flex', justifyContent:'space-between'}}>
               <span>
@@ -91,7 +90,9 @@ export default function GamePage({ roomId, onLeave }) {
                   <><strong style={{color:'#aaa'}}>{l.user}</strong> <span style={{color:'#888'}}>{l.action}</span></>
                 )}
               </span>
-              <span style={{color: '#555'}}>{dateStr} {timeStr}</span>
+              <span style={{color: '#555'}}>
+                {date.toLocaleDateString([], {day:'2-digit', month:'2-digit'})} {date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              </span>
             </div>
           );
         })}
