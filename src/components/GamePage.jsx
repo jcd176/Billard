@@ -33,47 +33,27 @@ export default function GamePage({ roomId, onLeave }) {
   const players = Object.keys(data.scores || {});
 
   return (
-    <div className="p-4 bg-[#0d5136] min-h-screen text-white pb-24">
-      {/* Header avec bouton Power à droite */}
+    <div className="p-4 min-h-screen text-white pb-24">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#dfb743] font-serif text-2xl">{data.name}</h2>
-        <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white transition">⏻</button>
+        <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white">⏻</button>
       </div>
 
-      {/* Bouton Ajouter joueur */}
-      <button 
-        onClick={addPlayer} 
-        className="w-full mb-6 py-3 border-2 border-[#2a9d8f] text-[#2a9d8f] rounded-lg font-bold hover:bg-[#2a9d8f] hover:text-white transition"
-      >
+      <button onClick={addPlayer} className="w-full mb-6 py-3 border border-[#dfb743] text-[#dfb743] rounded-lg hover:bg-[#dfb743] hover:text-black transition font-bold">
         + Ajouter un joueur
       </button>
 
-      {/* Bloc Enregistrer un match */}
       <div className="bg-[#1a1a1a] p-6 rounded-xl border border-[#dfb743]/30 shadow-xl">
         <h3 className="text-[#dfb743] font-bold text-lg mb-4">Enregistrer un match</h3>
-        
-        <select 
-          onChange={(e) => setWinner(e.target.value)} 
-          value={winner} 
-          className="w-full bg-[#333] p-3 rounded mb-3 border border-white/10 text-white"
-        >
+        <select onChange={(e) => setWinner(e.target.value)} value={winner} className="w-full bg-[#333] p-3 rounded mb-3 border border-white/10">
             <option value="">Vainqueur 🏆</option>
             {players.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        
-        <select 
-          onChange={(e) => setLoser(e.target.value)} 
-          value={loser} 
-          className="w-full bg-[#333] p-3 rounded mb-4 border border-white/10 text-white"
-        >
+        <select onChange={(e) => setLoser(e.target.value)} value={loser} className="w-full bg-[#333] p-3 rounded mb-4 border border-white/10">
             <option value="">Perdant ❌</option>
             {players.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        
-        <button 
-          onClick={recordMatch} 
-          className="w-full bg-[#2a9d8f] text-white font-bold p-4 rounded-lg hover:bg-[#1a938a] transition shadow-lg"
-        >
+        <button onClick={recordMatch} className="w-full bg-[#2a9d8f] text-white font-bold p-4 rounded-lg hover:bg-[#1a938a] transition">
           Valider le match
         </button>
       </div>
