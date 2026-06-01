@@ -11,7 +11,6 @@ const firebaseConfig = {
   messagingSenderId: "247215612831",
   appId: "1:247215612831:web:70c5b7b6cd642f09a213aa",
   measurementId: "G-3PPC69JKMM",
-  // CORRECTION ICI : .firebasedatabase.app au lieu de .firebasedatabaseapp.com
   databaseURL: "https://billard-17260-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
