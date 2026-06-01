@@ -5,7 +5,8 @@ import GamePage from './components/GamePage';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [roomId, setRoomId] = useState(null); // Gère la partie active
+  const [view, setView] = useState('menu'); // 'menu', 'create', 'game'
+  const [roomId, setRoomId] = useState(null);
 
   useEffect(() => {
     return auth.onAuthStateChanged(setUser);
@@ -13,20 +14,39 @@ export default function App() {
 
   if (!user) return <HomePage onUserLogin={setUser} />;
 
-  // Si on a un roomId, on affiche la page de jeu
-  if (roomId) {
-    return <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />;
-  }
-
-  // Sinon, on affiche un menu simple pour choisir une partie
   return (
     <div className="container">
-      <div className="card">
-        <h2>Bienvenue, {user.displayName}</h2>
-        <button className="btn-primary" onClick={() => setRoomId('partie-test-1')}>
-          Accéder à la partie test
-        </button>
-      </div>
+      {view === 'menu' && (
+        <div className="card">
+          <h2>Bienvenue, {user.displayName}</h2>
+          <button className="btn-primary" onClick={() => setView('create')} style={{ marginBottom: '10px' }}>
+            Créer une partie
+          </button>
+          <button className="btn-primary" style={{ background: '#444' }}>
+            Rejoindre une partie
+          </button>
+        </div>
+      )}
+
+      {view === 'create' && (
+        <div className="card">
+          <h2>Nouvelle Partie</h2>
+          <input className="join-input" placeholder="Nom de la salle" id="roomName" />
+          <button className="btn-primary" onClick={() => { 
+            const name = document.getElementById('roomName').value;
+            if(name) { setRoomId(name); setView('game'); }
+          }}>
+            Lancer la partie
+          </button>
+          <button onClick={() => setView('menu')} style={{ background: 'none', color: '#888', width: '100%', marginTop: '10px' }}>
+            Retour
+          </button>
+        </div>
+      )}
+
+      {view === 'game' && roomId && (
+        <GamePage roomId={roomId} onLeave={() => { setRoomId(null); setView('menu'); }} />
+      )}
     </div>
   );
 }
