@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fond d'écran global */
 body {
   background-image: url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg');
   background-size: cover;
@@ -16,17 +15,10 @@ body {
 }
 
 @layer components {
-  /* Style unifié pour les boutons */
   .btn-emerald {
-    @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer;
+    @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer text-center;
   }
-
-  /* Conteneur sombre avec transparence pour lire par-dessus l'image */
   .card-dark {
-    @apply bg-black/70 border border-[#dfb743]/30 rounded-2xl p-6 shadow-xl backdrop-blur-sm;
+    @apply bg-black/80 backdrop-blur-md border border-[#dfb743]/30 rounded-2xl p-6 shadow-xl;
   }
 }
-
-/* Utilitaires spécifiques */
-.table-header { color: #00b4d8; }
-.text-gold { color: #dfb743; }
