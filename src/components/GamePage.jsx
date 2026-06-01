@@ -24,8 +24,7 @@ export default function GamePage({ roomId, onLeave }) {
   const recordMatch = () => {
     if (winner && loser && winner !== loser) {
       declareWinner(roomId, winner, loser);
-      setWinner(''); 
-      setLoser('');
+      setWinner(''); setLoser('');
     }
   };
 
@@ -33,17 +32,17 @@ export default function GamePage({ roomId, onLeave }) {
   const players = Object.keys(data.scores || {});
 
   return (
-    <div className="p-4 min-h-screen text-white pb-24">
+    <div className="p-4 min-h-screen pb-24">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#dfb743] font-serif text-2xl">{data.name}</h2>
         <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white">⏻</button>
       </div>
 
-      <button onClick={addPlayer} className="w-full mb-6 py-3 border border-[#dfb743] text-[#dfb743] rounded-lg hover:bg-[#dfb743] hover:text-black transition font-bold">
+      <button onClick={addPlayer} className="w-full mb-6 py-3 border border-[#dfb743] text-[#dfb743] rounded-lg font-bold hover:bg-[#dfb743] hover:text-black transition">
         + Ajouter un joueur
       </button>
 
-      <div className="bg-[#1a1a1a] p-6 rounded-xl border border-[#dfb743]/30 shadow-xl">
+      <div className="card-dark">
         <h3 className="text-[#dfb743] font-bold text-lg mb-4">Enregistrer un match</h3>
         <select onChange={(e) => setWinner(e.target.value)} value={winner} className="w-full bg-[#333] p-3 rounded mb-3 border border-white/10">
             <option value="">Vainqueur 🏆</option>
@@ -53,9 +52,7 @@ export default function GamePage({ roomId, onLeave }) {
             <option value="">Perdant ❌</option>
             {players.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        <button onClick={recordMatch} className="w-full bg-[#2a9d8f] text-white font-bold p-4 rounded-lg hover:bg-[#1a938a] transition">
-          Valider le match
-        </button>
+        <button onClick={recordMatch} className="btn-primary w-full">Valider le match</button>
       </div>
     </div>
   );
