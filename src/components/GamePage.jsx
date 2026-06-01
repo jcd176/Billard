@@ -12,8 +12,7 @@ export default function GamePage({ roomId, onLeave }) {
     return onValue(ref(database, `rooms/${roomId}`), (s) => setData(s.val()));
   }, [roomId]);
 
-  const addPlayer = () => {
-    const name = prompt("Nom du nouveau joueur :");
+  const addPlayer = (name) => {
     if (name) {
       update(ref(database, `rooms/${roomId}/scores`), { [name]: { v: 0, d: 0 } });
       addLog(roomId, name, "a rejoint la partie");
@@ -41,15 +40,13 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="container">
-      {/* Header */}
       <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ border: 'none', margin: 0 }}>{data.name}</h2>
         <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor:'pointer' }}>Quitter</button>
       </div>
 
-      <button onClick={addPlayer} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
+      <button onClick={() => addPlayer(prompt("Nom du joueur :"))} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
 
-      {/* Formulaire Match */}
       <div className="card">
         <h2>Enregistrer un match</h2>
         <select onChange={(e) => setWinner(e.target.value)} value={winner} className="join-input"><option value="">Vainqueur 🏆</option>{Object.keys(scores).map(p => <option key={p} value={p}>{p}</option>)}</select>
@@ -57,7 +54,6 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={recordMatch} className="btn-primary">Valider le match</button>
       </div>
 
-      {/* Classement */}
       <div className="card">
         <h2>Classement Général</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', color: 'white' }}>
@@ -80,21 +76,25 @@ export default function GamePage({ roomId, onLeave }) {
         </table>
       </div>
 
-      {/* Historique */}
       <div className="card">
         <h2>Historique de la session</h2>
-        {logs.slice().reverse().map((l, i) => (
-          <div key={i} style={{fontSize:'12px', borderBottom:'1px solid #333', padding:'8px 0', display:'flex', justifyContent:'space-between'}}>
-            <span>
-              {l.action.includes("bat") ? (
-                <><strong style={{color:'#2a9d8f'}}>{l.user}</strong> bat <strong style={{color:'#ff4d4d'}}>{l.action.split("bat ")[1]}</strong></>
-              ) : (
-                <><strong style={{color:'#aaa'}}>{l.user}</strong> <span style={{color:'#888'}}>{l.action}</span></>
-              )}
-            </span>
-            <span style={{color: '#555'}}>{new Date(l.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-          </div>
-        ))}
+        {logs.slice().reverse().map((l, i) => {
+          const date = new Date(l.time);
+          const dateStr = date.toLocaleDateString([], {day:'2-digit', month:'2-digit'});
+          const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          return (
+            <div key={i} style={{fontSize:'12px', borderBottom:'1px solid #333', padding:'8px 0', display:'flex', justifyContent:'space-between'}}>
+              <span>
+                {l.action.includes("bat") ? (
+                  <><strong style={{color:'#2a9d8f'}}>{l.user}</strong> bat <strong style={{color:'#ff4d4d'}}>{l.action.split("bat ")[1]}</strong></>
+                ) : (
+                  <><strong style={{color:'#aaa'}}>{l.user}</strong> <span style={{color:'#888'}}>{l.action}</span></>
+                )}
+              </span>
+              <span style={{color: '#555'}}>{dateStr} {timeStr}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
