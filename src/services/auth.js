@@ -1,35 +1,23 @@
-import { signInAnonymously, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from './firebase';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously as firebaseSignInAnonymously } from 'firebase/auth';
 
-export const signInAnon = async () => {
-  try {
-    const result = await signInAnonymously(auth);
-    return result.user;
-  } catch (error) {
-    console.error('Erreur connexion anonyme:', error);
-    throw error;
-  }
-};
+const auth = getAuth();
+const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
   try {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    return result.user;
+    await signInWithPopup(auth, googleProvider);
   } catch (error) {
-    console.error('Erreur connexion Google:', error);
-    throw error;
+    console.error("Erreur Google:", error);
   }
 };
 
-export const getCurrentUser = () => {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = auth.onAuthStateChanged(
-      (user) => {
-        unsubscribe();
-        resolve(user);
-      },
-      reject
-    );
-  });
+export const signInAnonymously = async () => {
+  try {
+    // Utilisation de la fonction renommée pour éviter la confusion
+    await firebaseSignInAnonymously(auth);
+    // Optionnel : stocker un nom par défaut en local pour la session
+    localStorage.setItem('localUser', 'Joueur Local');
+  } catch (error) {
+    console.error("Erreur anonyme:", error);
+  }
 };
