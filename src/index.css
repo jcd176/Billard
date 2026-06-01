@@ -73,3 +73,20 @@ h2 {
   cursor: pointer;
   width: 100%;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th {
+  text-align: left;
+  color: var(--text-dim);
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
+
