@@ -10,15 +10,15 @@ export default function App() {
   }, []);
 
   return (
-    <div className="container" style={{ margin: '0 auto' }}>
+    <div>
       {!user ? (
         <HomePage onUserLogin={setUser} />
       ) : (
-        <div>
-          {/* Votre contenu de jeu ici avec les classNames="card" */}
-          <div className="card">
-            <h2>Bienvenue {user.displayName}</h2>
-          </div>
+        <div className="container">
+            <div className="card">
+                <h2>Bienvenue, {user.displayName}</h2>
+                {/* Ici votre logique de jeu */}
+            </div>
         </div>
       )}
     </div>
