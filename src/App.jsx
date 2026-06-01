@@ -29,17 +29,20 @@ export default function App() {
   if (!roomId) return <LandingPage onJoinRoom={setRoomId} />;
 
   return (
-    <div className="min-h-screen pb-24 bg-[#0d5136]">
+    <div className="min-h-screen pb-24">
+      {/* Suppression du bg-[#0d5136] pour laisser apparaître l'image de body */}
+      
       {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
       {tab === 'stats' && <StatsPage roomId={roomId} />}
       {tab === 'logs' && <LogsPage roomId={roomId} />}
 
-      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-[#dfb743] flex justify-center gap-8 p-4 z-50">
+      {/* Barre de navigation fixe */}
+      <nav className="fixed bottom-0 w-full bg-black/80 backdrop-blur-md border-t border-[#dfb743] flex justify-center gap-8 p-4 z-50">
         {['jeu', 'stats', 'logs'].map(t => (
           <button 
             key={t} 
             onClick={() => setTab(t)} 
-            className={`capitalize font-bold ${tab === t ? 'text-[#dfb743]' : 'text-white'}`}
+            className={`capitalize font-bold transition-colors ${tab === t ? 'text-[#dfb743]' : 'text-white hover:text-[#2a9d8f]'}`}
           >
             {t}
           </button>
