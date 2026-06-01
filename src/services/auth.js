@@ -1,23 +1,27 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously as firebaseSignInAnonymously } from 'firebase/auth';
+import { auth } from './firebase';
 
-const auth = getAuth();
 const googleProvider = new GoogleAuthProvider();
 
+// Exportation nommée : signInWithGoogle
 export const signInWithGoogle = async () => {
   try {
-    await signInWithPopup(auth, googleProvider);
+    return await signInWithPopup(auth, googleProvider);
   } catch (error) {
     console.error("Erreur Google:", error);
+    throw error;
   }
 };
 
+// Exportation nommée : signInAnonymously
 export const signInAnonymously = async () => {
   try {
-    // Utilisation de la fonction renommée pour éviter la confusion
-    await firebaseSignInAnonymously(auth);
-    // Optionnel : stocker un nom par défaut en local pour la session
+    const userCredential = await firebaseSignInAnonymously(auth);
+    // Stockage local pour persister le statut
     localStorage.setItem('localUser', 'Joueur Local');
+    return userCredential.user;
   } catch (error) {
     console.error("Erreur anonyme:", error);
+    throw error;
   }
 };
