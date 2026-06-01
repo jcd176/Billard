@@ -2,74 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Configuration globale */
 body {
-  /* Remplacez par le nom de votre fichier dans le dossier public */
-  background-image: url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg'); 
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  min-height: 100vh;
+  background-color: #0d5136; /* Vert de fond principal */
   color: white;
+  min-height: 100vh;
   margin: 0;
   font-family: sans-serif;
 }
 
-.billard-panel {
-  background: rgba(0, 0, 0, 0.8);
-  border: 2px solid #dfb743;
-  border-radius: 20px;
-  padding: 20px;
-  backdrop-filter: blur(10px);
+@layer components {
+  /* Style unifié pour tous les boutons (Action, Connexion, Validation) */
+  .btn-emerald {
+    @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer;
+  }
+
+  /* Conteneur de carte sombre pour les formulaires et listes */
+  .card-dark {
+    @apply bg-[#1a1a1a] border border-[#dfb743]/30 rounded-2xl p-6 shadow-xl;
+  }
 }
 
-.text-gold { color: #dfb743; }
-
-.btn-emerald {
-  background-color: #2a9d8f; /* La couleur de votre bouton */
-  color: #ffffff;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 700;
-  transition: all 0.2s;
-  border: none;
+/* Utilitaires spécifiques */
+.table-header { 
+  color: #00b4d8; 
 }
 
-.btn-emerald:hover {
-  background-color: #21867a;
+.text-gold { 
+  color: #dfb743; 
 }
 
-.card-bg {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 1.5rem;
+/* Optionnel : Si vous voulez garder l'image de fond sur le corps, 
+   décommentez les lignes ci-dessous, mais attention au contraste ! */
+/*
+body {
+  background-image: url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body { background-color: #0d5136; color: white; min-height: 100vh; }
-
-/* Style du bouton "Valider" et actions principales */
-.btn-primary {
-  background-color: #2a9d8f;
-  color: white;
-  font-weight: bold;
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: none;
-  transition: background 0.3s;
-}
-.btn-primary:hover { background-color: #1a938a; }
-
-/* Conteneur de carte sombre */
-.card-dark {
-  background-color: #1a1a1a;
-  border: 1px solid rgba(223, 183, 67, 0.3);
-  border-radius: 16px;
-  padding: 20px;
-}
-
-/* En-têtes de tableau (Cyan) */
-.table-header { color: #00b4d8; }
+*/
