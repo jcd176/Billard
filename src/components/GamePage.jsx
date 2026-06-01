@@ -27,14 +27,14 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
-  if (!data) return <div className="text-white text-center mt-20">Chargement...</div>;
+  if (!data) return <div className="card" style={{color: 'white', textAlign: 'center'}}>Chargement...</div>;
   const players = Object.keys(data.scores || {});
 
   return (
     <div className="container">
       <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ border: 'none', margin: 0 }}>{data.name}</h2>
-        <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>⏻</button>
+        <h2 style={{ border: 'none', margin: 0 }}>{roomId}</h2>
+        <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '20px' }}>⏻</button>
       </div>
 
       <button onClick={addPlayer} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
