@@ -24,3 +24,9 @@ body {
     @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer;
   }
 }
+
+@layer components {
+  .btn-emerald {
+    @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer w-full max-w-xs;
+  }
+}
