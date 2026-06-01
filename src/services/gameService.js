@@ -14,8 +14,11 @@ export const addLog = (roomId, userName, action) => {
 
 export const declareWinner = async (roomId, winnerName, loserName) => {
   const scoresRef = ref(database, `rooms/${roomId}/scores`);
+  
   onValue(scoresRef, (snapshot) => {
     const currentScores = snapshot.val() || {};
+    
+    // Initialisation automatique si le joueur est nouveau
     const w = currentScores[winnerName] || { v: 0, d: 0 };
     const l = currentScores[loserName] || { v: 0, d: 0 };
 
@@ -26,11 +29,4 @@ export const declareWinner = async (roomId, winnerName, loserName) => {
   }, { onlyOnce: true });
 
   addLog(roomId, winnerName, `bat ${loserName}`);
-};
-
-export const subscribeTo = (path, callback) => {
-  const pathRef = ref(database, path);
-  return onValue(pathRef, (snapshot) => { 
-    callback(snapshot.val()); 
-  });
 };
