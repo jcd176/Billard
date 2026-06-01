@@ -9,6 +9,5 @@ export const signInWithGoogle = async () => {
 
 export const signInAnonymously = async () => {
   const userCredential = await firebaseSignInAnonymously(auth);
-  localStorage.setItem('localUser', 'Joueur Local');
   return userCredential.user;
 };
