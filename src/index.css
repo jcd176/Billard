@@ -44,3 +44,32 @@ body {
   border-radius: 12px;
   padding: 1.5rem;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { background-color: #0d5136; color: white; min-height: 100vh; }
+
+/* Style du bouton "Valider" et actions principales */
+.btn-primary {
+  background-color: #2a9d8f;
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  transition: background 0.3s;
+}
+.btn-primary:hover { background-color: #1a938a; }
+
+/* Conteneur de carte sombre */
+.card-dark {
+  background-color: #1a1a1a;
+  border: 1px solid rgba(223, 183, 67, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* En-têtes de tableau (Cyan) */
+.table-header { color: #00b4d8; }
