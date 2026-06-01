@@ -31,17 +31,25 @@ export default function GamePage({ roomId, onLeave }) {
   const players = Object.keys(data.scores || {});
 
   return (
-    <div className="p-4 pb-24">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-[#dfb743] font-serif text-2xl font-bold">{data.name}</h2>
-        <button onClick={onLeave} className="text-2xl text-[#dfb743]">⏻</button>
+    <div className="container">
+      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ border: 'none', margin: 0 }}>{data.name}</h2>
+        <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>⏻</button>
       </div>
-      <button onClick={addPlayer} className="btn-emerald mb-6">+ Ajouter un joueur</button>
-      <div className="card-dark">
-        <h3 className="text-[#dfb743] font-bold mb-4">Enregistrer un match</h3>
-        <select onChange={(e) => setWinner(e.target.value)} value={winner} className="w-full p-3 mb-3 bg-[#333] text-white rounded"><option value="">Vainqueur 🏆</option>{players.map(p => <option key={p} value={p}>{p}</option>)}</select>
-        <select onChange={(e) => setLoser(e.target.value)} value={loser} className="w-full p-3 mb-4 bg-[#333] text-white rounded"><option value="">Perdant ❌</option>{players.map(p => <option key={p} value={p}>{p}</option>)}</select>
-        <button onClick={recordMatch} className="btn-emerald">Valider le match</button>
+
+      <button onClick={addPlayer} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
+      
+      <div className="card">
+        <h2>Enregistrer un match</h2>
+        <select onChange={(e) => setWinner(e.target.value)} value={winner} className="join-input">
+          <option value="">Vainqueur 🏆</option>
+          {players.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <select onChange={(e) => setLoser(e.target.value)} value={loser} className="join-input">
+          <option value="">Perdant ❌</option>
+          {players.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <button onClick={recordMatch} className="btn-primary">Valider le match</button>
       </div>
     </div>
   );
