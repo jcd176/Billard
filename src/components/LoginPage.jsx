@@ -3,11 +3,14 @@ import { signInWithGoogle, signInAnonymously } from '../services/authService';
 
 export default function LoginPage() {
   return (
+    // "min-h-screen flex flex-col items-center justify-center" centre tout verticalement et horizontalement
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <h1 className="text-4xl font-serif text-white mb-10 drop-shadow-md">BILLARD PARTY</h1>
+      <h1 className="text-4xl font-serif text-white mb-10 drop-shadow-md">
+        BILLARD PARTY
+      </h1>
       
-      {/* Conteneur flex pour centrer et espacer les boutons */}
-      <div className="flex flex-col gap-4 w-full max-w-xs">
+      {/* "gap-4" crée l'espacement entre les deux boutons */}
+      <div className="flex flex-col gap-4 w-full items-center">
         <button onClick={signInWithGoogle} className="btn-emerald">
           Connexion Google
         </button>
