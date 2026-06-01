@@ -2,22 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-image: url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  min-height: 100vh;
-  color: white;
+:root {
+  --bg: #121212;
+  --card: #1e1e1e;
+  --primary: #00b4d8;
+  --accent: #2a9d8f;
+  --text: #ffffff;
+  --text-dim: #aaaaaa;
+  --border: #333333;
 }
 
-.btn-emerald {
-  background-color: #2a9d8f !important;
-  color: white !important;
-  padding: 12px 24px !important;
-  border-radius: 8px !important;
-  font-weight: bold !important;
-  cursor: pointer;
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+}
+
+/* Style des cartes pour retrouver l'aspect du 1er projet */
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+}
+
+/* Boutons uniformes */
+.btn-billard-primary {
+  background: var(--accent);
+  color: white;
   border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-billard-secondary {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Input style */
+.join-input {
   width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #2d2d2d;
+  color: white;
+  box-sizing: border-box;
 }
