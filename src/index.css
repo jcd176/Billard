@@ -29,47 +29,4 @@ body {
 
 /* Utilitaires spécifiques */
 .table-header { color: #00b4d8; }
-.text-gold { color: #dfb743; }@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Configuration globale */
-body {
-  background-color: #0d5136; /* Vert de fond principal */
-  color: white;
-  min-height: 100vh;
-  margin: 0;
-  font-family: sans-serif;
-}
-
-@layer components {
-  /* Style unifié pour tous les boutons (Action, Connexion, Validation) */
-  .btn-emerald {
-    @apply bg-[#2a9d8f] text-white font-bold py-3 px-6 rounded-lg transition-all hover:bg-[#21867a] shadow-lg border-none cursor-pointer;
-  }
-
-  /* Conteneur de carte sombre pour les formulaires et listes */
-  .card-dark {
-    @apply bg-[#1a1a1a] border border-[#dfb743]/30 rounded-2xl p-6 shadow-xl;
-  }
-}
-
-/* Utilitaires spécifiques */
-.table-header { 
-  color: #00b4d8; 
-}
-
-.text-gold { 
-  color: #dfb743; 
-}
-
-/* Optionnel : Si vous voulez garder l'image de fond sur le corps, 
-   décommentez les lignes ci-dessous, mais attention au contraste ! */
-/*
-body {
-  background-image: url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-}
-*/
+.text-gold { color: #dfb743; }
