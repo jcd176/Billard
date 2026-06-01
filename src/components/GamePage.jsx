@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, update } from 'firebase/database';
+import { ref, onValue, update, remove } from 'firebase/database';
 import { database } from '../services/firebase';
 import { declareWinner, addLog } from '../services/gameService';
 
@@ -16,64 +16,60 @@ export default function GamePage({ roomId, onLeave }) {
     const name = prompt("Nom du nouveau joueur :");
     if (name) {
       update(ref(database, `rooms/${roomId}/scores`), { [name]: { v: 0, d: 0 } });
-      addLog(roomId, "Système", `${name} a rejoint la partie`);
+      addLog(roomId, "Système", `${name} a rejoint la partie.`);
+    }
+  };
+
+  const deletePlayer = (name) => {
+    if (confirm(`Supprimer ${name} ?`)) {
+      remove(ref(database, `rooms/${roomId}/scores/${name}`));
+      addLog(roomId, "Système", `${name} a été supprimé.`);
     }
   };
 
   const recordMatch = () => {
     if (winner && loser && winner !== loser) {
       declareWinner(roomId, winner, loser);
+      addLog(roomId, "Match", `${winner} a battu ${loser}`);
       setWinner(''); setLoser('');
     }
   };
 
-  if (!data) return <div className="card" style={{color: 'white', textAlign: 'center'}}>Chargement...</div>;
-  
+  if (!data) return <div className="card">Chargement...</div>;
   const scores = data.scores || {};
-  const players = Object.keys(scores);
   const logs = data.logs ? Object.values(data.logs) : [];
 
   return (
     <div className="container">
-      {/* Header */}
       <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ border: 'none', margin: 0 }}>{data.name}</h2>
-        <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '20px' }}>⏻</button>
+        <button onClick={onLeave} style={{ background: 'none', border: 'none', color: '#ff4d4d' }}>Quitter</button>
       </div>
 
-      {/* Bouton Ajouter */}
       <button onClick={addPlayer} className="btn-primary" style={{ marginBottom: '15px' }}>+ Ajouter un joueur</button>
-      
-      {/* Formulaire Enregistrer match */}
-      <div className="card">
-        <h2>Enregistrer un match</h2>
-        <select onChange={(e) => setWinner(e.target.value)} value={winner} className="join-input"><option value="">Vainqueur 🏆</option>{players.map(p => <option key={p} value={p}>{p}</option>)}</select>
-        <select onChange={(e) => setLoser(e.target.value)} value={loser} className="join-input"><option value="">Perdant ❌</option>{players.map(p => <option key={p} value={p}>{p}</option>)}</select>
-        <button onClick={recordMatch} className="btn-primary">Valider le match</button>
-      </div>
 
-      {/* Tableau de Classement */}
       <div className="card">
-        <h2>Classement Général</h2>
-        <table style={{ width: '100%', color: 'white', borderCollapse: 'collapse' }}>
-          <thead><tr><th>Joueur</th><th>V</th><th>D</th><th>%</th></tr></thead>
+        <h2>Classement</h2>
+        <table>
+          <thead><tr><th>Joueur</th><th>V</th><th>D</th><th>%</th><th></th></tr></thead>
           <tbody>
-            {players.map(p => {
-              const v = scores[p].v || 0;
-              const d = scores[p].d || 0;
-              const total = v + d;
-              const pct = total > 0 ? Math.round((v / total) * 100) : 0;
-              return (<tr key={p}><td>{p}</td><td>{v}</td><td>{d}</td><td>{pct}%</td></tr>);
+            {Object.entries(scores).map(([name, s]) => {
+              const total = (s.v || 0) + (s.d || 0);
+              const pct = total > 0 ? Math.round(((s.v || 0) / total) * 100) : 0;
+              return (
+                <tr key={name}>
+                  <td>{name}</td><td>{s.v}</td><td>{s.d}</td><td>{pct}%</td>
+                  <td><button onClick={() => deletePlayer(name)} style={{background:'none', color:'red'}}>×</button></td>
+                </tr>
+              );
             })}
           </tbody>
         </table>
       </div>
 
-      {/* Historique */}
       <div className="card">
-        <h2>Historique de la session</h2>
-        {logs.length === 0 ? <p style={{color: '#888'}}>Aucun match enregistré</p> : 
-         logs.slice().reverse().map((log, i) => <p key={i} style={{fontSize: '12px', borderBottom: '1px solid #333'}}>{log.msg}</p>)}
+        <h2>Historique</h2>
+        {logs.slice().reverse().map((l, i) => <p key={i} style={{fontSize:'12px', margin:'5px 0'}}>{l.msg}</p>)}
       </div>
     </div>
   );
