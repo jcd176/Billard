@@ -4,22 +4,28 @@
 
 :root {
   --bg: #121212;
-  --card: #1e1e1e;
+  --card: rgba(30, 30, 30, 0.9);
   --primary: #00b4d8;
   --accent: #2a9d8f;
   --text: #ffffff;
-  --text-dim: #aaaaaa;
   --border: #333333;
 }
 
 body {
-  background-color: var(--bg) !important;
+  /* Image de fond avec un voile sombre pour garantir la lisibilité du texte */
+  background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), 
+              url('https://www.dbjl.fr/media/wysiwyg/Billard-anglais.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-color: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   margin: 0;
   padding: 15px;
   display: flex;
   justify-content: center;
+  min-height: 100vh;
 }
 
 .container {
@@ -32,8 +38,9 @@ body {
   border-radius: 12px;
   padding: 15px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--border);
+  backdrop-filter: blur(5px);
 }
 
 h2 {
@@ -42,6 +49,7 @@ h2 {
   color: var(--primary);
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
+  margin-bottom: 15px;
 }
 
 .join-input {
