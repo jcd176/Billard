@@ -1,34 +1,24 @@
-import React, { useState } from 'react';
-import LandingPage from './components/LandingPage';
-import GamePage from './components/GamePage';
-import StatsPage from './components/StatsPage';
-import ProfilesPage from './components/ProfilesPage';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-export default function App() {
-  const [roomId, setRoomId] = useState(null);
-  const [tab, setTab] = useState('jeu');
+body { background: #0d5136; color: white; min-height: 100vh; }
 
-  // Si aucune salle n'est choisie, on affiche l'accueil
-  if (!roomId) return <LandingPage onJoin={setRoomId} />;
+/* Nouveau style de bouton uniformisé */
+.btn-teal {
+  background-color: #2a9d8f;
+  color: white;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+.btn-teal:hover { background-color: #1a938a; }
 
-  // Sinon, on affiche la partie avec la navigation en bas
-  return (
-    <div className="min-h-screen">
-      {tab === 'jeu' && <GamePage roomId={roomId} />}
-      {tab === 'stats' && <StatsPage roomId={roomId} />}
-      {tab === 'profils' && <ProfilesPage />}
-      
-      <nav className="fixed bottom-0 w-full bg-black/90 border-t border-[#dfb743] flex justify-around p-4">
-        {['jeu', 'stats', 'profils'].map(t => (
-          <button 
-            key={t} 
-            onClick={() => setTab(t)} 
-            className={`capitalize font-bold ${tab === t ? 'text-[#dfb743]' : 'text-white'}`}
-          >
-            {t}
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
+/* Style des cartes sombres */
+.card-dark {
+  background: #1a1a1a;
+  border: 1px solid rgba(223, 183, 67, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
 }
