@@ -8,31 +8,21 @@ export default function LandingPage({ onJoinRoom }) {
   const handleCreateRoom = async () => {
     if (!name) return;
     setLoading(true);
-    try {
-      const roomId = await createRoom(name);
-      onJoinRoom(roomId);
-    } catch (error) {
-      console.error("Erreur création salle:", error);
-      setLoading(false);
-    }
+    const roomId = await createRoom(name);
+    onJoinRoom(roomId);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-white font-sans">
       <h1 className="text-4xl font-serif text-[#dfb743] mb-8 uppercase tracking-widest">Partie de Billard</h1>
-      
       <div className="card-dark w-full max-w-sm">
         <input 
-          className="w-full p-4 mb-4 rounded-xl bg-black/40 border border-[#dfb743] text-white placeholder-white/30"
+          className="w-full p-4 mb-4 rounded-xl bg-black/40 border border-[#dfb743] text-white"
           placeholder="Nom de la partie..."
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button 
-          onClick={handleCreateRoom}
-          disabled={loading}
-          className="btn-emerald w-full"
-        >
+        <button onClick={handleCreateRoom} disabled={loading} className="btn-emerald w-full">
           {loading ? "Création..." : "Lancer la partie"}
         </button>
       </div>
