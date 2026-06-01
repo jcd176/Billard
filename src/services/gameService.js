@@ -1,38 +1,19 @@
-import { ref, push, set, update, increment, onValue } from 'firebase/database';
-import { database } from './firebase';
+export const declareWinner = async (roomId, winnerName, loserName) => {
+  const roomScoresRef = ref(database, `rooms/${roomId}/scores`);
+  
+  // Lecture instantanée pour mettre à jour les deux joueurs
+  onValue(ref(database, `rooms/${roomId}/scores`), (snapshot) => {
+    const currentScores = snapshot.val() || {};
+    
+    // Initialisation si inexistant
+    const w = currentScores[winnerName] || { v: 0, d: 0 };
+    const l = currentScores[loserName] || { v: 0, d: 0 };
 
-export const createRoom = async (name) => {
-  const roomRef = push(ref(database, 'rooms'));
-  await set(roomRef, { name, createdAt: Date.now(), scores: {} });
-  return roomRef.key;
-};
+    update(ref(database, `rooms/${roomId}/scores`), {
+      [winnerName]: { v: w.v + 1, d: w.d },
+      [loserName]: { v: l.v, d: l.d + 1 }
+    });
+  }, { onlyOnce: true });
 
-export const addLog = (roomId, userName, action) => {
-  const logsRef = ref(database, `rooms/${roomId}/logs`);
-  push(logsRef, { user: userName, action: action, time: Date.now() });
-};
-
-export const updateScore = async (roomId, playerId, newScore) => {
-  const scoreRef = ref(database, `rooms/${roomId}/scores/${playerId}`);
-  await set(scoreRef, newScore);
-};
-
-export const declareWinner = async (roomId, winnerId, winnerName, isBlackBall, scores) => {
-  const updates = {};
-  updates[`profiles/${winnerId}/wins`] = increment(1);
-  await update(ref(database), updates);
-  const action = isBlackBall ? "a gagné avec la bille noire !" : "a remporté la manche.";
-  addLog(roomId, winnerName, action);
-};
-
-export const subscribeTo = (path, callback) => {
-  const pathRef = ref(database, path);
-  return onValue(pathRef, (snapshot) => { 
-    callback(snapshot.val()); 
-  });
-};
-
-// Fonction ajoutée ici pour être utilisée par StatsPage
-export const subscribeToProfiles = (callback) => {
-  return subscribeTo('profiles', callback);
+  addLog(roomId, winnerName, `bat ${loserName}`);
 };
