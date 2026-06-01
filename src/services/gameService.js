@@ -2,7 +2,11 @@ import { ref, push, update, get } from 'firebase/database';
 import { database } from './firebase';
 
 export const addLog = (roomId, userName, action) => {
-  push(ref(database, `rooms/${roomId}/logs`), { user: userName, action: action, time: Date.now() });
+  push(ref(database, `rooms/${roomId}/logs`), { 
+    user: userName, 
+    action: action, 
+    time: Date.now() 
+  });
 };
 
 export const declareWinner = async (roomId, winnerName, loserName) => {
