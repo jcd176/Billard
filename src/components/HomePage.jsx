@@ -9,39 +9,25 @@ export default function HomePage({ onUserLogin }) {
 
   const handleAnonLogin = async (e) => {
     e.preventDefault();
-    if (!guestPseudo.trim()) return alert('Veuillez choisir un pseudo');
-    
+    if (!guestPseudo.trim()) return alert('Pseudo requis');
     setLoading(true);
     try {
       const user = await signInAnonymously();
-      if (user) {
-        await updateProfile(user, { displayName: guestPseudo.trim() });
-        onUserLogin(user);
-      }
-    } catch (error) {
-      alert('Erreur : ' + error.message);
-    }
+      await updateProfile(user, { displayName: guestPseudo.trim() });
+      onUserLogin(user);
+    } catch (err) { alert(err.message); }
     setLoading(false);
   };
 
   return (
-    <div className="container" style={{ maxWidth: '480px', margin: '0 auto', padding: '15px' }}>
+    <div className="container">
       <div className="card">
         <h2>Connexion</h2>
         <form onSubmit={handleAnonLogin}>
-          <input 
-            className="join-input" 
-            placeholder="Pseudo (ex: Joueur 1)" 
-            value={guestPseudo} 
-            onChange={(e) => setGuestPseudo(e.target.value)} 
-          />
-          <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? 'Connexion...' : 'Continuer en tant qu\'invité'}
-          </button>
+          <input className="join-input" placeholder="Votre pseudo" 
+                 value={guestPseudo} onChange={(e) => setGuestPseudo(e.target.value)} />
+          <button type="submit" className="btn-primary">Entrer en jeu</button>
         </form>
-        <button onClick={signInWithGoogle} className="btn-primary" style={{ marginTop: '10px', background: '#4285f4' }}>
-          Se connecter avec Google
-        </button>
       </div>
     </div>
   );
