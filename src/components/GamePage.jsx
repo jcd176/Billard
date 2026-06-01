@@ -28,19 +28,17 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
-  if (!data) return <div className="text-center mt-20">Chargement...</div>;
+  if (!data) return <div className="text-white text-center mt-20">Chargement...</div>;
   const players = Object.keys(data.scores || {});
 
   return (
-    <div className="p-4 min-h-screen pb-24">
+    <div className="p-4 pb-24">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[#dfb743] font-serif text-2xl font-bold">{data.name}</h2>
-        <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white transition">⏻</button>
+        <button onClick={onLeave} className="text-2xl text-[#dfb743] hover:text-white">⏻</button>
       </div>
 
-      <button onClick={addPlayer} className="btn-emerald w-full mb-6">
-        + Ajouter un joueur
-      </button>
+      <button onClick={addPlayer} className="btn-emerald w-full mb-6">+ Ajouter un joueur</button>
 
       <div className="card-dark">
         <h3 className="text-[#dfb743] font-bold mb-4">Enregistrer un match</h3>
