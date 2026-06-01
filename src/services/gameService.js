@@ -1,6 +1,12 @@
 import { ref, push, set, update, onValue } from 'firebase/database';
 import { database } from './firebase';
 
+export const createRoom = async (name) => {
+  const roomRef = push(ref(database, 'rooms'));
+  await set(roomRef, { name, createdAt: Date.now(), scores: {} });
+  return roomRef.key;
+};
+
 export const addLog = (roomId, userName, action) => {
   const logsRef = ref(database, `rooms/${roomId}/logs`);
   push(logsRef, { user: userName, action: action, time: Date.now() });
@@ -20,4 +26,11 @@ export const declareWinner = async (roomId, winnerName, loserName) => {
   }, { onlyOnce: true });
 
   addLog(roomId, winnerName, `bat ${loserName}`);
+};
+
+export const subscribeTo = (path, callback) => {
+  const pathRef = ref(database, path);
+  return onValue(pathRef, (snapshot) => { 
+    callback(snapshot.val()); 
+  });
 };
