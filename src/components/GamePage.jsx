@@ -1,4 +1,25 @@
-import React, { useState, useEffect } from 'react';
+export default function GamePage({ roomId, onLeave }) {
+  // ... (votre code useEffect et state reste identique)
+
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-[#dfb743] font-serif text-2xl">Jazennes</h2>
+        <button onClick={onLeave} className="text-2xl text-white hover:text-red-500">⏻</button>
+      </div>
+
+      <button onClick={addPlayer} className="w-full mb-6 py-3 border-2 border-[#2a9d8f] text-[#2a9d8f] rounded-lg font-bold hover:bg-[#2a9d8f] hover:text-white">
+        + Ajouter un joueur
+      </button>
+
+      <div className="card-dark">
+        <h3 className="text-[#dfb743] font-bold mb-4">Enregistrer un match</h3>
+        {/* Vos selects... */}
+        <button onClick={recordMatch} className="btn-teal w-full">Valider le match</button>
+      </div>
+    </div>
+  );
+}import React, { useState, useEffect } from 'react';
 import { ref, onValue, update } from 'firebase/database';
 import { database } from '../services/firebase';
 import { declareWinner, addLog } from '../services/gameService';
