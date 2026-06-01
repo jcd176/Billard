@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './services/firebase'; // <--- IMPORT CORRIGÉ ICI
 import LoginPage from './components/LoginPage';
 import LandingPage from './components/LandingPage';
 import GamePage from './components/GamePage';
@@ -13,7 +14,7 @@ export default function App() {
   const [tab, setTab] = useState('jeu');
 
   useEffect(() => {
-    const auth = getAuth();
+    // Utilisation directe de l'instance auth importée
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       const localUser = localStorage.getItem('localUser');
       if (currentUser) setUser(currentUser);
@@ -30,13 +31,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Suppression du bg-[#0d5136] pour laisser apparaître l'image de body */}
-      
       {tab === 'jeu' && <GamePage roomId={roomId} onLeave={() => setRoomId(null)} />}
       {tab === 'stats' && <StatsPage roomId={roomId} />}
       {tab === 'logs' && <LogsPage roomId={roomId} />}
 
-      {/* Barre de navigation fixe */}
       <nav className="fixed bottom-0 w-full bg-black/80 backdrop-blur-md border-t border-[#dfb743] flex justify-center gap-8 p-4 z-50">
         {['jeu', 'stats', 'logs'].map(t => (
           <button 
