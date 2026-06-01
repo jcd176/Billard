@@ -23,3 +23,24 @@ body {
 }
 
 .text-gold { color: #dfb743; }
+
+.btn-emerald {
+  background-color: #2a9d8f; /* La couleur de votre bouton */
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-emerald:hover {
+  background-color: #21867a;
+}
+
+.card-bg {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
