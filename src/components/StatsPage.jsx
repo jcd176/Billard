@@ -10,13 +10,15 @@ export default function StatsPage({ roomId }) {
   }, [roomId]);
 
   const stats = Object.entries(scores).map(([name, data]) => {
-    const total = (data.v || 0) + (data.d || 0);
-    const pct = total > 0 ? Math.round(((data.v || 0) / total) * 100) : 0;
-    return { name, v: data.v || 0, d: data.d || 0, pct };
+    const v = data.v || 0;
+    const d = data.d || 0;
+    const total = v + d;
+    const pct = total > 0 ? Math.round((v / total) * 100) : 0;
+    return { name, v, d, pct };
   }).sort((a, b) => b.v - a.v);
 
   return (
-    <div className="p-4 bg-[#0d5136] min-h-screen text-white">
+    <div className="p-4 text-white min-h-screen">
       <h2 className="text-[#dfb743] text-2xl font-bold mb-6 font-serif">Classement Général</h2>
       <div className="bg-[#1a1a1a] rounded-xl border border-[#dfb743]/30 overflow-hidden">
         <table className="w-full text-left">
@@ -31,8 +33,8 @@ export default function StatsPage({ roomId }) {
           </thead>
           <tbody>
             {stats.map((s, i) => (
-              <tr key={s.name} className="border-b border-white/5">
-                <td className="p-3 font-mono text-gray-400">{i + 1}</td>
+              <tr key={s.name} className="border-b border-white/10">
+                <td className="p-3 text-gray-400">{i + 1}</td>
                 <td className="p-3 font-bold">{s.name}</td>
                 <td className="p-3 text-center text-green-400">{s.v}</td>
                 <td className="p-3 text-center text-red-400">{s.d}</td>
