@@ -82,22 +82,28 @@ export default function GamePage({ roomId, onLeave }) {
         {logs.slice().reverse().map((l, i) => {
           const date = new Date(l.time);
           
-          // Logique de couleur et texte
-          let style = { color: 'white' };
+          // Logique d'affichage et couleurs
           let displayAction = l.action;
+          let isMatch = l.action.includes("bat");
           
-          if (l.action.includes("rejoint")) {
-            style = { color: 'blue' };
-          } else if (l.action.includes("quitté")) {
-            style = { color: 'maroon' };
-          } else if (l.action.includes("bat")) {
+          if (isMatch) {
             displayAction = l.action.replace("bat ", "a gagné contre ");
           }
 
           return (
             <div key={i} style={{fontSize:'12px', borderBottom:'1px solid #333', padding:'8px 0', display:'flex', justifyContent:'space-between'}}>
-              <span style={style}>
-                <strong>{l.user}</strong> {displayAction}
+              <span>
+                {isMatch ? (
+                  <>
+                    <strong style={{color:'#2a9d8f'}}>{l.user}</strong> 
+                    <span style={{color: 'white'}}> a gagné contre </span> 
+                    <strong style={{color:'#ff4d4d'}}>{l.action.split("bat ")[1]}</strong>
+                  </>
+                ) : (
+                  <span style={{ color: l.action.includes("rejoint") ? 'blue' : (l.action.includes("quitté") ? 'maroon' : '#aaa') }}>
+                    <strong>{l.user}</strong> {l.action}
+                  </span>
+                )}
               </span>
               <span style={{color: '#555'}}>
                 {date.toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'})} {date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
