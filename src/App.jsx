@@ -65,7 +65,7 @@ export default function App() {
               <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
                 {data.type === 'principale' ? '👑 ' : ''}{name}
               </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '28px' }} title="Supprimer">
+              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }} title="Supprimer">
                 🎱
               </button>
             </div>
@@ -99,7 +99,26 @@ export default function App() {
             </label>
           </div>
           <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
-          <button onClick={() => setView('menu')} style={{ background: 'none', color: '#888', width: '100%', marginTop: '10px' }}>Annuler</button>
+          
+          {/* Nouveau design pour le bouton Annuler */}
+          <button 
+            onClick={() => setView('menu')} 
+            style={{ 
+              background: 'transparent', 
+              color: '#ff4d4d', 
+              width: '100%', 
+              marginTop: '15px', 
+              padding: '10px',
+              border: '1px solid #ff4d4d',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: '0.3s'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#ff4d4d33'}
+            onMouseOut={(e) => e.target.style.background = 'transparent'}
+          >
+            Annuler
+          </button>
         </div>
       )}
 
