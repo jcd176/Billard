@@ -1,38 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, remove, push } from 'firebase/database';
+import { ref, onValue, remove, push, update } from 'firebase/database';
 import { auth, database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
-  const [playersInRoom, setPlayersInRoom] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [newPlayerName, setNewPlayerName] = useState('');
   const user = auth.currentUser;
 
   useEffect(() => {
-    // On pointe directement vers la liste des joueurs de la salle
-    const roomPlayersRef = ref(database, `rooms/${roomId}/players`);
-    
-    return onValue(roomPlayersRef, (snapshot) => {
+    const playersRef = ref(database, `rooms/${roomId}/players`);
+    return onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
-      // On transforme l'objet en tableau pour pouvoir faire le .map()
-      const list = data ? Object.entries(data).map(([id, p]) => ({ 
-        id, 
-        name: typeof p === 'string' ? p : p.name 
-      })) : [];
-      setPlayersInRoom(list);
+      const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
+      // Tri par victoires si nécessaire
+      setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
   }, [roomId]);
 
-  const removePlayerFromRoom = (playerId, playerName) => {
+  const addPlayer = () => {
+    if (!newPlayerName) return;
+    push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
+    setNewPlayerName('');
+  };
+
+  const removePlayer = (playerId, playerName) => {
     const password = prompt("Saisissez le mot de passe pour supprimer " + playerName + ":");
-    if (password !== 'root') {
-      alert("Mot de passe incorrect !");
-      return;
-    }
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     
     remove(ref(database, `rooms/${roomId}/players/${playerId}`));
-    
     push(ref(database, 'globalLogs'), { 
-      action: `a supprimé le joueur '${playerName}' de la salle '${roomId}'`, 
-      user: user?.displayName || user?.email || "Admin", 
+      action: `a supprimé '${playerName}' de la salle '${roomId}'`, 
+      user: user?.email || "Admin", 
       time: Date.now(), 
       type: 'deleted' 
     });
@@ -43,39 +41,33 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      <h3>Joueurs présents :</h3>
-      {playersInRoom.length > 0 ? (
-        playersInRoom.map((player) => (
-          <div key={player.id} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            padding: '10px',
-            background: '#333',
-            borderRadius: '8px',
-            marginBottom: '8px',
-            color: 'white'
-          }}>
-            <span style={{ fontSize: '18px' }}>{player.name}</span>
-            
-            <button 
-              onClick={() => removePlayerFromRoom(player.id, player.name)} 
-              style={{ 
-                background: 'transparent', 
-                border: 'none', 
-                cursor: 'pointer', 
-                fontSize: '32px',
-                padding: '0'
-              }}
-              title="Supprimer joueur"
-            >
-              🎱
-            </button>
-          </div>
-        ))
-      ) : (
-        <p style={{color: '#888'}}>Aucun joueur dans cette salle pour le moment.</p>
-      )}
+      <div style={{ marginBottom: '20px' }}>
+        <input 
+          placeholder="Nom du joueur" 
+          value={newPlayerName} 
+          onChange={(e) => setNewPlayerName(e.target.value)} 
+        />
+        <button onClick={addPlayer}>Ajouter</button>
+      </div>
+
+      <h3>Classement des joueurs :</h3>
+      {players.map((player) => (
+        <div key={player.id} style={{ 
+          display: 'flex', alignItems: 'center', gap: '10px', 
+          background: '#222', padding: '10px', marginBottom: '5px', borderRadius: '4px' 
+        }}>
+          <span style={{ flex: 1 }}>{player.name} ({player.wins || 0}V - {player.losses || 0}D)</span>
+          
+          {/* Le bouton N°8 remplace l'ancienne croix */}
+          <button 
+            onClick={() => removePlayer(player.id, player.name)} 
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}
+            title="Supprimer joueur"
+          >
+            🎱
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
