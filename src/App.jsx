@@ -42,8 +42,8 @@ export default function App() {
           return;
         }
       }
-      // Utilisation de la couronne avec barre superposée : 👑\u0338
-      const logAction = type === 'principale' ? `a supprimé la salle 👑\u0338 '${roomName}'` : `a supprimé la salle '${roomName}'`;
+      // Suppression sans texte "principale", utilisation simple de 👑 si c'était une salle principale
+      const logAction = type === 'principale' ? `a supprimé la salle 👑 '${roomName}'` : `a supprimé la salle '${roomName}'`;
       remove(ref(database, `rooms/${roomName}`));
       push(ref(database, 'globalLogs'), { action: logAction, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
     }
