@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, remove, push, update } from 'firebase/database';
-import { auth, database } from './services/firebase'; 
-import { signOut } from 'firebase/auth'; // Ajout pour la déconnexion
+import { auth, database } from './services/firebase';
+import { signOut } from 'firebase/auth';
 import HomePage from './components/HomePage';
 import GamePage from './components/GamePage';
 
@@ -10,7 +10,6 @@ export default function App() {
   const [view, setView] = useState('menu');
   const [roomId, setRoomId] = useState(null);
   const [rooms, setRooms] = useState({});
-  const [players, setPlayers] = useState([]);
   const [globalLogs, setGlobalLogs] = useState([]);
 
   useEffect(() => {
@@ -20,27 +19,28 @@ export default function App() {
   useEffect(() => {
     const roomsRef = ref(database, 'rooms');
     const logsRef = ref(database, 'globalLogs');
-    const playersRef = ref(database, 'players');
     
     const uR = onValue(roomsRef, (s) => setRooms(s.val() || {}));
     const uL = onValue(logsRef, (s) => setGlobalLogs(s.val() ? Object.values(s.val()) : []));
-    const uP = onValue(playersRef, (s) => {
-      const data = s.val() ? Object.entries(s.val()).map(([name, stats]) => ({ name, ...stats })) : [];
-      setPlayers(data.sort((a, b) => b.wins - a.wins));
-    });
-    return () => { uR(); uL(); uP(); };
+    
+    return () => { uR(); uL(); };
   }, []);
 
   const handleLogout = () => { signOut(auth); };
 
   const deleteRoom = (roomName, type) => {
-    if (window.confirm("Supprimer cette salle ?")) {
+    if (window.confirm(`Supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
-        const password = prompt("Mot de passe :");
+        const password = prompt("Mot de passe root :");
         if (password !== 'root') { alert("Incorrect !"); return; }
       }
       remove(ref(database, `rooms/${roomName}`));
-      push(ref(database, 'globalLogs'), { action: `a supprimé la salle '${roomName}'`, user: user.email, time: Date.now() });
+      push(ref(database, 'globalLogs'), { 
+        action: `a supprimé la salle '${roomName}'`, 
+        user: user.email, 
+        time: Date.now(), 
+        type: 'deleted' 
+      });
     }
   };
 
@@ -51,8 +51,8 @@ export default function App() {
       {view === 'menu' && (
         <div className="card">
           <h2>Salles</h2>
-          <button onClick={handleLogout} style={{background: '#ff4d4d', color: '#fff', border: 'none', padding: '5px 10px', marginBottom: '10px'}}>Déconnexion</button>
-          <button className="btn-primary" onClick={() => setView('create')}>Créer une partie</button>
+          <button onClick={handleLogout} style={{background: '#ff4d4d', color: '#fff', border: 'none', padding: '5px 10px', marginBottom: '10px', cursor: 'pointer'}}>Déconnexion</button>
+          <button className="btn-primary" onClick={() => setView('create')} style={{width: '100%'}}>Créer une partie</button>
           
           <h3>Parties disponibles :</h3>
           {Object.entries(rooms).map(([name, data]) => (
@@ -65,9 +65,14 @@ export default function App() {
           ))}
 
           <h3>Historique</h3>
-          {globalLogs.slice().reverse().map((l, i) => (
-            <div key={i} style={{ fontSize: '11px', color: '#f1c40f' }}>{new Date(l.time).toLocaleTimeString()} - {l.action}</div>
-          ))}
+          {globalLogs.slice().reverse().map((l, i) => {
+            const color = l.type === 'created' ? '#2ecc71' : l.type === 'deleted' ? '#e74c3c' : l.type === 'error' ? '#9b59b6' : '#f1c40f';
+            return (
+              <div key={i} style={{ fontSize: '11px', color: color, padding: '2px 0' }}>
+                {new Date(l.time).toLocaleTimeString()} - <strong>{l.user}</strong> {l.action}
+              </div>
+            );
+          })}
         </div>
       )}
       
