@@ -91,7 +91,7 @@ export default function GamePage({ roomId, onLeave }) {
                 )}
               </span>
               <span style={{color: '#555'}}>
-                {date.toLocaleDateString([], {day:'2-digit', month:'2-digit'})} {date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                {date.toLocaleDateString([], {day:'2-digit', month:'2-digit', year:'numeric'})} {date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
               </span>
             </div>
           );
