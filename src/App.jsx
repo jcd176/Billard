@@ -40,14 +40,14 @@ export default function App() {
   };
 
   const deletePlayer = (name) => {
-    const password = prompt("Saisissez le mot de passe pour supprimer le joueur " + name + ":");
+    const password = prompt("Saisissez le mot de passe :");
     if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     remove(ref(database, `players/${name}`));
     push(ref(database, 'globalLogs'), { action: `a supprimé le joueur '${name}'`, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
   };
 
   const resetPlayerStats = (name) => {
-    const password = prompt("Saisissez le mot de passe pour réinitialiser " + name + ":");
+    const password = prompt("Saisissez le mot de passe :");
     if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     set(ref(database, `players/${name}`), { wins: 0, losses: 0 });
     push(ref(database, 'globalLogs'), { action: `l'utilisateur a remis les compteurs à zéro ! (${name})`, user: user.displayName || user.email, time: Date.now(), type: 'reset' });
@@ -72,7 +72,7 @@ export default function App() {
           return;
         }
       }
-      const logAction = type === 'principale' ? `a supprimé la salle 👑 '${roomName}'` : `a supprimé la salle '${roomName}'`;
+      const logAction = type === 'principale' ? `a supprimé la salle 👑̷ '${roomName}'` : `a supprimé la salle '${roomName}'`;
       remove(ref(database, `rooms/${roomName}`));
       push(ref(database, 'globalLogs'), { action: logAction, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
     }
@@ -95,7 +95,7 @@ export default function App() {
     <div className="container">
       {view === 'menu' && (
         <div className="card">
-          <h2>Classement</h2>
+          <h2>Salles</h2>
           {players.map((p, i) => (
             <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{flex: 1}}>{i === 0 ? '👑 ' : ''}{p.name}</span>
@@ -153,3 +153,7 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
