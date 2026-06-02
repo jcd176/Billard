@@ -29,12 +29,12 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const resetStats = (player) => {
-    const password = prompt("Mot de passe root :");
+    const password = prompt("Saisissez le mot de passe");
     if (password === 'root') update(ref(database, `rooms/${roomId}/players/${player.id}`), { wins: 0, losses: 0 });
   };
 
   const removePlayer = (playerId, playerName) => {
-    const password = prompt(`Mot de passe root pour supprimer ${playerName} :`);
+    const password = prompt("Saisissez le mot de passe");
     if (password === 'root') remove(ref(database, `rooms/${roomId}/players/${playerId}`));
   };
 
