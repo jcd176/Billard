@@ -19,10 +19,8 @@ export default function App() {
   useEffect(() => {
     const roomsRef = ref(database, 'rooms');
     const logsRef = ref(database, 'globalLogs');
-    
     const uR = onValue(roomsRef, (s) => setRooms(s.val() || {}));
     const uL = onValue(logsRef, (s) => setGlobalLogs(s.val() ? Object.values(s.val()) : []));
-    
     return () => { uR(); uL(); };
   }, []);
 
@@ -32,15 +30,15 @@ export default function App() {
     if (window.confirm(`Supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
         const password = prompt("Mot de passe root :");
-        if (password !== 'root') { alert("Incorrect !"); return; }
+        if (password !== 'root') {
+          push(ref(database, 'globalLogs'), { action: `erreur suppression salle 👑 '${roomName}' (mauvais mdp)`, user: user.email, time: Date.now(), type: 'error' });
+          alert("Mot de passe incorrect !");
+          return;
+        }
       }
+      const logAction = type === 'principale' ? `a supprimé la salle 👑 '${roomName}'` : `a supprimé la salle '${roomName}'`;
       remove(ref(database, `rooms/${roomName}`));
-      push(ref(database, 'globalLogs'), { 
-        action: `a supprimé la salle '${roomName}'`, 
-        user: user.email, 
-        time: Date.now(), 
-        type: 'deleted' 
-      });
+      push(ref(database, 'globalLogs'), { action: logAction, user: user.email, time: Date.now(), type: 'deleted' });
     }
   };
 
