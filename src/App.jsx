@@ -1,61 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, set, remove, push, update } from 'firebase/database';
-import { auth, database } from './services/firebase';
-import HomePage from './components/HomePage';
-import GamePage from './components/GamePage';
+import { ref, onValue, remove, push, update } from 'firebase/database';
+import { auth, database } from '../services/firebase';
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [view, setView] = useState('menu');
-  const [roomId, setRoomId] = useState(null);
-  const [rooms, setRooms] = useState({});
+export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
-  const [globalLogs, setGlobalLogs] = useState([]);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const user = auth.currentUser;
 
   useEffect(() => {
-    return auth.onAuthStateChanged(setUser);
-  }, []);
-
-  useEffect(() => {
-    const roomsRef = ref(database, 'rooms');
-    const logsRef = ref(database, 'globalLogs');
-    const playersRef = ref(database, 'players');
-    
-    const uR = onValue(roomsRef, (s) => setRooms(s.val() || {}));
-    const uL = onValue(logsRef, (s) => setGlobalLogs(s.val() ? Object.values(s.val()) : []));
-    const uP = onValue(playersRef, (s) => {
-      const data = s.val() ? Object.entries(s.val()).map(([name, stats]) => ({ name, ...stats })) : [];
-      setPlayers(data.sort((a, b) => b.wins - a.wins));
+    const playersRef = ref(database, `rooms/${roomId}/players`);
+    return onValue(playersRef, (snapshot) => {
+      const data = snapshot.val();
+      const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
+      setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
-    return () => { uR(); uL(); uP(); };
-  }, []);
+  }, [roomId]);
 
-  // ... (Conservez vos fonctions adjustScore, deletePlayer, resetPlayerStats, etc. déjà présentes dans votre code)
+  const addPlayer = () => {
+    if (!newPlayerName.trim()) return;
+    push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
+    setNewPlayerName('');
+  };
 
-  if (!user) return <HomePage onUserLogin={setUser} />;
+  const adjustScore = (player, type) => {
+    update(ref(database, `rooms/${roomId}/players/${player.id}`), {
+      wins: type === 'win' ? (player.wins || 0) + 1 : Math.max(0, (player.wins || 0) - 1),
+      losses: type === 'loss' ? (player.losses || 0) + 1 : Math.max(0, (player.losses || 0) - 1)
+    });
+  };
+
+  const resetStats = (player) => {
+    const password = prompt("Saisissez le mot de passe (root) :");
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
+    update(ref(database, `rooms/${roomId}/players/${player.id}`), { wins: 0, losses: 0 });
+  };
+
+  const removePlayer = (playerId, playerName) => {
+    const password = prompt("Supprimer " + playerName + " ? (mdp root) :");
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
+    remove(ref(database, `rooms/${roomId}/players/${playerId}`));
+  };
 
   return (
-    <div className="container">
-      {view === 'menu' && (
-        <div className="card">
-          <h2>Salles</h2>
-          {/* ... (Votre code menu inchangé) */}
-          <button className="btn-primary" onClick={() => setView('create')}>Créer une partie</button>
-          
-          <h3>Parties disponibles :</h3>
-          {Object.entries(rooms).map(([name, data]) => (
-            <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center' }}>
-              <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
-                {data.type === 'principale' ? '👑 ' : ''}{name}
-              </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}>🎱</button>
-            </div>
-          ))}
-          {/* ... (Le reste de l'historique) */}
-        </div>
-      )}
+    <div className="card">
+      <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
+      <h2>Salle : {roomId}</h2>
       
-      {view === 'game' && roomId && <GamePage roomId={roomId} onLeave={() => setView('menu')} />}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
+        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
+        <button onClick={addPlayer} className="btn-primary">Ajouter</button>
+      </div>
+
+      <h3>Classement des joueurs :</h3>
+      {players.map((player) => (
+        <div key={player.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
+          <span style={{ flex: 1, color: '#fff' }}>{player.name}</span>
+          
+          <button onClick={() => adjustScore(player, 'win')}>+</button>
+          <span style={{width:'60px', textAlign:'center', color: '#fff'}}>{player.wins || 0}V-{player.losses || 0}D</span>
+          <button onClick={() => adjustScore(player, 'loss')}>-</button>
+          
+          <button onClick={() => resetStats(player)} style={{background:'none', border:'none', color:'#fff', fontSize:'20px', cursor:'pointer'}} title="Réinitialiser">⟲</button>
+          
+          <button onClick={() => removePlayer(player.id, player.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }} title="Supprimer joueur">🎱</button>
+        </div>
+      ))}
     </div>
   );
 }
