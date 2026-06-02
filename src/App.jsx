@@ -91,10 +91,10 @@ export default function App() {
             <div style={{ marginTop: '10px' }}>
               {globalLogs.slice().reverse().map((l, i) => {
                 let color = '#aaa';
-                if (l.type === 'created') color = '#2ecc71'; // Vert
-                else if (l.type === 'deleted') color = '#e74c3c'; // Rouge
-                else if (l.type === 'error') color = '#9b59b6'; // Violet pour erreurs MDP
-                else if (l.type === 'reset') color = '#f1c40f'; // Jaune pour reset
+                if (l.type === 'created') color = '#2ecc71';
+                else if (l.type === 'deleted') color = '#e74c3c';
+                else if (l.type === 'error') color = '#9b59b6';
+                else if (l.type === 'reset') color = '#f1c40f';
                 
                 return (
                   <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0', borderBottom: '1px solid #222' }}>
@@ -111,4 +111,33 @@ export default function App() {
         <div className="card">
           <h2>Nouvelle salle</h2>
           <input className="join-input" id="newRoomName" placeholder="Nom de la salle" />
-          <div style={{ margin: '15px 0', color: '
+          <div style={{ margin: '15px 0', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input type="checkbox" id="isPrincipal" style={{ transform: 'scale(1.5)' }} />
+            <label htmlFor="isPrincipal" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              Salle Principale 👑
+            </label>
+          </div>
+          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
+          
+          <button 
+            onClick={() => setView('menu')} 
+            style={{ 
+              background: 'transparent', 
+              color: '#ff4d4d', 
+              width: '100%', 
+              marginTop: '15px', 
+              padding: '10px',
+              border: '1px solid #ff4d4d',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Annuler
+          </button>
+        </div>
+      )}
+
+      {view === 'game' && roomId && <GamePage roomId={roomId} onLeave={() => setView('menu')} />}
+    </div>
+  );
+}
