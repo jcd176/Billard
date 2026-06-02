@@ -48,10 +48,14 @@ export default function App() {
   };
 
   const resetGlobalLogs = () => {
-    if (window.confirm("Voulez-vous vraiment effacer tout l'historique ?")) {
-      set(ref(database, 'globalLogs'), null);
-      push(ref(database, 'globalLogs'), { action: "l'utilisateur a remis les compteurs à zéro !", user: "Système", time: Date.now(), type: 'reset' });
+    const password = prompt("Action sensible : entrez le mot de passe 'root' pour réinitialiser l'historique :");
+    if (password !== 'root') {
+      push(ref(database, 'globalLogs'), { action: "erreur tentative réinitialisation historique (mauvais mdp)", user: user.displayName || user.email, time: Date.now(), type: 'error' });
+      alert("Mot de passe incorrect !");
+      return;
     }
+    set(ref(database, 'globalLogs'), null);
+    push(ref(database, 'globalLogs'), { action: "l'utilisateur a remis les compteurs à zéro !", user: "Système", time: Date.now(), type: 'reset' });
   };
 
   if (!user) return <HomePage onUserLogin={setUser} />;
@@ -81,7 +85,7 @@ export default function App() {
           <div style={{ marginTop: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{margin: 0}}>Historique</h3>
-                <button onClick={resetGlobalLogs} style={{ background: 'none', border: '1px solid #555', color: '#fff', fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Réinitialiser</button>
+                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }} title="Réinitialiser">⟲</button>
             </div>
             
             <div style={{ marginTop: '10px' }}>
@@ -90,7 +94,7 @@ export default function App() {
                 if (l.type === 'created') color = '#2ecc71';
                 else if (l.type === 'deleted') color = '#e74c3c';
                 else if (l.type === 'error') color = '#f39c12';
-                else if (l.type === 'reset') color = '#f1c40f'; // Jaune pour le reset
+                else if (l.type === 'reset') color = '#f1c40f';
                 
                 return (
                   <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0', borderBottom: '1px solid #222' }}>
