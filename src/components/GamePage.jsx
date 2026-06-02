@@ -24,14 +24,13 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const declareMatch = () => {
-    if (!winner || !loser || winner === loser) { alert("Sélectionnez deux joueurs différents"); return; }
+    if (!winner || !loser || winner === loser) return;
     
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
 
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
-    alert(`Match enregistré : ${wPlayer.name} a battu ${lPlayer.name}`);
   };
 
   const adjustScore = (player, type) => {
@@ -58,12 +57,12 @@ export default function GamePage({ roomId, onLeave }) {
 
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select onChange={(e) => setWinner(e.target.value)} style={{width: '100%', marginBottom: '5px'}}>
-          <option value="">Sélectionner Vainqueur</option>
-          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          <option value="">👑 Vainqueur</option>
+          {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select onChange={(e) => setLoser(e.target.value)} style={{width: '100%', marginBottom: '10px'}}>
-          <option value="">Sélectionner Perdant</option>
-          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          <option value="">🎱 Perdant</option>
+          {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{width: '100%'}}>Déclarer Match</button>
       </div>
@@ -74,11 +73,11 @@ export default function GamePage({ roomId, onLeave }) {
         const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
         return (
           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
-            <span style={{ flex: 1 }}>{p.name}</span>
-            <span>{p.wins}V - {p.losses}D ({winRate}%)</span>
+            <span style={{ flex: 1, color: '#fff' }}>{p.name}</span>
+            <span style={{fontSize: '12px', color: '#aaa'}}>{p.wins}V - {p.losses}D ({winRate}%)</span>
             <button onClick={() => adjustScore(p, 'win')}>+</button>
             <button onClick={() => adjustScore(p, 'loss')}>-</button>
-            <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', fontSize: '24px' }}>🎱</button>
+            <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>🎱</button>
           </div>
         );
       })}
