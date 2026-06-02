@@ -111,45 +111,4 @@ export default function App() {
           
           <h3>Parties disponibles :</h3>
           {Object.entries(rooms).map(([name, data]) => (
-            <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center' }}>
-              <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
-                {data.type === 'principale' ? '👑 ' : ''}{name}
-              </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}>🎱</button>
-            </div>
-          ))}
-
-          <div style={{ marginTop: '40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{margin: 0}}>Historique</h3>
-                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', fontSize: '32px', cursor: 'pointer' }}>⟲</button>
-            </div>
-            {globalLogs.slice().reverse().map((l, i) => {
-              let color = l.type === 'created' ? '#2ecc71' : l.type === 'deleted' ? '#e74c3c' : l.type === 'error' ? '#9b59b6' : '#f1c40f';
-              return (
-                <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0' }}>
-                  {new Date(l.time).toLocaleTimeString()} - <strong>{l.user}</strong> {l.action}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      
-      {view === 'create' && (
-        <div className="card">
-          <h2>Nouvelle salle</h2>
-          <input className="join-input" id="newRoomName" placeholder="Nom de la salle" />
-          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, false)}>Créer</button>
-          <button onClick={() => setView('menu')}>Annuler</button>
-        </div>
-      )}
-
-      {view === 'game' && roomId && <GamePage roomId={roomId} onLeave={() => setView('menu')} />}
-    </div>
-  );
-}
-
-
-
-
+            <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: '
