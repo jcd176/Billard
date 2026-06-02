@@ -8,7 +8,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState('menu');
   const [roomId, setRoomId] = useState(null);
-  const [rooms, setRooms] = useState({}); // Changé en objet pour stocker le type
+  const [rooms, setRooms] = useState({});
   const [globalLogs, setGlobalLogs] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function App() {
   const createRoom = (name, type) => {
     if (!name) return;
     set(ref(database, `rooms/${name}`), { name, type, createdAt: Date.now() });
-    push(ref(database, 'globalLogs'), { action: `a créé la salle '${name}' (${type})`, user: user.displayName || user.email, time: Date.now(), type: 'created' });
+    push(ref(database, 'globalLogs'), { action: `a créé la salle '${name}'`, user: user.displayName || user.email, time: Date.now(), type: 'created' });
     setRoomId(name);
     setView('game');
   };
@@ -35,7 +35,11 @@ export default function App() {
     if (window.confirm(`Voulez-vous vraiment supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
         const password = prompt("Salle principale : entrez le mot de passe 'root' pour valider :");
-        if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
+        if (password !== 'root') {
+          push(ref(database, 'globalLogs'), { action: `erreur suppression salle '${roomName}' (mauvais mdp)`, user: user.displayName || user.email, time: Date.now(), type: 'error' });
+          alert("Mot de passe incorrect !");
+          return;
+        }
       }
       remove(ref(database, `rooms/${roomName}`));
       push(ref(database, 'globalLogs'), { action: `a supprimé la salle '${roomName}'`, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
@@ -58,19 +62,29 @@ export default function App() {
           {Object.entries(rooms).map(([name, data]) => (
             <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
               <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
-                {name} ({data.type})
+                {data.type === 'principale' ? '👑 ' : ''}{name}
               </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: '1px solid #555', borderRadius: '4px', padding: '0 10px', cursor: 'pointer' }}>🗑️</button>
+              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }} title="Supprimer">
+                🎱
+              </button>
             </div>
           ))}
 
           <div style={{ marginTop: '40px' }}>
             <h3>Historique Global</h3>
-            {globalLogs.slice().reverse().map((l, i) => (
-              <div key={i} style={{ fontSize: '11px', color: l.type === 'created' ? '#2ecc71' : '#e74c3c', padding: '4px 0' }}>
-                {new Date(l.time).toLocaleDateString()} {new Date(l.time).toLocaleTimeString()} - {l.user} {l.action}
-              </div>
-            ))}
+            {globalLogs.slice().reverse().map((l, i) => {
+              // Définition de la couleur selon le type de log
+              let color = '#aaa';
+              if (l.type === 'created') color = '#2ecc71'; // Vert
+              else if (l.type === 'deleted') color = '#e74c3c'; // Rouge
+              else if (l.type === 'error') color = '#f39c12'; // Orange
+
+              return (
+                <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0' }}>
+                  {new Date(l.time).toLocaleDateString()} {new Date(l.time).toLocaleTimeString()} - {l.user} {l.action}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
