@@ -35,20 +35,22 @@ export default function App() {
   const deleteRoom = (roomName, type) => {
     if (window.confirm(`Voulez-vous vraiment supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
-        const password = prompt("Salle principale : entrez le mot de passe 'root' pour valider :");
+        const password = prompt("Saisissez le mot de passe :");
         if (password !== 'root') {
-          push(ref(database, 'globalLogs'), { action: `erreur suppression salle '${roomName}' (mauvais mdp)`, user: user.displayName || user.email, time: Date.now(), type: 'error' });
+          push(ref(database, 'globalLogs'), { action: `❌ suppression salle '${roomName}' (mauvais mdp)`, user: user.displayName || user.email, time: Date.now(), type: 'error' });
           alert("Mot de passe incorrect !");
           return;
         }
       }
+      // Utilisation de 👑 rayée (ou équivalent) pour les salles principales supprimées
+      const logAction = type === 'principale' ? `a supprimé la salle principale 👑❌ '${roomName}'` : `a supprimé la salle '${roomName}'`;
       remove(ref(database, `rooms/${roomName}`));
-      push(ref(database, 'globalLogs'), { action: `a supprimé la salle '${roomName}'`, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
+      push(ref(database, 'globalLogs'), { action: logAction, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
     }
   };
 
   const resetGlobalLogs = () => {
-    const password = prompt("Action sensible : entrez le mot de passe 'root' pour réinitialiser l'historique :");
+    const password = prompt("Saisissez le mot de passe :");
     if (password !== 'root') {
       push(ref(database, 'globalLogs'), { action: "erreur tentative réinitialisation historique (mauvais mdp)", user: user.displayName || user.email, time: Date.now(), type: 'error' });
       alert("Mot de passe incorrect !");
