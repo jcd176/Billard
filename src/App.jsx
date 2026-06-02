@@ -29,7 +29,7 @@ export default function App() {
   const deleteRoom = (roomName, type) => {
     if (window.confirm(`Supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
-        const password = prompt("Mot de passe root :");
+        const password = prompt("Saisissez le mot de passe");
         if (password !== 'root') {
           push(ref(database, 'globalLogs'), { action: `erreur suppression salle 👑 '${roomName}' (mauvais mdp)`, user: user.email, time: Date.now(), type: 'error' });
           alert("Mot de passe incorrect !");
