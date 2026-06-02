@@ -8,17 +8,23 @@ export default function GamePage({ roomId, onLeave }) {
   const user = auth.currentUser;
 
   useEffect(() => {
+    // Écoute de la base de données pour les joueurs dans cette salle spécifique
     const playersRef = ref(database, `rooms/${roomId}/players`);
     return onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
+      // Tri par victoires
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
   }, [roomId]);
 
   const addPlayer = () => {
-    if (!newPlayerName) return;
-    push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
+    if (!newPlayerName.trim()) return;
+    push(ref(database, `rooms/${roomId}/players`), { 
+      name: newPlayerName, 
+      wins: 0, 
+      losses: 0 
+    });
     setNewPlayerName('');
   };
 
@@ -53,7 +59,8 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      <div style={{ marginBottom: '20px' }}>
+      {/* Formulaire d'ajout */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
         <input 
           placeholder="Nom du joueur" 
           value={newPlayerName} 
@@ -63,15 +70,17 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
 
       <h3>Classement des joueurs :</h3>
+      
+      {/* Liste des joueurs */}
       {players.map((player) => (
         <div key={player.id} style={{ 
           display: 'flex', alignItems: 'center', gap: '8px', 
           background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' 
         }}>
-          <span style={{ flex: 1 }}>{player.name}</span>
+          <span style={{ flex: 1, color: '#fff' }}>{player.name}</span>
           
           <button onClick={() => adjustScore(player, 'win')}>+</button>
-          <span style={{width:'50px', textAlign:'center'}}>{player.wins || 0}V-{player.losses || 0}D</span>
+          <span style={{width:'60px', textAlign:'center', color: '#fff'}}>{player.wins || 0}V-{player.losses || 0}D</span>
           <button onClick={() => adjustScore(player, 'loss')}>-</button>
           
           <button onClick={() => resetStats(player)} style={{background:'none', border:'none', color:'#fff', fontSize:'20px', cursor:'pointer'}}>⟲</button>
