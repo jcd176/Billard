@@ -36,7 +36,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const resetStats = (player) => {
-    const password = prompt("Saisissez le mot de passe :");
+    const password = prompt("Saisissez le mot de passe pour réinitialiser " + player.name + ":");
     if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { wins: 0, losses: 0 });
   };
@@ -48,7 +48,7 @@ export default function GamePage({ roomId, onLeave }) {
     remove(ref(database, `rooms/${roomId}/players/${playerId}`));
     push(ref(database, 'globalLogs'), { 
       action: `a supprimé '${playerName}' de la salle '${roomId}'`, 
-      user: user?.email || "Admin", 
+      user: user?.displayName || user?.email || "Admin", 
       time: Date.now(), 
       type: 'deleted' 
     });
@@ -71,7 +71,7 @@ export default function GamePage({ roomId, onLeave }) {
 
       <h3>Classement des joueurs :</h3>
       
-      {/* Liste des joueurs */}
+      {/* Liste des joueurs avec scores, +/- et suppression N°8 */}
       {players.map((player) => (
         <div key={player.id} style={{ 
           display: 'flex', alignItems: 'center', gap: '8px', 
