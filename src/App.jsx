@@ -103,7 +103,6 @@ export default function App() {
               <span style={{width:'60px', textAlign:'center'}}>{p.wins}V-{p.losses}D</span>
               <button onClick={() => adjustScore(p.name, 'loss')}>-</button>
               <button onClick={() => resetPlayerStats(p.name)} style={{background:'none', border:'none', fontSize:'24px', cursor:'pointer'}}>⟲</button>
-              {/* Boule N°8 pour la suppression du joueur */}
               <button onClick={() => deletePlayer(p.name)} style={{background:'none', border:'none', fontSize:'32px', cursor:'pointer'}} title="Supprimer joueur">🎱</button>
             </div>
           ))}
@@ -116,27 +115,11 @@ export default function App() {
               <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
                 {data.type === 'principale' ? '👑 ' : ''}{name}
               </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }} title="Supprimer salle">🎱</button>
+              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}>🎱</button>
             </div>
           ))}
 
           <div style={{ marginTop: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{margin: 0}}>Historique</h3>
-                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', fontSize: '32px', cursor: 'pointer' }} title="Réinitialiser">⟲</button>
-            </div>
-            {globalLogs.slice().reverse().map((l, i) => {
-              let color = l.type === 'created' ? '#2ecc71' : l.type === 'deleted' ? '#e74c3c' : l.type === 'error' ? '#9b59b6' : '#f1c40f';
-              return (
-                <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0' }}>
-                  {new Date(l.time).toLocaleTimeString()} - <strong>{l.user}</strong> {l.action}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      
-      {view === 'create' && (
-        <div className="card">
-          <h2>Nouvelle salle</h2>
+                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', fontSize:
