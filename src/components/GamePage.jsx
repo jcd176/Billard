@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue, remove, push, update } from 'firebase/database';
-import { auth, database } from '../services/firebase'; // Corrigé ici
+import { auth, database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
@@ -34,7 +34,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const removePlayer = (playerId, playerName) => {
-    const password = prompt("Mot de passe pour supprimer " + playerName + " :");
+    const password = prompt("Mot de passe root pour supprimer " + playerName + " :");
     if (password === 'root') remove(ref(database, `rooms/${roomId}/players/${playerId}`));
   };
 
@@ -48,12 +48,12 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
       </div>
 
-      <h3>Classement :</h3>
+      <h3>Classement des joueurs :</h3>
       {players.map((p) => (
         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
-          <span style={{ flex: 1, color: '#fff' }}>{p.name}</span>
+          <span style={{ flex: 1 }}>{p.name}</span>
           <button onClick={() => adjustScore(p, 'win')}>+</button>
-          <span style={{width:'60px', textAlign:'center', color: '#fff'}}>{p.wins || 0}V-{p.losses || 0}D</span>
+          <span style={{width:'60px', textAlign:'center'}}>{p.wins || 0}V-{p.losses || 0}D</span>
           <button onClick={() => adjustScore(p, 'loss')}>-</button>
           <button onClick={() => resetStats(p)} title="Réinitialiser">⟲</button>
           <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}>🎱</button>
