@@ -26,6 +26,15 @@ export default function App() {
 
   const handleLogout = () => { signOut(auth); };
 
+  const resetGlobalLogs = () => {
+    const password = prompt("Saisissez le mot de passe");
+    if (password === 'root') {
+      set(ref(database, 'globalLogs'), null);
+    } else {
+      alert("Mot de passe incorrect !");
+    }
+  };
+
   const createRoom = (name, isPrincipal) => {
     if (!name) return;
     set(ref(database, `rooms/${name}`), { name, type: isPrincipal ? 'principale' : 'secondaire', createdAt: Date.now() });
@@ -71,7 +80,11 @@ export default function App() {
             </div>
           ))}
 
-          <h3>Historique</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+            <h3>Historique</h3>
+            <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }} title="Réinitialiser historique">⟲</button>
+          </div>
+          
           {globalLogs.slice().reverse().map((l, i) => {
             const color = l.type === 'created' ? '#2ecc71' : l.type === 'deleted' ? '#e74c3c' : l.type === 'error' ? '#9b59b6' : '#f1c40f';
             return (
@@ -86,21 +99,11 @@ export default function App() {
       {view === 'create' && (
         <div className="card" style={{ maxWidth: '400px', margin: '0 auto', boxSizing: 'border-box' }}>
           <h2>Nouvelle salle</h2>
-          <input 
-            id="newRoomName" 
-            placeholder="Nom de la salle" 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} 
-          />
+          <input id="newRoomName" placeholder="Nom de la salle" style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
           <div style={{color: 'white', marginBottom:'10px', textAlign: 'left'}}>
              <input type="checkbox" id="isPrincipal" style={{marginRight: '8px'}} /> Salle Principale 👑
           </div>
-          <button 
-            className="btn-primary" 
-            style={{width: '100%', padding: '10px'}}
-            onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}
-          >
-            Lancer
-          </button>
+          <button className="btn-primary" style={{width: '100%', padding: '10px'}} onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
           <button onClick={() => setView('menu')} style={{marginTop:'10px', width:'100%', padding:'10px'}}>Annuler</button>
         </div>
       )}
