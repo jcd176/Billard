@@ -12,7 +12,6 @@ export default function GamePage({ roomId, onLeave }) {
     return onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
-      // Tri par victoires si nécessaire
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
   }, [roomId]);
@@ -21,6 +20,19 @@ export default function GamePage({ roomId, onLeave }) {
     if (!newPlayerName) return;
     push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
     setNewPlayerName('');
+  };
+
+  const adjustScore = (player, type) => {
+    update(ref(database, `rooms/${roomId}/players/${player.id}`), {
+      wins: type === 'win' ? (player.wins || 0) + 1 : Math.max(0, (player.wins || 0) - 1),
+      losses: type === 'loss' ? (player.losses || 0) + 1 : Math.max(0, (player.losses || 0) - 1)
+    });
+  };
+
+  const resetStats = (player) => {
+    const password = prompt("Saisissez le mot de passe :");
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
+    update(ref(database, `rooms/${roomId}/players/${player.id}`), { wins: 0, losses: 0 });
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -53,12 +65,17 @@ export default function GamePage({ roomId, onLeave }) {
       <h3>Classement des joueurs :</h3>
       {players.map((player) => (
         <div key={player.id} style={{ 
-          display: 'flex', alignItems: 'center', gap: '10px', 
-          background: '#222', padding: '10px', marginBottom: '5px', borderRadius: '4px' 
+          display: 'flex', alignItems: 'center', gap: '8px', 
+          background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' 
         }}>
-          <span style={{ flex: 1 }}>{player.name} ({player.wins || 0}V - {player.losses || 0}D)</span>
+          <span style={{ flex: 1 }}>{player.name}</span>
           
-          {/* Le bouton N°8 remplace l'ancienne croix */}
+          <button onClick={() => adjustScore(player, 'win')}>+</button>
+          <span style={{width:'50px', textAlign:'center'}}>{player.wins || 0}V-{player.losses || 0}D</span>
+          <button onClick={() => adjustScore(player, 'loss')}>-</button>
+          
+          <button onClick={() => resetStats(player)} style={{background:'none', border:'none', color:'#fff', fontSize:'20px', cursor:'pointer'}}>⟲</button>
+          
           <button 
             onClick={() => removePlayer(player.id, player.name)} 
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}
