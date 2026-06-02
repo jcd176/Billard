@@ -102,7 +102,7 @@ export default function App() {
               <button onClick={() => adjustScore(p.name, 'win')}>+</button>
               <span style={{width:'60px', textAlign:'center'}}>{p.wins}V-{p.losses}D</span>
               <button onClick={() => adjustScore(p.name, 'loss')}>-</button>
-              <button onClick={() => resetPlayerStats(p.name)} style={{background:'none', border:'none', fontSize:'24px', cursor:'pointer'}}>⟲</button>
+              <button onClick={() => resetPlayerStats(p.name)} style={{background:'none', border:'none', color:'#fff', fontSize:'24px', cursor:'pointer'}}>⟲</button>
               <button onClick={() => deletePlayer(p.name)} style={{background:'none', border:'none', fontSize:'32px', cursor:'pointer'}} title="Supprimer joueur">🎱</button>
             </div>
           ))}
@@ -122,7 +122,7 @@ export default function App() {
           <div style={{ marginTop: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{margin: 0}}>Historique</h3>
-                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', fontSize: '32px', cursor: 'pointer' }}>⟲</button>
+                <button onClick={resetGlobalLogs} style={{ background: 'none', border: 'none', color:'#fff', fontSize: '32px', cursor: 'pointer' }}>⟲</button>
             </div>
             {globalLogs.slice().reverse().map((l, i) => {
               let color = l.type === 'created' ? '#2ecc71' : l.type === 'deleted' ? '#e74c3c' : l.type === 'error' ? '#9b59b6' : '#f1c40f';
@@ -145,7 +145,7 @@ export default function App() {
             <label htmlFor="isPrincipal">Salle Principale 👑</label>
           </div>
           <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
-          <button onClick={() => setView('menu')} style={{marginTop:'10px'}}>Annuler</button>
+          <button onClick={() => setView('menu')} style={{marginTop:'10px', background:'#ff4d4d', color:'#fff', border:'none', padding:'10px', width:'100%', cursor:'pointer'}}>Annuler</button>
         </div>
       )}
 
@@ -153,7 +153,3 @@ export default function App() {
     </div>
   );
 }
-
-
-
-
