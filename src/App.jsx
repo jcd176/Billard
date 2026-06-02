@@ -42,8 +42,8 @@ export default function App() {
           return;
         }
       }
-      // Utilisation de 👑 rayée (ou équivalent) pour les salles principales supprimées
-      const logAction = type === 'principale' ? `a supprimé la salle principale 👑❌ '${roomName}'` : `a supprimé la salle '${roomName}'`;
+      // Utilisation de 👑̷ pour les salles principales supprimées sans afficher le mot "principale"
+      const logAction = type === 'principale' ? `a supprimé la salle 👑̷ '${roomName}'` : `a supprimé la salle '${roomName}'`;
       remove(ref(database, `rooms/${roomName}`));
       push(ref(database, 'globalLogs'), { action: logAction, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
     }
