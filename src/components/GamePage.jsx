@@ -5,6 +5,8 @@ import { auth, database } from '../services/firebase';
 export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [winner, setWinner] = useState('');
+  const [loser, setLoser] = useState('');
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -21,16 +23,22 @@ export default function GamePage({ roomId, onLeave }) {
     setNewPlayerName('');
   };
 
+  const declareMatch = () => {
+    if (!winner || !loser || winner === loser) { alert("Sélectionnez deux joueurs différents"); return; }
+    
+    const wPlayer = players.find(p => p.id === winner);
+    const lPlayer = players.find(p => p.id === loser);
+
+    update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
+    update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+    alert(`Match enregistré : ${wPlayer.name} a battu ${lPlayer.name}`);
+  };
+
   const adjustScore = (player, type) => {
     update(ref(database, `rooms/${roomId}/players/${player.id}`), {
       wins: type === 'win' ? (player.wins || 0) + 1 : Math.max(0, (player.wins || 0) - 1),
       losses: type === 'loss' ? (player.losses || 0) + 1 : Math.max(0, (player.losses || 0) - 1)
     });
-  };
-
-  const resetStats = (player) => {
-    const password = prompt("Saisissez le mot de passe");
-    if (password === 'root') update(ref(database, `rooms/${roomId}/players/${player.id}`), { wins: 0, losses: 0 });
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -48,17 +56,32 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
       </div>
 
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+        <select onChange={(e) => setWinner(e.target.value)} style={{width: '100%', marginBottom: '5px'}}>
+          <option value="">Sélectionner Vainqueur</option>
+          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <select onChange={(e) => setLoser(e.target.value)} style={{width: '100%', marginBottom: '10px'}}>
+          <option value="">Sélectionner Perdant</option>
+          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <button onClick={declareMatch} className="btn-primary" style={{width: '100%'}}>Déclarer Match</button>
+      </div>
+
       <h3>Classement :</h3>
-      {players.map((p) => (
-        <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
-          <span style={{ flex: 1, color: '#fff' }}>{p.name}</span>
-          <button onClick={() => adjustScore(p, 'win')}>+</button>
-          <span style={{width:'60px', textAlign:'center', color: '#fff'}}>{p.wins || 0}V-{p.losses || 0}D</span>
-          <button onClick={() => adjustScore(p, 'loss')}>-</button>
-          <button onClick={() => resetStats(p)} title="Réinitialiser" style={{background:'none', border:'none', color:'#fff', cursor:'pointer'}}>⟲</button>
-          <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '32px' }}>🎱</button>
-        </div>
-      ))}
+      {players.map((p) => {
+        const total = (p.wins || 0) + (p.losses || 0);
+        const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+        return (
+          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
+            <span style={{ flex: 1 }}>{p.name}</span>
+            <span>{p.wins}V - {p.losses}D ({winRate}%)</span>
+            <button onClick={() => adjustScore(p, 'win')}>+</button>
+            <button onClick={() => adjustScore(p, 'loss')}>-</button>
+            <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', fontSize: '24px' }}>🎱</button>
+          </div>
+        );
+      })}
     </div>
   );
 }
