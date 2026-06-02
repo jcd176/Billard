@@ -41,20 +41,14 @@ export default function App() {
 
   const deletePlayer = (name) => {
     const password = prompt("Saisissez le mot de passe pour supprimer le joueur " + name + ":");
-    if (password !== 'root') {
-      alert("Mot de passe incorrect !");
-      return;
-    }
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     remove(ref(database, `players/${name}`));
     push(ref(database, 'globalLogs'), { action: `a supprimé le joueur '${name}'`, user: user.displayName || user.email, time: Date.now(), type: 'deleted' });
   };
 
   const resetPlayerStats = (name) => {
     const password = prompt("Saisissez le mot de passe pour réinitialiser " + name + ":");
-    if (password !== 'root') {
-      alert("Mot de passe incorrect !");
-      return;
-    }
+    if (password !== 'root') { alert("Mot de passe incorrect !"); return; }
     set(ref(database, `players/${name}`), { wins: 0, losses: 0 });
     push(ref(database, 'globalLogs'), { action: `l'utilisateur a remis les compteurs à zéro ! (${name})`, user: user.displayName || user.email, time: Date.now(), type: 'reset' });
   };
@@ -141,7 +135,16 @@ export default function App() {
           </div>
         </div>
       )}
-      {view === 'create' && /* ... */ }
+      
+      {view === 'create' && (
+        <div className="card">
+          <h2>Nouvelle salle</h2>
+          <input className="join-input" id="newRoomName" placeholder="Nom de la salle" />
+          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, false)}>Créer</button>
+          <button onClick={() => setView('menu')}>Annuler</button>
+        </div>
+      )}
+
       {view === 'game' && roomId && <GamePage roomId={roomId} onLeave={() => setView('menu')} />}
     </div>
   );
