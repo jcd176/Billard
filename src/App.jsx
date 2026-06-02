@@ -23,8 +23,9 @@ export default function App() {
     return () => { uR(); uL(); };
   }, []);
 
-  const createRoom = (name, type) => {
+  const createRoom = (name, isPrincipal) => {
     if (!name) return;
+    const type = isPrincipal ? 'principale' : 'secondaire';
     set(ref(database, `rooms/${name}`), { name, type, createdAt: Date.now() });
     push(ref(database, 'globalLogs'), { action: `a créé la salle '${name}'`, user: user.displayName || user.email, time: Date.now(), type: 'created' });
     setRoomId(name);
@@ -60,11 +61,11 @@ export default function App() {
           
           <h3>Parties disponibles :</h3>
           {Object.entries(rooms).map(([name, data]) => (
-            <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+            <div key={name} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center' }}>
               <button className="btn-primary" style={{ background: '#333', flex: 1, textAlign: 'left' }} onClick={() => { setRoomId(name); setView('game'); }}>
                 {data.type === 'principale' ? '👑 ' : ''}{name}
               </button>
-              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }} title="Supprimer">
+              <button onClick={() => deleteRoom(name, data.type)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '28px' }} title="Supprimer">
                 🎱
               </button>
             </div>
@@ -73,12 +74,10 @@ export default function App() {
           <div style={{ marginTop: '40px' }}>
             <h3>Historique Global</h3>
             {globalLogs.slice().reverse().map((l, i) => {
-              // Définition de la couleur selon le type de log
               let color = '#aaa';
-              if (l.type === 'created') color = '#2ecc71'; // Vert
-              else if (l.type === 'deleted') color = '#e74c3c'; // Rouge
-              else if (l.type === 'error') color = '#f39c12'; // Orange
-
+              if (l.type === 'created') color = '#2ecc71';
+              else if (l.type === 'deleted') color = '#e74c3c';
+              else if (l.type === 'error') color = '#f39c12';
               return (
                 <div key={i} style={{ fontSize: '11px', color: color, padding: '4px 0' }}>
                   {new Date(l.time).toLocaleDateString()} {new Date(l.time).toLocaleTimeString()} - {l.user} {l.action}
@@ -93,11 +92,13 @@ export default function App() {
         <div className="card">
           <h2>Nouvelle salle</h2>
           <input className="join-input" id="newRoomName" placeholder="Nom de la salle" />
-          <select id="roomType" className="join-input" style={{marginBottom: '10px'}}>
-            <option value="secondaire">Salle Secondaire</option>
-            <option value="principale">Salle Principale</option>
-          </select>
-          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('roomType').value)}>Lancer</button>
+          <div style={{ margin: '15px 0', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input type="checkbox" id="isPrincipal" style={{ transform: 'scale(1.5)' }} />
+            <label htmlFor="isPrincipal" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              Salle Principale 👑
+            </label>
+          </div>
+          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
           <button onClick={() => setView('menu')} style={{ background: 'none', color: '#888', width: '100%', marginTop: '10px' }}>Annuler</button>
         </div>
       )}
