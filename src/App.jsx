@@ -26,6 +26,14 @@ export default function App() {
 
   const handleLogout = () => { signOut(auth); };
 
+  const createRoom = (name, isPrincipal) => {
+    if (!name) return;
+    set(ref(database, `rooms/${name}`), { name, type: isPrincipal ? 'principale' : 'secondaire', createdAt: Date.now() });
+    push(ref(database, 'globalLogs'), { action: `a créé la salle '${name}'`, user: user.email, time: Date.now(), type: 'created' });
+    setRoomId(name);
+    setView('game');
+  };
+
   const deleteRoom = (roomName, type) => {
     if (window.confirm(`Supprimer la salle ${roomName} ?`)) {
       if (type === 'principale') {
@@ -50,7 +58,9 @@ export default function App() {
         <div className="card">
           <h2>Salles</h2>
           <button onClick={handleLogout} style={{background: '#ff4d4d', color: '#fff', border: 'none', padding: '5px 10px', marginBottom: '10px', cursor: 'pointer'}}>Déconnexion</button>
-          <button className="btn-primary" onClick={() => setView('create')} style={{width: '100%'}}>Créer une partie</button>
+          
+          {/* Bouton Créer une partie corrigé */}
+          <button className="btn-primary" onClick={() => setView('create')} style={{width: '100%', padding: '10px', marginBottom: '20px'}}>Créer une partie</button>
           
           <h3>Parties disponibles :</h3>
           {Object.entries(rooms).map(([name, data]) => (
@@ -74,6 +84,18 @@ export default function App() {
         </div>
       )}
       
+      {view === 'create' && (
+        <div className="card">
+          <h2>Nouvelle salle</h2>
+          <input id="newRoomName" placeholder="Nom de la salle" style={{width:'100%', padding:'10px', marginBottom:'10px'}} />
+          <div style={{color: 'white', marginBottom:'10px'}}>
+             <input type="checkbox" id="isPrincipal" /> Salle Principale 👑
+          </div>
+          <button className="btn-primary" onClick={() => createRoom(document.getElementById('newRoomName').value, document.getElementById('isPrincipal').checked)}>Lancer</button>
+          <button onClick={() => setView('menu')} style={{marginTop:'10px', width:'100%', padding:'10px'}}>Annuler</button>
+        </div>
+      )}
+
       {view === 'game' && roomId && <GamePage roomId={roomId} onLeave={() => setView('menu')} />}
     </div>
   );
