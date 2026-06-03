@@ -13,7 +13,6 @@ export default function GamePage({ roomId, onLeave }) {
   const prevLeaderIdRef = useRef(null);
   const lastLeaderAnnouncementRef = useRef(0);
 
-  // Fonction de formatage corrigée
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -141,4 +140,91 @@ export default function GamePage({ roomId, onLeave }) {
           <option value="">🎱 Perdant</option>
           {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
-        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%' }}>Déclarer Match</button
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%' }}>Déclarer Match</button>
+      </div>
+
+      <h3>Classement :</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #444' }}>
+            <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
+            <th>Vict</th><th>Déf</th><th>%Vict</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((p, index) => {
+            const total = (p.wins || 0) + (p.losses || 0);
+            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+            return (
+              <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                <td style={{ padding: '8px' }}>{index === 0 && '👑 '}{p.name}</td>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{p.wins || 0}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>🔴</button>
+                    </div>
+                  </div>
+                </td>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{p.losses || 0}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>🔴</button>
+                    </div>
+                  </div>
+                </td>
+                <td style={{ textAlign: 'center' }}>{winRate}%</td>
+                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🎱</button></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h3>Suivi des rencontres :</h3>
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
+        {Object.values(matches).map((m, i) => (
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+            {m.p1Name} vs {m.p2Name} : <strong>{m.wins} victoire(s)</strong>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Historique :</h3>
+        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map((log) => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888', marginRight: '5px' }}>[{formatDate(log.timestamp)}]</span>
+            {log.type === 'match' ? (
+              <span>
+                <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
+                <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
+                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]} 🎱</span>
+              </span>
+            ) : log.type === 'leader' ? (
+              <span>
+                <span style={{ color: '#00FF00' }}>{log.message.split('|')[0]}</span>
+                <span style={{ color: '#FFD700' }}> 👑 Passe en tête du classement !</span>
+              </span>
+            ) : (
+              <span style={{
+                color: log.type === 'add' ? '#00FF00' :
+                  log.type === 'remove' ? '#FF0000' :
+                    log.type === 'error' ? '#EE82EE' :
+                      log.type === 'manual' ? '#FFA500' : '#FFD700'
+              }}>
+                {log.message}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
