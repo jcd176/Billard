@@ -34,60 +34,77 @@ export default function GamePage({ roomId, onLeave }) {
     const w = players.find(p => p.id === winner);
     const l = players.find(p => p.id === loser);
 
-    // 1. Mise à jour classement global
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (w.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (l.losses || 0) + 1 });
 
-    // 2. Mise à jour suivi duo (clé unique)
     const duoKey = [winner, loser].sort().join('_');
     const currentStats = matchStats[duoKey] || { p1: w.name, p2: l.name, wins1: 0, wins2: 0 };
+    const isWFirst = w.id === (w.id < l.id ? winner : loser); 
     
-    // On incrémente selon qui est le gagnant
-    const isWFirst = w.name === currentStats.p1;
     update(ref(database, `rooms/${roomId}/matchStats/${duoKey}`), {
-        p1: currentStats.p1,
-        p2: currentStats.p2,
-        wins1: isWFirst ? currentStats.wins1 + 1 : currentStats.wins1,
-        wins2: !isWFirst ? currentStats.wins2 + 1 : currentStats.wins2
+        p1: w.id < l.id ? w.name : l.name,
+        p2: w.id < l.id ? l.name : w.name,
+        wins1: (w.id < l.id) ? (currentStats.wins1 + 1) : currentStats.wins1,
+        wins2: (w.id > l.id) ? (currentStats.wins2 + 1) : currentStats.wins2
     });
 
     push(ref(database, `rooms/${roomId}/logs`), { message: `MATCH:${w.name}|${l.name}`, type: 'match', timestamp: Date.now() });
     setWinner(''); setLoser('');
   };
 
-  // ... (Fonctions reset, addPlayer, removePlayer identiques)
+  const resetAll = () => {
+    if (prompt("Mot de passe pour tout réinitialiser ?") === 'root') {
+        set(ref(database, `rooms/${roomId}/matchStats`), null);
+        set(ref(database, `rooms/${roomId}/logs`), null);
+        players.forEach(p => update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 }));
+    }
+  };
+
+  const adjustScore = (player, type, field) => {
+    const newVal = type === 'plus' ? (player[field] || 0) + 1 : Math.max(0, (player[field] || 0) - 1);
+    update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
+  };
+
   const removePlayer = (id, name) => { if (prompt("Mot de passe ?") === 'root') remove(ref(database, `rooms/${roomId}/players/${id}`)); };
 
   return (
     <div className="card">
-      <button onClick={onLeave}>← Retour</button>
+      <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      {/* ... (Formulaire et Classement général) ... */}
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-         {/* ... (Selects Vainqueur/Perdant et bouton Déclarer) ... */}
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{width: '100%'}}><option value="">👑 Vainqueur</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{width: '100%', margin: '10px 0'}}><option value="">🎱 Perdant</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+        <button onClick={declareMatch} style={{width: '100%'}}>Déclarer Match</button>
       </div>
 
       <h3>Classement Général</h3>
-      {/* ... (Tableau classement) ... */}
+      <table style={{width: '100%', color: '#fff'}}>
+        <thead><tr><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={p.id}>
+              <td>{i === 0 && '👑'}{p.name}</td>
+              <td>{p.wins || 0} <button onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button> <button onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
+              <td>{p.losses || 0} <button onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button> <button onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
+              <td><button onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      <h3>Suivi des rencontres (Duo)</h3>
-      {Object.entries(matchStats).map(([key, stats]) => (
-        <div key={key} style={{ background: '#222', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-          <table style={{ width: '100%', color: '#fff' }}>
-            <thead>
-              <tr><th>Joueur</th><th>Victoires</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>{stats.p1}</td><td>{stats.wins1}</td></tr>
-              <tr><td>{stats.p2}</td><td>{stats.wins2}</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <h3>Suivi des rencontres (Duo) <button onClick={resetAll} style={{fontSize: '12px'}}>↻</button></h3>
+      {Object.entries(matchStats).map(([key, s]) => (
+        <table key={key} style={{width: '100%', background: '#222', marginBottom: '10px', color: '#fff'}}>
+          <thead><tr><th>{s.p1}</th><th>{s.p2}</th></tr></thead>
+          <tbody><tr><td>{s.wins1}</td><td>{s.wins2}</td></tr></tbody>
+        </table>
       ))}
 
       <h3>Historique :</h3>
-      {/* ... (Logs) ... */}
+      <div style={{background: '#111', fontSize: '12px', padding: '10px'}}>
+        {logs.map(l => <div key={l.id}>{l.message}</div>)}
+      </div>
     </div>
   );
 }
