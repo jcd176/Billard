@@ -10,8 +10,8 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
 
-  // Utilisation de useRef pour mémoriser le leader précédent sans déclencher de re-rendu
-  const prevLeaderIdRef = useRef(undefined);
+  const prevLeaderIdRef = useRef(null);
+  const lastLeaderAnnouncementRef = useRef(0); // Protection temporelle
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -20,16 +20,21 @@ export default function GamePage({ roomId, onLeave }) {
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
 
-      // Logique de détection de passage en tête (anti-doublon)
       if (sorted.length > 0 && sorted[0].wins > 0) {
         const currentLeader = sorted[0];
-        
-        // Si le leader change et que ce n'est pas le premier chargement (undefined)
-        if (prevLeaderIdRef.current !== undefined && prevLeaderIdRef.current !== currentLeader.id) {
+        const now = Date.now();
+
+        // 1. Vérifie si le leader a changé
+        // 2. Vérifie qu'il s'est écoulé au moins 5 secondes depuis la dernière annonce
+        if (
+          prevLeaderIdRef.current !== null && 
+          prevLeaderIdRef.current !== currentLeader.id &&
+          now - lastLeaderAnnouncementRef.current > 5000 
+        ) {
           addLog(`${currentLeader.name}|LEADER`, 'leader');
+          lastLeaderAnnouncementRef.current = now;
         }
         
-        // Initialisation ou mise à jour du leader mémorisé
         prevLeaderIdRef.current = currentLeader.id;
       }
       
