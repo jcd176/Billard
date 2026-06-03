@@ -80,12 +80,18 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
 
     const matchKey = [winner, loser].sort().join('_vs_');
-    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, wins: 0 };
-    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
-      p1Name: wPlayer.name,
-      p2Name: lPlayer.name,
-      wins: (existing.wins || 0) + 1
-    });
+    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, p1Wins: 0, p2Wins: 0 };
+    
+    // Logique pour compter les victoires de chaque joueur dans le duel
+    const isP1Winner = (winner === (wPlayer.id === winner ? wPlayer.id : lPlayer.id)); 
+    // Pour simplifier, on stocke les victoires du joueur A contre B et inversement
+    const updateData = {};
+    updateData[`${matchKey}/p1Name`] = wPlayer.name;
+    updateData[`${matchKey}/p2Name`] = lPlayer.name;
+    // On incrémente la victoire pour celui qui a gagné ce match spécifique
+    updateData[`${matchKey}/wins`] = (existing.wins || 0) + 1;
+
+    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), updateData);
 
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
@@ -226,13 +232,22 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Suivi des rencontres :</h3>
         <button onClick={resetMatches} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
       </div>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
-        {Object.values(matches).map((m, i) => (
-          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
-            {m.p1Name} vs {m.p2Name} : <strong>{m.wins} victoire(s)</strong>
-          </div>
-        ))}
-      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', background: '#222', borderRadius: '5px' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #444' }}>
+            <th style={{ textAlign: 'left', padding: '8px' }}>Duel</th>
+            <th>Total Matchs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.values(matches).map((m, i) => (
+            <tr key={i} style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '8px' }}>{m.p1Name} vs {m.p2Name}</td>
+              <td style={{ textAlign: 'center', padding: '8px' }}>{m.wins}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Historique :</h3>
