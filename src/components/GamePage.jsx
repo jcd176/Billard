@@ -100,6 +100,16 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
+  const resetRanking = () => {
+    if (prompt("Mot de passe pour vider tout le classement ?") === 'root') {
+      set(ref(database, `rooms/${roomId}/players`), null);
+      set(ref(database, `rooms/${roomId}/matches`), null);
+      addLog("Classement réinitialisé !", 'reset');
+    } else {
+      addLog("Réinitialisation du classement en échec", 'error');
+    }
+  };
+
   const adjustScore = (player, type, field) => {
     const currentVal = player[field] || 0;
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
@@ -155,7 +165,11 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
-      <h3>Classement :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Classement :</h3>
+        <button onClick={resetRanking} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
+      </div>
+      
       <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
