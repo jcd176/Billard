@@ -14,6 +14,7 @@ export default function GamePage({ roomId, onLeave }) {
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
+      // Tri par victoires décroissantes
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
 
@@ -51,26 +52,22 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const resetLogs = () => {
-    const password = prompt("Mot de passe pour vider l'historique ?");
-    if (password === 'root') {
+    if (prompt("Mot de passe pour vider l'historique ?") === 'root') {
       set(ref(database, `rooms/${roomId}/logs`), null);
       addLog("Remise à zéro de l'historique !", 'reset');
     } else {
       alert("Mot de passe incorrect !");
-      addLog("Tentative de réinitialisation échouée", 'failed_remove');
     }
   };
 
   const resetCounters = () => {
-    const password = prompt("Mot de passe pour vider les compteurs ?");
-    if (password === 'root') {
+    if (prompt("Mot de passe pour vider les compteurs ?") === 'root') {
       players.forEach(p => {
         update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 });
       });
       addLog("Remise à zéro des compteurs !", 'reset');
     } else {
       alert("Mot de passe incorrect !");
-      addLog("Tentative de réinitialisation échouée", 'failed_remove');
     }
   };
 
@@ -121,19 +118,22 @@ export default function GamePage({ roomId, onLeave }) {
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
             <th style={{ textAlign: 'left' }}>Joueur</th>
-            <th>V</th>
-            <th>D</th>
-            <th>%</th>
+            <th>Victoire</th>
+            <th>Défaite</th>
+            <th>% V/D</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {players.map((p) => {
+          {players.map((p, index) => {
             const total = (p.wins || 0) + (p.losses || 0);
             const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
             return (
               <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                <td style={{ padding: '8px' }}>{p.name}</td>
+                <td style={{ padding: '8px' }}>
+                  {index === 0 && <span style={{marginRight: '5px'}}>👑</span>}
+                  {p.name}
+                </td>
                 <td>
                   {p.wins || 0}
                   <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🟢</button>
