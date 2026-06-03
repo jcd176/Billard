@@ -117,14 +117,14 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={resetCounters} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', marginBottom: '20px' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
-            <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
+            <th style={{ textAlign: 'left' }}>Joueur</th>
             <th>V</th>
             <th>D</th>
             <th>%</th>
-            <th>Actions</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -135,12 +135,14 @@ export default function GamePage({ roomId, onLeave }) {
               <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
                 <td style={{ padding: '8px' }}>{p.name}</td>
                 <td>
-                  <button onClick={() => adjustScore(p, 'plus', 'wins')}>+</button>{p.wins || 0}
-                  <button onClick={() => adjustScore(p, 'minus', 'wins')}>-</button>
+                  {p.wins || 0}
+                  <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🟢</button>
+                  <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🔴</button>
                 </td>
                 <td>
-                  <button onClick={() => adjustScore(p, 'plus', 'losses')}>+</button>{p.losses || 0}
-                  <button onClick={() => adjustScore(p, 'minus', 'losses')}>-</button>
+                  {p.losses || 0}
+                  <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🟢</button>
+                  <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🔴</button>
                 </td>
                 <td style={{textAlign: 'center'}}>{winRate}%</td>
                 <td style={{textAlign: 'center'}}>
@@ -156,7 +158,23 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Historique :</h3>
         <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
       </div>
-      {/* ... section logs reste identique ... */}
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map((log) => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            {log.type === 'match' ? (
+              <span>
+                <span style={{color: '#00FF00'}}>{log.message.split('MATCH:')[1].split('|')[0]}</span>
+                <span style={{color: '#FFFFFF'}}> {log.message.split('|')[1]} </span>
+                <span style={{color: '#FF0000'}}>{log.message.split('|')[2]}</span>
+              </span>
+            ) : (
+              <span style={{color: log.type === 'add' ? '#00FF00' : (log.type === 'remove' ? '#FF0000' : (log.type === 'failed_remove' ? '#DA70D6' : '#FFD700'))}}>
+                {log.message}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
