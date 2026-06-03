@@ -190,7 +190,7 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td style={{ textAlign: 'center' }}>{winRate}%</td>
                 <td style={{ textAlign: 'center' }}>
-                  {/* Bouton de suppression avec boule agrandie */}
+                  {/* Boule agrandie uniquement ici dans le tableau */}
                   <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
                     🎱
                   </button>
@@ -222,7 +222,7 @@ export default function GamePage({ roomId, onLeave }) {
               <span>
                 <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
                 <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
-                <span style={{ color: '#FF0000', fontSize: '20px' }}>{log.message.split('|')[1]} 🎱</span>
+                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : log.type === 'leader' ? (
               <span style={{ color: '#FFD700' }}>👑 {log.message}</span>
