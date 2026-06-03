@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
@@ -9,13 +9,27 @@ export default function GamePage({ roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
+  
+  // Ref pour suivre l'ancien leader et détecter le changement
+  const prevLeaderRef = useRef(null);
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
-      setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
+      const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
+      
+      // Détection du passage en tête
+      if (sorted.length > 0) {
+        const currentLeader = sorted[0];
+        if (prevLeaderRef.current && prevLeaderRef.current !== currentLeader.id && currentLeader.wins > 0) {
+          addLog(`${currentLeader.name}|LEADER`, 'leader');
+        }
+        prevLeaderRef.current = currentLeader.id;
+      }
+      
+      setPlayers(sorted);
     });
 
     const matchesRef = ref(database, `rooms/${roomId}/matches`);
@@ -151,19 +165,7 @@ export default function GamePage({ roomId, onLeave }) {
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres :</h3>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
-        {Object.values(matches).map((m, i) => (
-            <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
-                {m.p1Name} vs {m.p2Name} : <strong>{m.wins} victoire(s)</strong>
-            </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Historique :</h3>
-        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
+      <h3>Historique :</h3>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
@@ -173,8 +175,17 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{color: '#FFFFFF'}}> a gagné contre </span>
                 <span style={{color: '#FF0000'}}>{log.message.split('|')[1]} 🎱</span>
               </span>
+            ) : log.type === 'leader' ? (
+                <span>
+                    <span style={{color: '#00FF00'}}>{log.message.split('|')[0]}</span>
+                    <span style={{color: '#FFD700'}}> 👑 Passe en tête du classement !</span>
+                </span>
             ) : (
-              <span style={{color: log.type === 'add' ? '#00FF00' : log.type === 'error' ? '#EE82EE' : '#FFD700'}}>
+              <span style={{
+                color: log.type === 'add' ? '#00FF00' : 
+                       log.type === 'remove' ? '#FF0000' : 
+                       log.type === 'error' ? '#EE82EE' : '#FFD700'
+              }}>
                 {log.message}
               </span>
             )}
