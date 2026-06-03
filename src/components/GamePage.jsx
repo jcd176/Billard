@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, remove, push, update } from 'firebase/database';
+import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
@@ -51,11 +51,15 @@ export default function GamePage({ roomId, onLeave }) {
     setLoser('');
   };
 
-  const adjustScore = (player, type) => {
-    update(ref(database, `rooms/${roomId}/players/${player.id}`), {
-      wins: type === 'win' ? (player.wins || 0) + 1 : Math.max(0, (player.wins || 0) - 1),
-      losses: type === 'loss' ? (player.losses || 0) + 1 : Math.max(0, (player.losses || 0) - 1)
-    });
+  const resetLogs = () => {
+    const password = prompt("Mot de passe pour vider l'historique ?");
+    if (password === 'root') {
+      set(ref(database, `rooms/${roomId}/logs`), null);
+      addLog("Remise à zéro des compteurs !", 'reset');
+    } else {
+      alert("Mot de passe incorrect !");
+      addLog("Tentative de réinitialisation échouée", 'failed_remove');
+    }
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -95,13 +99,14 @@ export default function GamePage({ roomId, onLeave }) {
       {players.map((p) => (
         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
           <span style={{ flex: 1, color: '#fff' }}>{p.name}</span>
-          <button onClick={() => adjustScore(p, 'win')}>+</button>
-          <button onClick={() => adjustScore(p, 'loss')}>-</button>
           <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🎱</button>
         </div>
       ))}
 
-      <h3>Historique :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={resetLogs} style={{background: '#555', color: '#fff', border: 'none', padding: '5px 10px', cursor: 'pointer'}}>Vider logs</button>
+      </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
@@ -112,7 +117,7 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{color: '#FF0000'}}>{log.message.split('|')[2]}</span>
               </span>
             ) : (
-              <span style={{color: log.type === 'add' ? '#FFD700' : (log.type === 'failed_remove' ? '#DA70D6' : '#FF0000')}}>
+              <span style={{color: log.type === 'add' ? '#00FF00' : (log.type === 'remove' ? '#FF0000' : (log.type === 'failed_remove' ? '#DA70D6' : '#FFD700'))}}>
                 {log.message}
               </span>
             )}
