@@ -95,7 +95,13 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={declareMatch} className="btn-primary" style={{width: '100%'}}>Déclarer Match</button>
       </div>
 
-      <h3>Classement :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Classement :</h3>
+        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>
+          ↻
+        </button>
+      </div>
+
       {players.map((p) => (
         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222', padding: '10px', marginBottom: '8px', borderRadius: '4px' }}>
           <span style={{ flex: 1, color: '#fff' }}>{p.name}</span>
@@ -105,7 +111,9 @@ export default function GamePage({ roomId, onLeave }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
-        <button onClick={resetLogs} style={{background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer'}}>🔄</button>
+        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>
+          ↻
+        </button>
       </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
