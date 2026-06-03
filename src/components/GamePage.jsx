@@ -133,11 +133,11 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{ width: '100%', marginBottom: '5px' }}>
           <option value="">👑 Vainqueur</option>
-          {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{ width: '100%', marginBottom: '10px' }}>
           <option value="">🎱 Perdant</option>
-          {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%' }}>Déclarer Match</button>
       </div>
