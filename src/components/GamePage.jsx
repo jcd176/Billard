@@ -138,7 +138,6 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
 
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-        {/* Liste Vainqueur : on exclut le perdant choisi */}
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.filter(p => p.id !== loser).map(p => (
@@ -146,7 +145,6 @@ export default function GamePage({ roomId, onLeave }) {
           ))}
         </select>
         
-        {/* Liste Perdant : on exclut le vainqueur choisi */}
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
           {players.filter(p => p.id !== winner).map(p => (
@@ -191,7 +189,12 @@ export default function GamePage({ roomId, onLeave }) {
                   </div>
                 </td>
                 <td style={{ textAlign: 'center' }}>{winRate}%</td>
-                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🎱</button></td>
+                <td style={{ textAlign: 'center' }}>
+                  {/* Bouton de suppression avec boule agrandie */}
+                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
+                    🎱
+                  </button>
+                </td>
               </tr>
             );
           })}
@@ -219,7 +222,7 @@ export default function GamePage({ roomId, onLeave }) {
               <span>
                 <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
                 <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
-                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]} 🎱</span>
+                <span style={{ color: '#FF0000', fontSize: '20px' }}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : log.type === 'leader' ? (
               <span style={{ color: '#FFD700' }}>👑 {log.message}</span>
