@@ -10,7 +10,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
   
-  const prevLeaderRef = useRef(null);
+  const prevLeaderIdRef = useRef(null);
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -19,12 +19,14 @@ export default function GamePage({ roomId, onLeave }) {
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
       
+      // Détection du changement de leader
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
-        if (prevLeaderRef.current && prevLeaderRef.current !== currentLeader.id && currentLeader.wins > 0) {
+        // On vérifie si c'est bien un nouveau leader et qu'il a au moins 1 victoire
+        if (currentLeader.id !== prevLeaderIdRef.current && currentLeader.wins > 0) {
           addLog(`${currentLeader.name}|LEADER`, 'leader');
         }
-        prevLeaderRef.current = currentLeader.id;
+        prevLeaderIdRef.current = currentLeader.id;
       }
       
       setPlayers(sorted);
@@ -89,6 +91,11 @@ export default function GamePage({ roomId, onLeave }) {
     const currentVal = player[field] || 0;
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
+    
+    // Log manuel en orange
+    const direction = type === 'plus' ? '+' : '-';
+    const fieldName = field === 'wins' ? 'victoire' : 'défaite';
+    addLog(`Ajout manuel de ${direction}1 ${fieldName} pour "${player.name}"`, 'manual');
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -194,7 +201,8 @@ export default function GamePage({ roomId, onLeave }) {
               <span style={{
                 color: log.type === 'add' ? '#00FF00' : 
                        log.type === 'remove' ? '#FF0000' : 
-                       log.type === 'error' ? '#EE82EE' : '#FFD700'
+                       log.type === 'error' ? '#EE82EE' : 
+                       log.type === 'manual' ? '#FFA500' : '#FFD700'
               }}>
                 {log.message}
               </span>
