@@ -38,7 +38,6 @@ export default function GamePage({ roomId, onLeave }) {
           prevLeaderIdRef.current !== currentLeader.id &&
           now - lastLeaderAnnouncementRef.current > 5000 
         ) {
-          // Message exact : "Nom Passe en tête !"
           addLog(`${currentLeader.name} Passe en tête !`, 'leader');
           lastLeaderAnnouncementRef.current = now;
         }
@@ -208,7 +207,7 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : log.type === 'leader' ? (
-              <span style={{ color: '#FFD700' }}>{log.message}</span>
+              <span style={{ color: '#FFD700' }}>👑 {log.message}</span>
             ) : (
               <span style={{
                 color: log.type === 'add' ? '#00FF00' :
