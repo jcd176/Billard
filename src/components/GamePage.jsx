@@ -116,11 +116,11 @@ export default function GamePage({ roomId, onLeave }) {
       <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
-            <th style={{ textAlign: 'left' }}>Joueur</th>
+            <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
             <th>Vict</th>
             <th>Déf</th>
             <th>%Vict</th>
-            <th></th> {/* En-tête vide */}
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -133,15 +133,23 @@ export default function GamePage({ roomId, onLeave }) {
                   {index === 0 && <span style={{marginRight: '5px'}}>👑</span>}
                   {p.name}
                 </td>
-                <td>
-                  {p.wins || 0}
-                  <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🟢</button>
-                  <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🔴</button>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{p.wins || 0}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🔴</button>
+                    </div>
+                  </div>
                 </td>
-                <td>
-                  {p.losses || 0}
-                  <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🟢</button>
-                  <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer'}}>🔴</button>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{p.losses || 0}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🔴</button>
+                    </div>
+                  </div>
                 </td>
                 <td style={{textAlign: 'center'}}>{winRate}%</td>
                 <td style={{textAlign: 'center'}}>
