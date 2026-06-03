@@ -13,14 +13,15 @@ export default function GamePage({ roomId, onLeave }) {
   const prevLeaderIdRef = useRef(null);
   const lastLeaderAnnouncementRef = useRef(0);
 
-  // Formatage : jj/mm/aa uniquement
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = String(date.getFullYear()).slice(-2);
-    return `${day}/${month}/${year}`;
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}h${minutes}`;
   };
 
   useEffect(() => {
@@ -38,8 +39,7 @@ export default function GamePage({ roomId, onLeave }) {
           prevLeaderIdRef.current !== currentLeader.id &&
           now - lastLeaderAnnouncementRef.current > 5000 
         ) {
-          // Message exact demandé
-          addLog(`${currentLeader.name} Passe en tête !`, 'leader');
+          addLog(`${currentLeader.name}|LEADER`, 'leader');
           lastLeaderAnnouncementRef.current = now;
         }
         prevLeaderIdRef.current = currentLeader.id;
@@ -200,7 +200,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888', marginRight: '5px' }}>{formatDate(log.timestamp)}</span>
+            <span style={{ color: '#888', marginRight: '5px' }}>[{formatDate(log.timestamp)}]</span>
             {log.type === 'match' ? (
               <span>
                 <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
@@ -208,7 +208,10 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : log.type === 'leader' ? (
-              <span style={{ color: '#FFD700' }}>👑 {log.message}</span>
+              <span>
+                <span style={{ color: '#00FF00' }}>{log.message.split('|')[0]}</span>
+                <span style={{ color: '#FFD700' }}> 👑 Passe en tête du classement !</span>
+              </span>
             ) : (
               <span style={{
                 color: log.type === 'add' ? '#00FF00' :
