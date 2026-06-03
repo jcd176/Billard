@@ -31,6 +31,10 @@ export default function GamePage({ roomId, onLeave }) {
 
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+
+    // --- RÉINITIALISATION AJOUTÉE ICI ---
+    setWinner('');
+    setLoser('');
   };
 
   const adjustScore = (player, type) => {
@@ -56,11 +60,13 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
 
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-        <select onChange={(e) => setWinner(e.target.value)} style={{width: '100%', marginBottom: '5px'}}>
+        {/* Ajout de la prop 'value' pour contrôler le select */}
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{width: '100%', marginBottom: '5px'}}>
           <option value="">👑 Vainqueur</option>
           {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
-        <select onChange={(e) => setLoser(e.target.value)} style={{width: '100%', marginBottom: '10px'}}>
+        {/* Ajout de la prop 'value' pour contrôler le select */}
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{width: '100%', marginBottom: '10px'}}>
           <option value="">🎱 Perdant</option>
           {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
