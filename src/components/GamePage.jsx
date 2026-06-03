@@ -13,6 +13,16 @@ export default function GamePage({ roomId, onLeave }) {
   const prevLeaderIdRef = useRef(null);
   const lastLeaderAnnouncementRef = useRef(0);
 
+  // Formatage : jj/mm/aa uniquement
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
@@ -28,6 +38,7 @@ export default function GamePage({ roomId, onLeave }) {
           prevLeaderIdRef.current !== currentLeader.id &&
           now - lastLeaderAnnouncementRef.current > 5000 
         ) {
+          // Message exact demandé
           addLog(`${currentLeader.name} Passe en tête !`, 'leader');
           lastLeaderAnnouncementRef.current = now;
         }
@@ -189,6 +200,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888', marginRight: '5px' }}>{formatDate(log.timestamp)}</span>
             {log.type === 'match' ? (
               <span>
                 <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
