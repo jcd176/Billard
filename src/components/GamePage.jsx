@@ -11,7 +11,19 @@ export default function GamePage({ roomId, onLeave }) {
   const [loser, setLoser] = useState('');
 
   const prevLeaderIdRef = useRef(null);
-  const lastLeaderAnnouncementRef = useRef(0); // Protection temporelle
+  const lastLeaderAnnouncementRef = useRef(0);
+
+  // Fonction utilitaire pour formater la date
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}h${minutes}`;
+  };
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -23,9 +35,6 @@ export default function GamePage({ roomId, onLeave }) {
       if (sorted.length > 0 && sorted[0].wins > 0) {
         const currentLeader = sorted[0];
         const now = Date.now();
-
-        // 1. Vérifie si le leader a changé
-        // 2. Vérifie qu'il s'est écoulé au moins 5 secondes depuis la dernière annonce
         if (
           prevLeaderIdRef.current !== null && 
           prevLeaderIdRef.current !== currentLeader.id &&
@@ -34,10 +43,8 @@ export default function GamePage({ roomId, onLeave }) {
           addLog(`${currentLeader.name}|LEADER`, 'leader');
           lastLeaderAnnouncementRef.current = now;
         }
-        
         prevLeaderIdRef.current = currentLeader.id;
       }
-      
       setPlayers(sorted);
     });
 
@@ -194,6 +201,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888', marginRight: '8px' }}>[{formatDate(log.timestamp)}]</span>
             {log.type === 'match' ? (
               <span>
                 <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
