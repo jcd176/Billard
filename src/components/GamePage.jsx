@@ -55,7 +55,7 @@ export default function GamePage({ roomId, onLeave }) {
     const password = prompt("Mot de passe pour vider l'historique ?");
     if (password === 'root') {
       set(ref(database, `rooms/${roomId}/logs`), null);
-      addLog("Remise à zéro des compteurs !", 'reset');
+      addLog("Remise à zéro de l'historique !", 'reset');
     } else {
       alert("Mot de passe incorrect !");
       addLog("Tentative de réinitialisation échouée", 'failed_remove');
@@ -105,7 +105,7 @@ export default function GamePage({ roomId, onLeave }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
-        <button onClick={resetLogs} style={{background: '#555', color: '#fff', border: 'none', padding: '5px 10px', cursor: 'pointer'}}>Vider logs</button>
+        <button onClick={resetLogs} style={{background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer'}}>🔄</button>
       </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
