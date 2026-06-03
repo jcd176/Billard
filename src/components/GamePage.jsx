@@ -4,6 +4,7 @@ import { database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
+  const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
@@ -17,6 +18,11 @@ export default function GamePage({ roomId, onLeave }) {
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
 
+    const matchesRef = ref(database, `rooms/${roomId}/matches`);
+    const unsubscribeMatches = onValue(matchesRef, (snapshot) => {
+      setMatches(snapshot.val() || {});
+    });
+
     const logsRef = ref(database, `rooms/${roomId}/logs`);
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
@@ -24,7 +30,7 @@ export default function GamePage({ roomId, onLeave }) {
       setLogs(list.reverse().slice(0, 10)); 
     });
 
-    return () => { unsubscribePlayers(); unsubscribeLogs(); };
+    return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
   }, [roomId]);
 
   const addLog = (message, type) => {
@@ -46,6 +52,15 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
+    // Logique de suivi des rencontres (clé unique par duo)
+    const matchKey = [winner, loser].sort().join('_vs_');
+    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, wins: 0 };
+    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), { 
+        p1Name: wPlayer.name, 
+        p2Name: lPlayer.name, 
+        wins: (existing.wins || 0) + 1 
+    });
+
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -54,19 +69,14 @@ export default function GamePage({ roomId, onLeave }) {
     if (prompt("Mot de passe pour vider l'historique ?") === 'root') {
       set(ref(database, `rooms/${roomId}/logs`), null);
       addLog("Remise à zéro de l'historique !", 'reset');
-    } else {
-      alert("Mot de passe incorrect !");
     }
   };
 
   const resetCounters = () => {
     if (prompt("Mot de passe pour vider les compteurs ?") === 'root') {
-      players.forEach(p => {
-        update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 });
-      });
-      addLog("Remise à zéro des compteurs !", 'reset');
-    } else {
-      alert("Mot de passe incorrect !");
+      players.forEach(p => update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 }));
+      set(ref(database, `rooms/${roomId}/matches`), null);
+      addLog("Remise à zéro des compteurs et rencontres !", 'reset');
     }
   };
 
@@ -80,9 +90,6 @@ export default function GamePage({ roomId, onLeave }) {
     if (prompt("Saisissez le mot de passe") === 'root') {
       remove(ref(database, `rooms/${roomId}/players/${playerId}`));
       addLog(`${playerName} a été supprimé`, 'remove');
-    } else {
-      alert("Mot de passe incorrect !");
-      addLog(`Tentative de suppression de ${playerName} échouée`, 'failed_remove');
     }
   };
 
@@ -108,19 +115,12 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={declareMatch} className="btn-primary" style={{width: '100%'}}>Déclarer Match</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Classement :</h3>
-        <button onClick={resetCounters} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
-
+      <h3>Classement :</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
             <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
-            <th>Vict</th>
-            <th>Déf</th>
-            <th>%Vict</th>
-            <th></th>
+            <th>Vict</th><th>Déf</th><th>%Vict</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -129,16 +129,13 @@ export default function GamePage({ roomId, onLeave }) {
             const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
             return (
               <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                <td style={{ padding: '8px' }}>
-                  {index === 0 && <span style={{marginRight: '5px'}}>👑</span>}
-                  {p.name}
-                </td>
+                <td style={{ padding: '8px' }}>{index === 0 && '👑 '}{p.name}</td>
                 <td style={{ padding: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>{p.wins || 0}</span>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🟢</button>
-                      <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🔴</button>
+                      <button onClick={() => adjustScore(p, 'plus', 'wins')} style={{border:'none', background:'none', cursor:'pointer', padding:0}}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'wins')} style={{border:'none', background:'none', cursor:'pointer', padding:0}}>🔴</button>
                     </div>
                   </div>
                 </td>
@@ -146,22 +143,29 @@ export default function GamePage({ roomId, onLeave }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>{p.losses || 0}</span>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🟢</button>
-                      <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{border: 'none', background: 'none', cursor: 'pointer', padding: '0px', fontSize: '12px'}}>🔴</button>
+                      <button onClick={() => adjustScore(p, 'plus', 'losses')} style={{border:'none', background:'none', cursor:'pointer', padding:0}}>🟢</button>
+                      <button onClick={() => adjustScore(p, 'minus', 'losses')} style={{border:'none', background:'none', cursor: 'pointer', padding:0}}>🔴</button>
                     </div>
                   </div>
                 </td>
                 <td style={{textAlign: 'center'}}>{winRate}%</td>
-                <td style={{textAlign: 'center'}}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🎱</button>
-                </td>
+                <td style={{textAlign: 'center'}}><button onClick={() => removePlayer(p.id, p.name)} style={{background:'transparent', border:'none', cursor:'pointer'}}>🎱</button></td>
               </tr>
             );
           })}
         </tbody>
       </table>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+      <h3>Suivi des rencontres :</h3>
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
+        {Object.values(matches).map((m, i) => (
+            <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+                {m.p1Name} vs {m.p2Name} : <strong>{m.wins} victoire(s)</strong>
+            </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Historique :</h3>
         <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
       </div>
@@ -175,9 +179,7 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{color: '#FF0000'}}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : (
-              <span style={{color: log.type === 'add' ? '#00FF00' : (log.type === 'remove' ? '#FF0000' : (log.type === 'failed_remove' ? '#DA70D6' : '#FFD700'))}}>
-                {log.message}
-              </span>
+              <span style={{color: log.type === 'add' ? '#00FF00' : '#FFD700'}}>{log.message}</span>
             )}
           </div>
         ))}
