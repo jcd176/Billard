@@ -13,7 +13,6 @@ export default function GamePage({ roomId, onLeave }) {
   const prevLeaderIdRef = useRef(null);
   const lastLeaderAnnouncementRef = useRef(0);
 
-  // Formatage : jj/mm/aa uniquement
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -120,6 +119,15 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
+  // Style commun pour les select agrandis
+  const selectStyle = { 
+    width: '100%', 
+    marginBottom: '10px', 
+    padding: '10px',
+    fontSize: '16px',
+    borderRadius: '4px'
+  };
+
   return (
     <div className="card">
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
@@ -131,19 +139,20 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
 
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{ width: '100%', marginBottom: '5px' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
-        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{ width: '100%', marginBottom: '10px' }}>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
           {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
-        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%' }}>Déclarer Match</button>
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
       <h3>Classement :</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
+        {/* ... reste de votre tableau inchangé ... */}
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
             <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
