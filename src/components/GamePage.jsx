@@ -46,7 +46,6 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
-    // Format: Gagnant|Perdant
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -121,7 +120,7 @@ export default function GamePage({ roomId, onLeave }) {
             <th>Vict</th>
             <th>Déf</th>
             <th>%Vict</th>
-            <th>Action</th>
+            <th>🎱</th>
           </tr>
         </thead>
         <tbody>
@@ -146,7 +145,7 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td style={{textAlign: 'center'}}>{winRate}%</td>
                 <td style={{textAlign: 'center'}}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🗑️</button>
+                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🎱</button>
                 </td>
               </tr>
             );
