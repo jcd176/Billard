@@ -14,7 +14,6 @@ export default function GamePage({ roomId, onLeave }) {
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
-      // Tri par victoires décroissantes
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
 
@@ -47,7 +46,8 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
-    addLog(`MATCH:${wPlayer.name}|a gagné contre|${lPlayer.name}`, 'match');
+    // Format: Gagnant|Perdant
+    addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
 
@@ -118,9 +118,9 @@ export default function GamePage({ roomId, onLeave }) {
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
             <th style={{ textAlign: 'left' }}>Joueur</th>
-            <th>Victoire</th>
-            <th>Défaite</th>
-            <th>% V/D</th>
+            <th>Vict</th>
+            <th>Déf</th>
+            <th>%Vict</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -146,7 +146,7 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td style={{textAlign: 'center'}}>{winRate}%</td>
                 <td style={{textAlign: 'center'}}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🎱</button>
+                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px' }}>🗑️</button>
                 </td>
               </tr>
             );
@@ -163,9 +163,9 @@ export default function GamePage({ roomId, onLeave }) {
           <div key={log.id} style={{ marginBottom: '5px' }}>
             {log.type === 'match' ? (
               <span>
-                <span style={{color: '#00FF00'}}>{log.message.split('MATCH:')[1].split('|')[0]}</span>
-                <span style={{color: '#FFFFFF'}}> {log.message.split('|')[1]} </span>
-                <span style={{color: '#FF0000'}}>{log.message.split('|')[2]}</span>
+                <span style={{color: '#00FF00'}}>{log.message.split('MATCH:')[1].split('|')[0]} 👑</span>
+                <span style={{color: '#FFFFFF'}}> a gagné contre </span>
+                <span style={{color: '#FF0000'}}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : (
               <span style={{color: log.type === 'add' ? '#00FF00' : (log.type === 'remove' ? '#FF0000' : (log.type === 'failed_remove' ? '#DA70D6' : '#FFD700'))}}>
