@@ -46,7 +46,6 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
-    // Format: Gagnant|a gagné contre|Perdant
     addLog(`MATCH:${wPlayer.name}|a gagné contre|${lPlayer.name}`, 'match');
     setWinner(''); 
     setLoser('');
@@ -66,7 +65,7 @@ export default function GamePage({ roomId, onLeave }) {
       addLog(`${playerName} a été supprimé`, 'remove');
     } else {
       alert("Mot de passe incorrect !");
-      addLog(`Tentative de suppression de ${playerName} échouée`, 'remove');
+      addLog(`Tentative de suppression de ${playerName} échouée`, 'failed_remove');
     }
   };
 
@@ -113,7 +112,7 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{color: '#FF0000'}}>{log.message.split('|')[2]}</span>
               </span>
             ) : (
-              <span style={{color: log.type === 'add' ? '#FFD700' : '#FF0000'}}>
+              <span style={{color: log.type === 'add' ? '#FFD700' : (log.type === 'failed_remove' ? '#DA70D6' : '#FF0000')}}>
                 {log.message}
               </span>
             )}
