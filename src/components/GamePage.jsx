@@ -103,10 +103,18 @@ export default function GamePage({ roomId, onLeave }) {
   const resetRanking = () => {
     if (prompt("Mot de passe pour vider tout le classement ?") === 'root') {
       set(ref(database, `rooms/${roomId}/players`), null);
-      set(ref(database, `rooms/${roomId}/matches`), null);
       addLog("Classement réinitialisé !", 'reset');
     } else {
       addLog("Réinitialisation du classement en échec", 'error');
+    }
+  };
+
+  const resetMatches = () => {
+    if (prompt("Mot de passe pour vider le suivi des rencontres ?") === 'root') {
+      set(ref(database, `rooms/${roomId}/matches`), null);
+      addLog("Suivi des rencontres réinitialisé !", 'reset');
+    } else {
+      addLog("Réinitialisation du suivi en échec", 'error');
     }
   };
 
@@ -214,7 +222,10 @@ export default function GamePage({ roomId, onLeave }) {
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={resetMatches} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
+      </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
         {Object.values(matches).map((m, i) => (
           <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
