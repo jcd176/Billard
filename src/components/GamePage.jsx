@@ -62,6 +62,19 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
+  const resetCounters = () => {
+    const password = prompt("Mot de passe pour vider les compteurs ?");
+    if (password === 'root') {
+      players.forEach(p => {
+        update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 });
+      });
+      addLog("Remise à zéro des compteurs !", 'reset');
+    } else {
+      alert("Mot de passe incorrect !");
+      addLog("Tentative de réinitialisation échouée", 'failed_remove');
+    }
+  };
+
   const removePlayer = (playerId, playerName) => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
@@ -97,7 +110,7 @@ export default function GamePage({ roomId, onLeave }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
-        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>
+        <button onClick={resetCounters} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>
           ↻
         </button>
       </div>
