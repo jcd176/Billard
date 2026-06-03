@@ -10,31 +10,42 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
 
-  const btnStyle = { background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '16px' };
+  // Style forcé pour éviter les fonds blancs
+  const btnStyle = { 
+    background: 'transparent !important', 
+    border: 'none', 
+    cursor: 'pointer', 
+    padding: '2px', 
+    fontSize: '16px',
+    backgroundColor: 'transparent'
+  };
 
   useEffect(() => {
+    if (!roomId) return;
     const playersRef = ref(database, `rooms/${roomId}/players`);
-    onValue(playersRef, (snapshot) => {
+    const statsRef = ref(database, `rooms/${roomId}/matchStats`);
+    const logsRef = ref(database, `rooms/${roomId}/logs`);
+
+    const unsubP = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       setPlayers(list.sort((a, b) => (b.wins || 0) - (a.wins || 0)));
     });
 
-    const statsRef = ref(database, `rooms/${roomId}/matchStats`);
-    onValue(statsRef, (snapshot) => setMatchStats(snapshot.val() || {}));
-
-    const logsRef = ref(database, `rooms/${roomId}/logs`);
-    onValue(logsRef, (snapshot) => {
+    const unsubS = onValue(statsRef, (snapshot) => setMatchStats(snapshot.val() || {}));
+    
+    const unsubL = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
       setLogs(list.reverse().slice(0, 10));
     });
+
+    return () => { unsubP(); unsubS(); unsubL(); };
   }, [roomId]);
 
   const addPlayer = () => {
     if (!newPlayerName.trim()) return;
     push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
-    push(ref(database, `rooms/${roomId}/logs`), { message: `${newPlayerName} a rejoint la salle`, type: 'add' });
     setNewPlayerName('');
   };
 
@@ -46,13 +57,12 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (l.losses || 0) + 1 });
     
     const duoKey = [winner, loser].sort().join('_');
-    const currentStats = matchStats[duoKey] || { p1: w.name, p2: l.name, wins1: 0, wins2: 0 };
+    const current = matchStats[duoKey] || { p1: w.name, p2: l.name, wins1: 0, wins2: 0 };
     update(ref(database, `rooms/${roomId}/matchStats/${duoKey}`), {
         p1: w.id < l.id ? w.name : l.name, p2: w.id < l.id ? l.name : w.name,
-        wins1: (w.id < l.id) ? (currentStats.wins1 + 1) : currentStats.wins1,
-        wins2: (w.id > l.id) ? (currentStats.wins2 + 1) : currentStats.wins2
+        wins1: (w.id < l.id) ? (current.wins1 + 1) : current.wins1,
+        wins2: (w.id > l.id) ? (current.wins2 + 1) : current.wins2
     });
-
     push(ref(database, `rooms/${roomId}/logs`), { message: `MATCH:${w.name}|${l.name}`, type: 'match' });
     setWinner(''); setLoser('');
   };
@@ -61,10 +71,8 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${p.id}`), { [field]: type === 'plus' ? (p[field] || 0) + 1 : Math.max(0, (p[field] || 0) - 1) });
   };
 
-  const removePlayer = (id, name) => { if (prompt("Mot de passe ?") === 'root') remove(ref(database, `rooms/${roomId}/players/${id}`)); };
-
   return (
-    <div className="card" style={{color: '#fff'}}>
+    <div className="card" style={{color: '#fff', padding: '20px'}}>
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
@@ -81,18 +89,16 @@ export default function GamePage({ roomId, onLeave }) {
 
       <h3>Classement Général</h3>
       <table style={{width: '100%', borderCollapse: 'collapse'}}>
-        <thead><tr style={{borderBottom: '1px solid #555'}}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%Vict</th><th></th></tr></thead>
+        <thead><tr style={{borderBottom: '1px solid #555'}}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th></tr></thead>
         <tbody>
           {players.map((p, i) => {
-            const total = (p.wins || 0) + (p.losses || 0);
-            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+            const tot = (p.wins || 0) + (p.losses || 0);
             return (
               <tr key={p.id} style={{borderBottom: '1px solid #333'}}>
                 <td style={{padding: '5px'}}>{i === 0 && '👑'}{p.name}</td>
                 <td>{p.wins} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button><button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
                 <td>{p.losses} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button><button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
-                <td>{winRate}%</td>
-                <td><button style={btnStyle} onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+                <td>{tot > 0 ? Math.round(((p.wins || 0) / tot) * 100) : 0}%</td>
               </tr>
             );
           })}
@@ -102,7 +108,7 @@ export default function GamePage({ roomId, onLeave }) {
       <h3>Suivi des rencontres (Duo)</h3>
       {Object.entries(matchStats).map(([key, s]) => (
         <div key={key} style={{background: '#222', padding: '5px', marginBottom: '5px'}}>
-            {s.p1} ({s.wins1}) vs {s.p2} ({s.wins2})
+            {s?.p1} ({s?.wins1}) vs {s?.p2} ({s?.wins2})
         </div>
       ))}
 
@@ -113,13 +119,5 @@ export default function GamePage({ roomId, onLeave }) {
                 {l.type === 'match' ? (
                   <span>
                     <span style={{color: '#0f0'}}>{l.message.split('MATCH:')[1].split('|')[0]} 👑</span>
-                    <span style={{color: '#fff'}}> a gagné contre </span>
+                    <span style={{color: '#fff'}}> vs </span>
                     <span style={{color: '#f00'}}>{l.message.split('|')[1]} 🎱</span>
-                  </span>
-                ) : <span style={{color: '#fd0'}}>{l.message}</span>}
-            </div>
-        ))}
-      </div>
-    </div>
-  );
-}
