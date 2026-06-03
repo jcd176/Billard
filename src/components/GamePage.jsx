@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { ref, onValue, remove, push, update, set } from 'firebase/database';
+import { useState, useEffect } from 'react';
+import { ref, onValue, remove, push, update, set, query, limitToLast, get } from 'firebase/database';
 import { database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
@@ -9,27 +9,31 @@ export default function GamePage({ roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
-  
-  const prevLeaderIdRef = useRef(null);
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
-    const unsubscribePlayers = onValue(playersRef, (snapshot) => {
+    const unsubscribePlayers = onValue(playersRef, async (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
       
-      // Détection du changement de leader
-      if (sorted.length > 0) {
-        const currentLeader = sorted[0];
-        // On vérifie si c'est bien un nouveau leader et qu'il a au moins 1 victoire
-        if (currentLeader.id !== prevLeaderIdRef.current && currentLeader.wins > 0) {
-          addLog(`${currentLeader.name}|LEADER`, 'leader');
-        }
-        prevLeaderIdRef.current = currentLeader.id;
-      }
-      
       setPlayers(sorted);
+
+      // Logique anti-doublon pour le leader
+      if (sorted.length > 0 && sorted[0].wins > 0) {
+        const currentLeader = sorted[0];
+        
+        // On récupère le dernier log pour vérifier s'il s'agit déjà d'une annonce pour ce joueur
+        const lastLogQuery = query(ref(database, `rooms/${roomId}/logs`), limitToLast(1));
+        const lastLogSnapshot = await get(lastLogQuery);
+        const lastLogData = lastLogSnapshot.val();
+        const lastLog = lastLogData ? Object.values(lastLogData)[0] : null;
+
+        const expectedMessage = `${currentLeader.name}|LEADER`;
+        if (!lastLog || lastLog.message !== expectedMessage) {
+          addLog(expectedMessage, 'leader');
+        }
+      }
     });
 
     const matchesRef = ref(database, `rooms/${roomId}/matches`);
@@ -92,7 +96,6 @@ export default function GamePage({ roomId, onLeave }) {
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
     
-    // Log manuel en orange
     const direction = type === 'plus' ? '+' : '-';
     const fieldName = field === 'wins' ? 'victoire' : 'défaite';
     addLog(`Ajout manuel de ${direction}1 ${fieldName} pour "${player.name}"`, 'manual');
