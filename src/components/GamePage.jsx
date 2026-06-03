@@ -10,14 +10,12 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
 
-  // Style forcé pour éviter les fonds blancs
   const btnStyle = { 
-    background: 'transparent !important', 
+    background: 'transparent', 
     border: 'none', 
     cursor: 'pointer', 
     padding: '2px', 
-    fontSize: '16px',
-    backgroundColor: 'transparent'
+    fontSize: '16px'
   };
 
   useEffect(() => {
@@ -118,6 +116,4 @@ export default function GamePage({ roomId, onLeave }) {
             <div key={l.id} style={{padding: '2px 0'}}>
                 {l.type === 'match' ? (
                   <span>
-                    <span style={{color: '#0f0'}}>{l.message.split('MATCH:')[1].split('|')[0]} 👑</span>
-                    <span style={{color: '#fff'}}> vs </span>
-                    <span style={{color: '#f00'}}>{l.message.split('|')[1]} 🎱</span>
+                    <span style={{color: '#0f0'}}>{l.message.split('MATCH:
