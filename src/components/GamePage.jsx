@@ -10,18 +10,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
 
-  // Styles forcés pour éviter l'héritage de style blanc
-  const iconButtonStyle = {
-    background: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '2px',
-    fontSize: '16px',
-    margin: '0 2px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
+  const btnStyle = { background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '16px' };
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -42,12 +31,20 @@ export default function GamePage({ roomId, onLeave }) {
     });
   }, [roomId]);
 
+  const addPlayer = () => {
+    if (!newPlayerName.trim()) return;
+    push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
+    push(ref(database, `rooms/${roomId}/logs`), { message: `${newPlayerName} a rejoint la salle`, type: 'add' });
+    setNewPlayerName('');
+  };
+
   const declareMatch = () => {
     if (!winner || !loser || winner === loser) return;
     const w = players.find(p => p.id === winner);
     const l = players.find(p => p.id === loser);
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (w.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (l.losses || 0) + 1 });
+    
     const duoKey = [winner, loser].sort().join('_');
     const currentStats = matchStats[duoKey] || { p1: w.name, p2: l.name, wins1: 0, wins2: 0 };
     update(ref(database, `rooms/${roomId}/matchStats/${duoKey}`), {
@@ -55,13 +52,13 @@ export default function GamePage({ roomId, onLeave }) {
         wins1: (w.id < l.id) ? (currentStats.wins1 + 1) : currentStats.wins1,
         wins2: (w.id > l.id) ? (currentStats.wins2 + 1) : currentStats.wins2
     });
-    push(ref(database, `rooms/${roomId}/logs`), { message: `MATCH:${w.name}|${l.name}`, type: 'match', timestamp: Date.now() });
+
+    push(ref(database, `rooms/${roomId}/logs`), { message: `MATCH:${w.name}|${l.name}`, type: 'match' });
     setWinner(''); setLoser('');
   };
 
-  const adjustScore = (player, type, field) => {
-    const newVal = type === 'plus' ? (player[field] || 0) + 1 : Math.max(0, (player[field] || 0) - 1);
-    update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
+  const adjustScore = (p, type, field) => {
+    update(ref(database, `rooms/${roomId}/players/${p.id}`), { [field]: type === 'plus' ? (p[field] || 0) + 1 : Math.max(0, (p[field] || 0) - 1) });
   };
 
   const removePlayer = (id, name) => { if (prompt("Mot de passe ?") === 'root') remove(ref(database, `rooms/${roomId}/players/${id}`)); };
@@ -71,30 +68,40 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
+        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom joueur" />
+        <button onClick={addPlayer}>Ajouter</button>
+      </div>
+
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{width: '100%'}}><option value="">👑 Vainqueur</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{width: '100%', margin: '10px 0'}}><option value="">🎱 Perdant</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <button onClick={declareMatch} style={{width: '100%', padding: '10px'}}>Déclarer Match</button>
+        <button onClick={declareMatch} style={{width: '100%'}}>Déclarer Match</button>
       </div>
 
       <h3>Classement Général</h3>
       <table style={{width: '100%', borderCollapse: 'collapse'}}>
-        <thead><tr style={{borderBottom: '1px solid #555'}}><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+        <thead><tr style={{borderBottom: '1px solid #555'}}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%Vict</th><th></th></tr></thead>
         <tbody>
-          {players.map((p, i) => (
-            <tr key={p.id} style={{borderBottom: '1px solid #333'}}>
-              <td style={{padding: '5px'}}>{i === 0 && '👑'}{p.name}</td>
-              <td>{p.wins || 0} <button style={iconButtonStyle} onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button><button style={iconButtonStyle} onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
-              <td>{p.losses || 0} <button style={iconButtonStyle} onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button><button style={iconButtonStyle} onClick={() => adjustStyle(p, 'minus', 'losses')}>🔴</button></td>
-              <td><button style={iconButtonStyle} onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
-            </tr>
-          ))}
+          {players.map((p, i) => {
+            const total = (p.wins || 0) + (p.losses || 0);
+            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+            return (
+              <tr key={p.id} style={{borderBottom: '1px solid #333'}}>
+                <td style={{padding: '5px'}}>{i === 0 && '👑'}{p.name}</td>
+                <td>{p.wins} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button><button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
+                <td>{p.losses} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button><button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
+                <td>{winRate}%</td>
+                <td><button style={btnStyle} onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
       <h3>Suivi des rencontres (Duo)</h3>
       {Object.entries(matchStats).map(([key, s]) => (
-        <div key={key} style={{background: '#222', padding: '5px', marginBottom: '5px', borderRadius: '3px'}}>
+        <div key={key} style={{background: '#222', padding: '5px', marginBottom: '5px'}}>
             {s.p1} ({s.wins1}) vs {s.p2} ({s.wins2})
         </div>
       ))}
@@ -102,8 +109,14 @@ export default function GamePage({ roomId, onLeave }) {
       <h3>Historique :</h3>
       <div style={{background: '#111', fontSize: '13px', padding: '10px'}}>
         {logs.map(l => (
-            <div key={l.id} style={{color: l.type === 'match' ? '#0f0' : '#fff', padding: '2px 0'}}>
-                {l.message}
+            <div key={l.id} style={{padding: '2px 0'}}>
+                {l.type === 'match' ? (
+                  <span>
+                    <span style={{color: '#0f0'}}>{l.message.split('MATCH:')[1].split('|')[0]} 👑</span>
+                    <span style={{color: '#fff'}}> a gagné contre </span>
+                    <span style={{color: '#f00'}}>{l.message.split('|')[1]} 🎱</span>
+                  </span>
+                ) : <span style={{color: '#fd0'}}>{l.message}</span>}
             </div>
         ))}
       </div>
