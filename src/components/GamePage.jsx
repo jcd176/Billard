@@ -46,9 +46,10 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
-    // Log formaté : Gagnant (vert) + texte (blanc) + Perdant (vert)
+    // Format: Gagnant|a gagné contre|Perdant
     addLog(`MATCH:${wPlayer.name}|a gagné contre|${lPlayer.name}`, 'match');
-    setWinner(''); setLoser('');
+    setWinner(''); 
+    setLoser('');
   };
 
   const adjustScore = (player, type) => {
@@ -65,7 +66,7 @@ export default function GamePage({ roomId, onLeave }) {
       addLog(`${playerName} a été supprimé`, 'remove');
     } else {
       alert("Mot de passe incorrect !");
-      addLog(`Tentative de suppression de ${playerName} échouée (mdp erroné)`, 'remove');
+      addLog(`Tentative de suppression de ${playerName} échouée`, 'remove');
     }
   };
 
@@ -104,14 +105,18 @@ export default function GamePage({ roomId, onLeave }) {
       <h3>Historique :</h3>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
-          <div key={log.id} style={{ marginBottom: '5px', color: log.type === 'add' ? '#FFD700' : '#DA70D6' }}>
+          <div key={log.id} style={{ marginBottom: '5px' }}>
             {log.type === 'match' ? (
               <span>
                 <span style={{color: '#00FF00'}}>{log.message.split('MATCH:')[1].split('|')[0]}</span>
                 <span style={{color: '#FFFFFF'}}> {log.message.split('|')[1]} </span>
-                <span style={{color: '#00FF00'}}>{log.message.split('|')[2]}</span>
+                <span style={{color: '#FF0000'}}>{log.message.split('|')[2]}</span>
               </span>
-            ) : log.message}
+            ) : (
+              <span style={{color: log.type === 'add' ? '#FFD700' : '#FF0000'}}>
+                {log.message}
+              </span>
+            )}
           </div>
         ))}
       </div>
