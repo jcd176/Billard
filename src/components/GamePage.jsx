@@ -120,7 +120,7 @@ export default function GamePage({ roomId, onLeave }) {
             <th>Vict</th>
             <th>Déf</th>
             <th>%Vict</th>
-            <th>🎱</th>
+            <th></th> {/* En-tête vide */}
           </tr>
         </thead>
         <tbody>
