@@ -9,9 +9,6 @@ export default function GamePage({ roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
-  
-  // Simulation de l'utilisateur courant pour les logs
-  const [currentUser, setCurrentUser] = useState('Anonyme');
 
   useEffect(() => {
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -44,7 +41,6 @@ export default function GamePage({ roomId, onLeave }) {
     if (!newPlayerName.trim()) return;
     push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
     addLog(`${newPlayerName} a rejoint la salle`, 'add');
-    setCurrentUser(newPlayerName); // On définit ce joueur comme l'utilisateur courant
     setNewPlayerName('');
   };
 
@@ -73,26 +69,7 @@ export default function GamePage({ roomId, onLeave }) {
       set(ref(database, `rooms/${roomId}/logs`), null);
       addLog("Remise à zéro de l'historique !", 'reset');
     } else {
-      addLog(`Tentative de réinitialisation de l'historique par "${currentUser}" à échouée`, 'error');
-    }
-  };
-
-  const resetCounters = () => {
-    if (prompt("Mot de passe pour vider les compteurs ?") === 'root') {
-      players.forEach(p => update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 }));
-      set(ref(database, `rooms/${roomId}/matches`), null);
-      addLog("Remise à zéro des compteurs et rencontres !", 'reset');
-    } else {
-      addLog(`Tentative de réinitialisation des scores par "${currentUser}" à échouée`, 'error');
-    }
-  };
-
-  const removePlayer = (playerId, playerName) => {
-    if (prompt(`Saisissez le mot de passe pour supprimer ${playerName}`) === 'root') {
-      remove(ref(database, `rooms/${roomId}/players/${playerId}`));
-      addLog(`${playerName} a été supprimé`, 'remove');
-    } else {
-      addLog(`Tentative de suppression de "${playerName}" par "${currentUser}" à échouée`, 'error');
+      addLog("Réinitialisation de l'historique en échec", 'error');
     }
   };
 
@@ -102,27 +79,25 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
   };
 
+  const removePlayer = (playerId, playerName) => {
+    if (prompt("Saisissez le mot de passe") === 'root') {
+      remove(ref(database, `rooms/${roomId}/players/${playerId}`));
+      addLog(`${playerName} a été supprimé`, 'remove');
+    } else {
+      addLog(`Suppression de "${playerName}" en échec`, 'error');
+    }
+  };
+
   return (
     <div className="card">
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      {/* Sélecteur d'identité temporaire pour les logs */}
-      <div style={{ marginBottom: '10px' }}>
-        <small>Vous agissez en tant que : </small>
-        <select onChange={(e) => setCurrentUser(e.target.value)} value={currentUser}>
-            <option value="Anonyme">Anonyme</option>
-            {players.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-        </select>
-      </div>
-
       <div style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
         <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
       </div>
 
-      {/* ... (Reste du JSX identique) ... */}
-      
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{width: '100%', marginBottom: '5px'}}>
           <option value="">👑 Vainqueur</option>
@@ -188,9 +163,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Historique :</h3>
         <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-        <button onClick={resetCounters} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>⚡</button>
       </div>
-
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
@@ -201,10 +174,7 @@ export default function GamePage({ roomId, onLeave }) {
                 <span style={{color: '#FF0000'}}>{log.message.split('|')[1]} 🎱</span>
               </span>
             ) : (
-              <span style={{
-                color: log.type === 'add' ? '#00FF00' : 
-                       log.type === 'error' ? '#EE82EE' : '#FFD700'
-              }}>
+              <span style={{color: log.type === 'add' ? '#00FF00' : log.type === 'error' ? '#EE82EE' : '#FFD700'}}>
                 {log.message}
               </span>
             )}
