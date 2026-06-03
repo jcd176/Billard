@@ -39,7 +39,6 @@ export default function GamePage({ roomId, onLeave }) {
 
     const duoKey = [winner, loser].sort().join('_');
     const currentStats = matchStats[duoKey] || { p1: w.name, p2: l.name, wins1: 0, wins2: 0 };
-    const isWFirst = w.id === (w.id < l.id ? winner : loser); 
     
     update(ref(database, `rooms/${roomId}/matchStats/${duoKey}`), {
         p1: w.id < l.id ? w.name : l.name,
@@ -48,7 +47,7 @@ export default function GamePage({ roomId, onLeave }) {
         wins2: (w.id > l.id) ? (currentStats.wins2 + 1) : currentStats.wins2
     });
 
-    push(ref(database, `rooms/${roomId}/logs`), { message: `MATCH:${w.name}|${l.name}`, type: 'match', timestamp: Date.now() });
+    push(ref(database, `rooms/${roomId}/logs`), { message: `${w.name} a battu ${l.name}`, type: 'match', timestamp: Date.now() });
     setWinner(''); setLoser('');
   };
 
@@ -67,6 +66,9 @@ export default function GamePage({ roomId, onLeave }) {
 
   const removePlayer = (id, name) => { if (prompt("Mot de passe ?") === 'root') remove(ref(database, `rooms/${roomId}/players/${id}`)); };
 
+  // Style helper pour boutons transparents
+  const btnStyle = { background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '16px' };
+
   return (
     <div className="card">
       <button onClick={onLeave} style={{marginBottom: '10px'}}>← Retour</button>
@@ -75,35 +77,35 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{width: '100%'}}><option value="">👑 Vainqueur</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{width: '100%', margin: '10px 0'}}><option value="">🎱 Perdant</option>{players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <button onClick={declareMatch} style={{width: '100%'}}>Déclarer Match</button>
+        <button onClick={declareMatch} className="btn-primary" style={{width: '100%'}}>Déclarer Match</button>
       </div>
 
       <h3>Classement Général</h3>
-      <table style={{width: '100%', color: '#fff'}}>
-        <thead><tr><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+      <table style={{width: '100%', color: '#fff', borderCollapse: 'collapse'}}>
+        <thead><tr style={{borderBottom: '1px solid #555'}}><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
         <tbody>
           {players.map((p, i) => (
-            <tr key={p.id}>
-              <td>{i === 0 && '👑'}{p.name}</td>
-              <td>{p.wins || 0} <button onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button> <button onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
-              <td>{p.losses || 0} <button onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button> <button onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
-              <td><button onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+            <tr key={p.id} style={{borderBottom: '1px solid #333'}}>
+              <td style={{padding: '5px'}}>{i === 0 && '👑'}{p.name}</td>
+              <td>{p.wins} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button> <button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
+              <td>{p.losses} <button style={btnStyle} onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button> <button style={btnStyle} onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
+              <td><button style={btnStyle} onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres (Duo) <button onClick={resetAll} style={{fontSize: '12px'}}>↻</button></h3>
+      <h3>Suivi des rencontres (Duo) <button style={btnStyle} onClick={resetAll}>🔄</button></h3>
       {Object.entries(matchStats).map(([key, s]) => (
-        <table key={key} style={{width: '100%', background: '#222', marginBottom: '10px', color: '#fff'}}>
+        <table key={key} style={{width: '100%', background: '#222', marginBottom: '5px', color: '#fff', textAlign: 'center'}}>
           <thead><tr><th>{s.p1}</th><th>{s.p2}</th></tr></thead>
-          <tbody><tr><td>{s.wins1}</td><td>{s.wins2}</td></tr></tbody>
+          <tbody><tr><td style={{color: '#0f0'}}>{s.wins1}</td><td style={{color: '#0f0'}}>{s.wins2}</td></tr></tbody>
         </table>
       ))}
 
       <h3>Historique :</h3>
-      <div style={{background: '#111', fontSize: '12px', padding: '10px'}}>
-        {logs.map(l => <div key={l.id}>{l.message}</div>)}
+      <div style={{background: '#111', fontSize: '13px', padding: '10px', color: '#ccc'}}>
+        {logs.map(l => <div key={l.id} style={{padding: '2px 0'}}>{l.message}</div>)}
       </div>
     </div>
   );
