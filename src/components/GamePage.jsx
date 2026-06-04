@@ -33,9 +33,9 @@ export default function GamePage({ roomId, onLeave }) {
         const currentLeader = sorted[0];
         const now = Date.now();
         if (
-          prevLeaderIdRef.current !== null && 
+          prevLeaderIdRef.current !== null &&
           prevLeaderIdRef.current !== currentLeader.id &&
-          now - lastLeaderAnnouncementRef.current > 5000 
+          now - lastLeaderAnnouncementRef.current > 5000
         ) {
           addLog(`${currentLeader.name} Passe en tête !`, 'leader');
           lastLeaderAnnouncementRef.current = now;
@@ -84,6 +84,8 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
       p1Name: wPlayer.name,
       p2Name: lPlayer.name,
+      p1Id: winner,
+      p2Id: loser,
       wins: (existing.wins || 0) + 1
     });
 
@@ -122,7 +124,6 @@ export default function GamePage({ roomId, onLeave }) {
     const currentVal = player[field] || 0;
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-    
     const direction = type === 'plus' ? '+' : '-';
     const fieldName = field === 'wins' ? 'victoire' : 'défaite';
     addLog(`Ajout manuel de ${direction}1 ${fieldName} pour "${player.name}"`, 'manual');
@@ -137,13 +138,7 @@ export default function GamePage({ roomId, onLeave }) {
     }
   };
 
-  const selectStyle = { 
-    width: '100%', 
-    marginBottom: '10px', 
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '4px'
-  };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
 
   return (
     <div className="card">
@@ -158,18 +153,12 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
-          {players.filter(p => p.id !== loser).map(p => (
-            <option key={p.id} value={p.id}>👑 {p.name}</option>
-          ))}
+          {players.filter(p => p.id !== loser).map(p => (<option key={p.id} value={p.id}>👑 {p.name}</option>))}
         </select>
-        
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
-          {players.filter(p => p.id !== winner).map(p => (
-            <option key={p.id} value={p.id}>🎱 {p.name}</option>
-          ))}
+          {players.filter(p => p.id !== winner).map(p => (<option key={p.id} value={p.id}>🎱 {p.name}</option>))}
         </select>
-        
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
@@ -212,9 +201,7 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td style={{ textAlign: 'center' }}>{winRate}%</td>
                 <td style={{ textAlign: 'center' }}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>
-                    🎱
-                  </button>
+                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>🎱</button>
                 </td>
               </tr>
             );
@@ -227,11 +214,17 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={resetMatches} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
-        {Object.values(matches).map((m, i) => (
-          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
-            {m.p1Name} vs {m.p2Name} : <strong>{m.wins} victoire(s)</strong>
-          </div>
-        ))}
+        {Object.values(matches).map((m, i) => {
+          // Trouver les données actuelles des joueurs pour afficher les scores mis à jour
+          const p1 = players.find(p => p.name === m.p1Name);
+          const p2 = players.find(p => p.name === m.p2Name);
+          
+          return (
+            <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+              👑 {m.p1Name} ({p1?.wins || 0}) vs 🎱 {m.p2Name} ({p2?.losses || 0}) : <strong>{m.wins} confrontation(s)</strong>
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -251,12 +244,7 @@ export default function GamePage({ roomId, onLeave }) {
             ) : log.type === 'leader' ? (
               <span style={{ color: '#FFD700' }}>👑{log.message}</span>
             ) : (
-              <span style={{
-                color: log.type === 'add' ? '#00FF00' :
-                  log.type === 'remove' ? '#FF0000' :
-                    log.type === 'error' ? '#EE82EE' :
-                      log.type === 'manual' ? '#FFA500' : '#FFD700'
-              }}>
+              <span style={{ color: log.type === 'add' ? '#00FF00' : log.type === 'remove' ? '#FF0000' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFA500' : '#FFD700' }}>
                 {log.message}
               </span>
             )}
