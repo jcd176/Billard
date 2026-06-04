@@ -10,9 +10,9 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
   
-  // États pour la nouvelle PopUp de modification
+  // États pour la PopUp de modification
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalData, setModalData] = useState(null); // { player, actionType, field }
+  const [modalData, setModalData] = useState(null); 
 
   const prevLeaderIdRef = useRef(null);
   const lastLeaderAnnouncementRef = useRef(0);
@@ -32,6 +32,17 @@ export default function GamePage({ roomId, onLeave }) {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
+      
+      // Logique Leader
+      if (sorted.length > 0 && sorted[0].wins > 0) {
+        const currentLeader = sorted[0];
+        const now = Date.now();
+        if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id && now - lastLeaderAnnouncementRef.current > 5000) {
+          addLog(`👑 ${currentLeader.name} Passe en tête ! 👑`, 'leader');
+          lastLeaderAnnouncementRef.current = now;
+        }
+        prevLeaderIdRef.current = currentLeader.id;
+      }
       setPlayers(sorted);
     });
 
@@ -57,6 +68,7 @@ export default function GamePage({ roomId, onLeave }) {
       const targetPlayer = players.find(p => p.id === targetId);
       const val = actionType === 'plus' ? 1 : -1;
       
+      // Mise à jour base de données
       update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + val) });
       update(ref(database, `rooms/${roomId}/players/${targetPlayer.id}`), { [field]: Math.max(0, (targetPlayer[field] || 0) - val) });
       
@@ -98,9 +110,9 @@ export default function GamePage({ roomId, onLeave }) {
     } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
   };
 
-  // Styles
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
 
   return (
     <div className="card">
@@ -108,9 +120,9 @@ export default function GamePage({ roomId, onLeave }) {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', width: '300px' }}>
-            <h3>Transférer point</h3>
-            <p>Sélectionner le joueur cible :</p>
-            <select id="targetSelect" style={{ width: '100%', padding: '10px', marginBottom: '15px' }}>
+            <h3>Transfert de point</h3>
+            <p>Joueur recevant l'inverse :</p>
+            <select id="targetSelect" style={selectStyle}>
               {players.filter(p => p.id !== modalData.player.id).map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -126,28 +138,80 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      {/* ... (Code existant pour Ajouter Joueur et Déclarer Match reste identique) ... */}
-      
+      {/* Inputs Ajout */}
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
+        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
+        <button onClick={addPlayer} className="btn-primary">Ajouter</button>
+      </div>
+
+      {/* Déclaration Match */}
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
+          <option value="">👑 Vainqueur</option>
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+        </select>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
+          <option value="">🎱 Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+        </select>
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
+      </div>
+
+      {/* Classement */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Classement :</h3>
+        <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
+      </div>
       <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
-        <thead><tr><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
         <tbody>
           {players.map((p, i) => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{p.wins || 0} 
+            <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
+              <td style={{ padding: '8px' }}>{p.wins || 0} 
                 <button onClick={() => { setModalData({player: p, actionType: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
                 <button onClick={() => { setModalData({player: p, actionType: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
               </td>
-              <td>{p.losses || 0} 
+              <td style={{ padding: '8px' }}>{p.losses || 0} 
                 <button onClick={() => { setModalData({player: p, actionType: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
                 <button onClick={() => { setModalData({player: p, actionType: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
               </td>
-              <td><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
+              <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
             </tr>
           ))}
         </tbody>
       </table>
-      {/* ... (Reste du code pour Historique et Suivi identique) ... */}
+
+      {/* Suivi des rencontres */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+        {Object.values(matches).map((m, i) => (
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '8px 5px' }}>
+            👑 {m.p1Name} <strong>{m.p1Wins}</strong> vs 🎱 {m.p2Name} <strong>{m.p2Wins}</strong>
+          </div>
+        ))}
+      </div>
+
+      {/* Historique */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFD700' : '#FFD700' }}>{log.message}</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
