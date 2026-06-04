@@ -92,66 +92,79 @@ export default function GamePage({ roomId, onLeave }) {
   const adjustScore = (player, type, field) => {
     const newVal = type === 'plus' ? (player[field] || 0) + 1 : Math.max(0, (player[field] || 0) - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-    addLog(`${type === 'plus' ? '+' : '-'}1 ${field} pour ${player.name}`, 'manual');
+    addLog(`${type === 'plus' ? '+' : '-'}1 ${field === 'wins' ? 'victoire' : 'défaite'} pour "${player.name}"`, 'manual');
   };
 
   const removePlayer = (playerId, playerName) => {
     if (prompt("Mot de passe suppression") === 'root') {
       remove(ref(database, `rooms/${roomId}/players/${playerId}`));
-      addLog(`${playerName} supprimé`, 'remove');
-    } else { addLog(`Suppression ${playerName} échec`, 'error'); }
+      addLog(`${playerName} a été supprimé`, 'remove');
+    } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
   };
+
+  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
+  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
 
   return (
     <div className="card">
-      <button onClick={onLeave}>← Retour</button>
+      <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       <h2>Salle : {roomId}</h2>
-      <div style={{ display: 'flex', gap: '5px' }}>
-        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom" />
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
+        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
       </div>
 
-      <div style={{ background: '#333', padding: '15px', marginTop: '10px' }}>
-        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{ width: '100%' }}>
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
-        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{ width: '100%', marginTop: '5px' }}>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
           {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
-        <button onClick={declareMatch} style={{ width: '100%', marginTop: '5px' }}>Déclarer Match</button>
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
-        <button onClick={() => resetAction('classement', 'players')}>↻</button>
+        <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
       </div>
-      <table style={{ width: '100%', color: '#fff' }}>
-        <thead><tr><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
         <tbody>
           {players.map((p, i) => (
-            <tr key={p.id}>
-              <td>{i === 0 && '👑 '}{p.name}</td>
-              <td>{p.wins || 0} <button onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
-              <td>{p.losses || 0} <button onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
-              <td><button onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+            <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
+              <td style={{ padding: '8px' }}>{p.wins || 0} <button onClick={() => adjustScore(p, 'plus', 'wins')} style={btnAction}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'wins')} style={btnAction}>🔴</button></td>
+              <td style={{ padding: '8px' }}>{p.losses || 0} <button onClick={() => adjustScore(p, 'plus', 'losses')} style={btnAction}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'losses')} style={btnAction}>🔴</button></td>
+              <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres : <button onClick={() => resetAction('suivi', 'matches')}>↻</button></h3>
-      {Object.values(matches).map((m, i) => (
-        <div key={i} style={{ borderBottom: '1px solid #444' }}>👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)</div>
-      ))}
+      <h3>Suivi des rencontres : <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button></h3>
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+        {Object.values(matches).map((m, i) => (
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)</div>
+        ))}
+      </div>
 
-      <h3>Historique : <button onClick={() => resetAction('historique', 'logs')}>↻</button></h3>
-      {logs.map(log => (
-        <div key={log.id} style={{ color: log.type === 'match' ? '#0f0' : log.type === 'error' ? '#f00' : '#fff' }}>
-          {formatDate(log.timestamp)} - {log.message}
-        </div>
-      ))}
+      <h3>Historique : <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button></h3>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
