@@ -79,14 +79,21 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
 
-    const matchKey = [winner, loser].sort().join('_vs_');
-    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, p1Id: winner, p2Id: loser, wins: 0 };
+    // On stocke les IDs triés pour que le match soit unique entre deux joueurs
+    const ids = [winner, loser].sort();
+    const matchKey = ids.join('_vs_');
+    const existing = matches[matchKey] || { p1Id: ids[0], p2Id: ids[1], p1Name: '', p2Name: '', p1Wins: 0, p2Wins: 0 };
+    
+    // Déterminer qui est p1 et p2 selon l'ordre alphabétique des IDs
+    const isWinnerP1 = winner === ids[0];
+    
     update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
-      p1Name: wPlayer.name,
-      p2Name: lPlayer.name,
-      p1Id: winner,
-      p2Id: loser,
-      wins: (existing.wins || 0) + 1
+      p1Id: ids[0],
+      p2Id: ids[1],
+      p1Name: isWinnerP1 ? wPlayer.name : lPlayer.name,
+      p2Name: isWinnerP1 ? lPlayer.name : wPlayer.name,
+      p1Wins: isWinnerP1 ? (existing.p1Wins || 0) + 1 : (existing.p1Wins || 0),
+      p2Wins: !isWinnerP1 ? (existing.p2Wins || 0) + 1 : (existing.p2Wins || 0)
     });
 
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
@@ -96,7 +103,6 @@ export default function GamePage({ roomId, onLeave }) {
   const resetLogs = () => {
     if (prompt("Mot de passe pour vider l'historique ?") === 'root') {
       set(ref(database, `rooms/${roomId}/logs`), null);
-      addLog("Remise à zéro de l'historique !", 'reset');
     }
   };
 
@@ -116,7 +122,6 @@ export default function GamePage({ roomId, onLeave }) {
     const currentVal = player[field] || 0;
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-    addLog(`Ajout manuel de ${type === 'plus' ? '+' : '-'}1 ${field} pour "${player.name}"`, 'manual');
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -149,11 +154,7 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Classement :</h3>
-        <button onClick={resetRanking} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
-      
+      <h3>Classement :</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
@@ -187,52 +188,27 @@ export default function GamePage({ roomId, onLeave }) {
                   </div>
                 </td>
                 <td style={{ textAlign: 'center' }}>{winRate}%</td>
-                <td style={{ textAlign: 'center' }}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                </td>
+                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button></td>
               </tr>
             );
           })}
         </tbody>
       </table>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Suivi des rencontres :</h3>
-        <button onClick={resetMatches} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
+      <h3>Suivi des rencontres :</h3>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
-        {Object.values(matches).map((m, i) => {
-          const p1 = players.find(p => p.id === m.p1Id);
-          const p2 = players.find(p => p.id === m.p2Id);
-          return (
-            <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
-              👑 {m.p1Name} ({p1?.wins || 0}) vs 🎱 {m.p2Name} ({p2?.wins || 0}) : {m.wins} Match(s)
-            </div>
-          );
-        })}
+        {Object.values(matches).map((m, i) => (
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+            👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)
+          </div>
+        ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Historique :</h3>
-        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
+      <h3>Historique :</h3>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map((log) => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888', marginRight: '5px' }}>{formatDate(log.timestamp)}</span>
-            {log.type === 'match' ? (
-              <span>
-                <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]}👑</span>
-                <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
-                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]}🎱</span>
-              </span>
-            ) : log.type === 'leader' ? (
-              <span style={{ color: '#FFD700' }}>👑{log.message}</span>
-            ) : (
-              <span style={{ color: log.type === 'add' ? '#00FF00' : log.type === 'remove' ? '#FF0000' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFA500' : '#FFD700' }}>
-                {log.message}
-              </span>
-            )}
+            {log.message}
           </div>
         ))}
       </div>
