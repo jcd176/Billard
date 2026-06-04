@@ -83,17 +83,33 @@ export default function GamePage({ roomId, onLeave }) {
     setWinner(''); setLoser('');
   };
 
+  const adjustScore = (player, actionType, field) => {
+    const targetPlayerId = prompt(`Saisissez l'ID du joueur pour la contre-action (ou son nom) :`);
+    const targetPlayer = players.find(p => p.id === targetPlayerId || p.name === targetPlayerId);
+    
+    if (!targetPlayer) {
+      alert("Joueur non trouvé");
+      return;
+    }
+
+    if (prompt("Saisissez le mot de passe") === 'root') {
+      const val1 = actionType === 'plus' ? 1 : -1;
+      const val2 = -val1; // Inverse
+      
+      update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + val1) });
+      update(ref(database, `rooms/${roomId}/players/${targetPlayer.id}`), { [field]: Math.max(0, (targetPlayer[field] || 0) + val2) });
+      
+      addLog(`${val1 > 0 ? '+' : ''}${val1} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" et ${val2 > 0 ? '+' : ''}${val2} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, 'manual');
+    } else {
+      addLog(`Modification du Classement en échec`, 'error');
+    }
+  };
+
   const resetAction = (type, path) => {
     if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
       set(ref(database, `rooms/${roomId}/${path}`), null);
       addLog(`Réinitialisation de ${type} effectuée`, 'reset');
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
-  };
-
-  const adjustScore = (player, type, field) => {
-    const newVal = type === 'plus' ? (player[field] || 0) + 1 : Math.max(0, (player[field] || 0) - 1);
-    update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-    addLog(`${type === 'plus' ? '+' : '-'}1 ${field === 'wins' ? 'victoire' : 'défaite'} pour "${player.name}"`, 'manual');
   };
 
   const removePlayer = (playerId, playerName) => {
@@ -169,7 +185,7 @@ export default function GamePage({ roomId, onLeave }) {
             {log.type === 'match' ? (
               <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
             ) : (
-              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFD700' : '#FFD700' }}>{log.message}</span>
             )}
           </div>
         ))}
