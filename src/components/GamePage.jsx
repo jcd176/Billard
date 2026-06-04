@@ -211,6 +211,31 @@ export default function GamePage({ roomId, onLeave }) {
           );
         })}
       </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Historique :</h3>
+        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map((log) => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888', marginRight: '5px' }}>{formatDate(log.timestamp)}</span>
+            {log.type === 'match' ? (
+              <span>
+                <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]}👑</span>
+                <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
+                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]}🎱</span>
+              </span>
+            ) : log.type === 'leader' ? (
+              <span style={{ color: '#FFD700' }}>👑{log.message}</span>
+            ) : (
+              <span style={{ color: log.type === 'add' ? '#00FF00' : log.type === 'remove' ? '#FF0000' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFA500' : '#FFD700' }}>
+                {log.message}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
