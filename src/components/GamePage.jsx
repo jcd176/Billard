@@ -33,7 +33,7 @@ export default function GamePage({ roomId, onLeave }) {
         const currentLeader = sorted[0];
         const now = Date.now();
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id && now - lastLeaderAnnouncementRef.current > 5000) {
-          addLog(`${currentLeader.name} Passe en tête !`, 'leader');
+          addLog(`👑 ${currentLeader.name} Passe en tête ! 👑`, 'leader');
           lastLeaderAnnouncementRef.current = now;
         }
         prevLeaderIdRef.current = currentLeader.id;
