@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
@@ -12,9 +12,6 @@ export default function GamePage({ roomId, onLeave }) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
-
-  const prevLeaderIdRef = useRef(null);
-  const lastLeaderAnnouncementRef = useRef(0);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -77,8 +74,18 @@ export default function GamePage({ roomId, onLeave }) {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
+    
+    // Mise à jour des scores
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+    
+    // Sauvegarde de la rencontre
+    push(ref(database, `rooms/${roomId}/matches`), {
+        p1Name: wPlayer.name,
+        p2Name: lPlayer.name,
+        timestamp: Date.now()
+    });
+
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -166,9 +173,9 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.values(matches).map((m, i) => (
+        {Object.values(matches).reverse().map((m, i) => (
           <div key={i} style={{ borderBottom: '1px solid #444', padding: '8px 5px' }}>
-            👑 {m.p1Name} <strong>{m.p1Wins}</strong> vs 🎱 {m.p2Name} <strong>{m.p2Wins}</strong>
+            👑 {m.p1Name} vs 🎱 {m.p2Name}
           </div>
         ))}
       </div>
