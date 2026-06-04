@@ -72,11 +72,9 @@ export default function GamePage({ roomId, onLeave }) {
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
 
-    // 1. Mise à jour globale des scores
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
 
-    // 2. Mise à jour du suivi des rencontres par binôme
     const matchId = [winner, loser].sort().join('_');
     const matchRef = ref(database, `rooms/${roomId}/matches/${matchId}`);
     
@@ -86,7 +84,6 @@ export default function GamePage({ roomId, onLeave }) {
       let p1Wins = m.p1Id === winner ? m.p1Wins + 1 : m.p1Wins;
       let p2Wins = m.p2Id === loser ? m.p2Wins + 1 : m.p2Wins;
       
-      // Tri automatique : le leader du duel à gauche (p1)
       if (p2Wins > p1Wins) {
         set(matchRef, { p1Id: loser, p1Name: lPlayer.name, p1Wins: p2Wins, p2Id: winner, p2Name: wPlayer.name, p2Wins: p1Wins });
       } else {
@@ -156,20 +153,4 @@ export default function GamePage({ roomId, onLeave }) {
       <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
         <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
         <tbody>
-          {players.map((p, i) => {
-            const total = (p.wins || 0) + (p.losses || 0);
-            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
-            return (
-              <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
-                <td style={{ padding: '8px' }}>{p.wins || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
-                <td style={{ padding: '8px' }}>{p.losses || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
-                <td style={{ padding: '8px' }}>{winRate}%</td>
-                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <h3>Suivi des rencontres :</h3>
+          {players.map((p, i
