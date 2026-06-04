@@ -111,4 +111,47 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
       </div>
 
-      <div style
+      <div style={{ background: '#333', padding: '15px', marginTop: '10px' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={{ width: '100%' }}>
+          <option value="">👑 Vainqueur</option>
+          {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+        </select>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={{ width: '100%', marginTop: '5px' }}>
+          <option value="">🎱 Perdant</option>
+          {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+        </select>
+        <button onClick={declareMatch} style={{ width: '100%', marginTop: '5px' }}>Déclarer Match</button>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+        <h3>Classement :</h3>
+        <button onClick={() => resetAction('classement', 'players')}>↻</button>
+      </div>
+      <table style={{ width: '100%', color: '#fff' }}>
+        <thead><tr><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={p.id}>
+              <td>{i === 0 && '👑 '}{p.name}</td>
+              <td>{p.wins || 0} <button onClick={() => adjustScore(p, 'plus', 'wins')}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'wins')}>🔴</button></td>
+              <td>{p.losses || 0} <button onClick={() => adjustScore(p, 'plus', 'losses')}>🟢</button><button onClick={() => adjustScore(p, 'minus', 'losses')}>🔴</button></td>
+              <td><button onClick={() => removePlayer(p.id, p.name)}>🎱</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3>Suivi des rencontres : <button onClick={() => resetAction('suivi', 'matches')}>↻</button></h3>
+      {Object.values(matches).map((m, i) => (
+        <div key={i} style={{ borderBottom: '1px solid #444' }}>👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)</div>
+      ))}
+
+      <h3>Historique : <button onClick={() => resetAction('historique', 'logs')}>↻</button></h3>
+      {logs.map(log => (
+        <div key={log.id} style={{ color: log.type === 'match' ? '#0f0' : log.type === 'error' ? '#f00' : '#fff' }}>
+          {formatDate(log.timestamp)} - {log.message}
+        </div>
+      ))}
+    </div>
+  );
+}
