@@ -16,7 +16,10 @@ export default function GamePage({ roomId, onLeave }) {
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
   };
 
   useEffect(() => {
@@ -76,52 +79,11 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
 
-    // Création de la clé unique pour le duel, ex: "id1_vs_id2"
     const ids = [winner, loser].sort();
     const matchKey = ids.join('_vs_');
-    
-    // On récupère les infos existantes pour incrémenter
     const existing = matches[matchKey] || { p1Id: ids[0], p2Id: ids[1], wins: 0 };
     
     update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
       p1Id: ids[0],
       p2Id: ids[1],
-      wins: (existing.wins || 0) + 1
-    });
-
-    addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
-    setWinner(''); setLoser('');
-  };
-
-  // ... (fonctions resetLogs, resetRanking, resetMatches, adjustScore, removePlayer restent inchangées)
-  
-  // Note: Pour des raisons de concision, j'ai omis de répéter les fonctions reset 
-  // car elles sont identiques à votre code d'origine.
-
-  return (
-    <div className="card">
-      {/* ... (début du rendu inchangé jusqu'au Suivi des rencontres) */}
-      
-      <h3>Suivi des rencontres :</h3>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.values(matches).map((m, i) => {
-          // Récupération des noms depuis la liste des joueurs chargés
-          const p1 = players.find(p => p.id === m.p1Id);
-          const p2 = players.find(p => p.id === m.p2Id);
-          if (!p1 || !p2) return null;
-
-          return (
-            <div key={i} style={{ borderBottom: '1px solid #444', padding: '10px 5px' }}>
-              👑 <strong>{p1.name}</strong> vs 🎱 <strong>{p2.name}</strong> 
-              <span style={{ marginLeft: '10px', color: '#FFD700' }}>
-                Score global : {m.wins} victoire(s)
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      
-      {/* ... (reste du code pour l'historique) */}
-    </div>
-  );
-}
+      wins: (
