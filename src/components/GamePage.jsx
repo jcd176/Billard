@@ -10,6 +10,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
   
+  // États pour la PopUp de confirmation
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
 
@@ -31,7 +32,7 @@ export default function GamePage({ roomId, onLeave }) {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
-      
+
       if (sorted.length > 0 && sorted[0].wins > 0) {
         const currentLeader = sorted[0];
         const now = Date.now();
@@ -67,8 +68,7 @@ export default function GamePage({ roomId, onLeave }) {
       const newVal = Math.max(0, (player[field] || 0) + change);
       
       update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-      const fieldName = field === 'wins' ? 'Victoire' : 'Défaite';
-      addLog(`${change > 0 ? '+' : ''}${change} ${fieldName} "${player.name}"`, 'manual');
+      addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, 'manual');
     } else {
       addLog(`Echec modification Classement`, 'error');
     }
@@ -88,6 +88,16 @@ export default function GamePage({ roomId, onLeave }) {
     const lPlayer = players.find(p => p.id === loser);
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+
+    const ids = [winner, loser].sort();
+    const matchKey = ids.join('_vs_');
+    const existing = matches[matchKey] || { p1Id: ids[0], p2Id: ids[1], p1Wins: 0, p2Wins: 0 };
+    let p1Id = existing.p1Id, p2Id = existing.p2Id, p1Wins = existing.p1Wins || 0, p2Wins = existing.p2Wins || 0;
+    if (winner === p1Id) p1Wins += 1; else p2Wins += 1;
+    if (p2Wins > p1Wins) { [p1Id, p2Id] = [p2Id, p1Id]; [p1Wins, p2Wins] = [p2Wins, p1Wins]; }
+    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
+      p1Id, p2Id, p1Name: players.find(p => p.id === p1Id).name, p2Name: players.find(p => p.id === p2Id).name, p1Wins, p2Wins
+    });
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -127,7 +137,6 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       <h2>Salle : {roomId}</h2>
       
-      {/* ... Le reste du JSX inchangé ... */}
       <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
         <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
@@ -155,26 +164,39 @@ export default function GamePage({ roomId, onLeave }) {
           {players.map((p, i) => (
             <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
-              <td style={{ padding: '8px' }}>{p.wins || 0} 
-                <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-              </td>
-              <td style={{ padding: '8px' }}>{p.losses || 0} 
-                <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-              </td>
+              <td style={{ padding: '8px' }}>{p.wins || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
+              <td style={{ padding: '8px' }}>{p.losses || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
               <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>Historique :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+        {Object.values(matches).map((m, i) => (
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '8px 5px' }}>
+            👑 {m.p1Name} <strong>{m.p1Wins}</strong> vs 🎱 {m.p2Name} <strong>{m.p2Wins}</strong>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map(log => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
             <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+            )}
           </div>
         ))}
       </div>
