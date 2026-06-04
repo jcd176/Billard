@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ref, onValue, remove, push, update, set } from 'firebase/database';
+import { useState, useEffect, useRef } from 'react';
+import { ref, onValue, remove, push, update, set, get } from 'firebase/database';
 import { database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
@@ -52,11 +52,8 @@ export default function GamePage({ roomId, onLeave }) {
       const { player, type, field } = modalAction;
       const change = type === 'plus' ? 1 : -1;
       const newVal = Math.max(0, (player[field] || 0) + change);
-      
       update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-      
-      const fieldName = field === 'wins' ? 'Victoire' : 'Défaite';
-      addLog(`${change > 0 ? '+' : ''}${change} ${fieldName} "${player.name}"`, 'manual');
+      addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, 'manual');
     } else {
       addLog(`Echec modification Classement`, 'error');
     }
@@ -70,21 +67,34 @@ export default function GamePage({ roomId, onLeave }) {
     setNewPlayerName('');
   };
 
-  const declareMatch = () => {
+  const declareMatch = async () => {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
-    
-    // Mise à jour des scores
+
+    // 1. Mise à jour globale des scores
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+
+    // 2. Mise à jour du suivi des rencontres par binôme
+    const matchId = [winner, loser].sort().join('_');
+    const matchRef = ref(database, `rooms/${roomId}/matches/${matchId}`);
     
-    // Sauvegarde de la rencontre
-    push(ref(database, `rooms/${roomId}/matches`), {
-        p1Name: wPlayer.name,
-        p2Name: lPlayer.name,
-        timestamp: Date.now()
-    });
+    const snapshot = await get(matchRef);
+    if (snapshot.exists()) {
+      const m = snapshot.val();
+      let p1Wins = m.p1Id === winner ? m.p1Wins + 1 : m.p1Wins;
+      let p2Wins = m.p2Id === loser ? m.p2Wins + 1 : m.p2Wins;
+      
+      // Tri automatique : le leader du duel à gauche (p1)
+      if (p2Wins > p1Wins) {
+        set(matchRef, { p1Id: loser, p1Name: lPlayer.name, p1Wins: p2Wins, p2Id: winner, p2Name: wPlayer.name, p2Wins: p1Wins });
+      } else {
+        update(matchRef, { p1Wins, p2Wins });
+      }
+    } else {
+      set(matchRef, { p1Id: winner, p1Name: wPlayer.name, p1Wins: 1, p2Id: loser, p2Name: lPlayer.name, p2Wins: 0 });
+    }
 
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
@@ -113,10 +123,7 @@ export default function GamePage({ roomId, onLeave }) {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>
-              Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une 
-              {modalAction.field === 'wins' ? ' victoire' : ' défaite'} ?
-            </p>
+            <p>Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une {modalAction.field === 'wins' ? 'victoire' : 'défaite'} ?</p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={executeAdjustment} className="btn-primary">Valider</button>
               <button onClick={() => setIsModalOpen(false)}>Annuler</button>
@@ -145,10 +152,7 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Classement :</h3>
-        <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
-      </div>
+      <h3>Classement :</h3>
       <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
         <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
         <tbody>
@@ -168,34 +172,4 @@ export default function GamePage({ roomId, onLeave }) {
         </tbody>
       </table>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Suivi des rencontres :</h3>
-        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.values(matches).reverse().map((m, i) => (
-          <div key={i} style={{ borderBottom: '1px solid #444', padding: '8px 5px' }}>
-            👑 {m.p1Name} vs 🎱 {m.p2Name}
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Historique :</h3>
-        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
-        {logs.map(log => (
-          <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            {log.type === 'match' ? (
-              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
-            ) : (
-              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+      <h3>Suivi des rencontres :</h3>
