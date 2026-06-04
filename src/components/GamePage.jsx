@@ -170,4 +170,23 @@ export default function GamePage({ roomId, onLeave }) {
 
       <h3>Suivi des rencontres :</h3>
       <button onClick={resetMatches}>↻</button>
-      <div style={{ background:
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+        {Object.values(matches).map((m, i) => {
+          const p1 = players.find(p => p.id === m.p1Id);
+          const p2 = players.find(p => p.id === m.p2Id);
+          if (!p1 || !p2) return null;
+          return (
+            <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+              👑 {p1.name} <strong>{m.wins}</strong> vs 🎱 {p2.name}
+            </div>
+          );
+        })}
+      </div>
+
+      <h3>Historique :</h3>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px' }}>
+        {logs.map((log) => <div key={log.id}>{log.message}</div>)}
+      </div>
+    </div>
+  );
+}
