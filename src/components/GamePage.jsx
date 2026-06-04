@@ -113,44 +113,4 @@ export default function GamePage({ roomId, onLeave }) {
 
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
-  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
-
-  return (
-    <div className="card">
-      {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une {modalAction.field === 'wins' ? 'victoire' : 'défaite'} ?</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={executeAdjustment} className="btn-primary">Valider</button>
-              <button onClick={() => setIsModalOpen(false)}>Annuler</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
-      <h2>Salle : {roomId}</h2>
-      
-      <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
-        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
-        <button onClick={addPlayer} className="btn-primary">Ajouter</button>
-      </div>
-
-      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
-        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
-          <option value="">👑 Vainqueur</option>
-          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
-        </select>
-        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
-          <option value="">🎱 Perdant</option>
-          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
-        </select>
-        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
-      </div>
-
-      <h3>Classement :</h3>
-      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
-        <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
-        <tbody>
-          {players.map((p, i
+  const selectStyle = { width
