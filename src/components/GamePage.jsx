@@ -152,7 +152,9 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
         {Object.values(matches).map((m, i) => (
-          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)</div>
+          <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
+            👑 {m.p1Name} {m.p1Wins} vs 🎱 {m.p2Name} {m.p2Wins} : {m.p1Wins + m.p2Wins} 🥢
+          </div>
         ))}
       </div>
 
