@@ -9,6 +9,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
 
@@ -56,6 +57,7 @@ export default function GamePage({ roomId, onLeave }) {
       const newVal = Math.max(0, (player[field] || 0) + change);
       
       update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
+      
       const fieldName = field === 'wins' ? 'Victoire' : 'Défaite';
       addLog(`${change > 0 ? '+' : ''}${change} ${fieldName} "${player.name}"`, 'manual');
     } else {
@@ -104,7 +106,10 @@ export default function GamePage({ roomId, onLeave }) {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>Validez l'ajout ou la suppression d'une {modalAction?.field === 'wins' ? 'victoire' : 'défaite'} ?</p>
+            <p>
+              Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une 
+              {modalAction.field === 'wins' ? ' victoire' : ' défaite'} ?
+            </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={executeAdjustment} className="btn-primary">Valider</button>
               <button onClick={() => setIsModalOpen(false)}>Annuler</button>
@@ -115,7 +120,7 @@ export default function GamePage({ roomId, onLeave }) {
 
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       <h2>Salle : {roomId}</h2>
-
+      
       <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
         <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
         <button onClick={addPlayer} className="btn-primary">Ajouter</button>
@@ -176,7 +181,11 @@ export default function GamePage({ roomId, onLeave }) {
         {logs.map(log => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
             <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+            )}
           </div>
         ))}
       </div>
