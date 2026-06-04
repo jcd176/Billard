@@ -91,22 +91,23 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const adjustScore = (player, action, field) => {
-    const targetPlayerName = prompt(`Saisissez le nom du joueur inverse pour l'opération :`);
-    const targetPlayer = players.find(p => p.name === targetPlayerName);
+    const otherPlayers = players.filter(p => p.id !== player.id);
+    if (otherPlayers.length === 0) { alert("Aucun autre joueur disponible."); return; }
     
-    if (!targetPlayer || targetPlayer.id === player.id) {
-        alert("Joueur invalide.");
-        return;
-    }
+    const listString = otherPlayers.map(p => p.name).join('\n');
+    const targetName = prompt(`Saisissez le nom du joueur à ajuster inversement parmi :\n\n${listString}`);
+    const targetPlayer = otherPlayers.find(p => p.name === targetName);
+    
+    if (!targetPlayer) { alert("Nom incorrect."); return; }
 
     if (prompt("Saisissez le mot de passe") === 'root') {
-      const val1 = action === 'plus' ? 1 : -1;
-      const val2 = action === 'plus' ? -1 : 1;
+      const val = action === 'plus' ? 1 : -1;
       
-      update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + val1) });
-      update(ref(database, `rooms/${roomId}/players/${targetPlayer.id}`), { [field]: Math.max(0, (targetPlayer[field] || 0) + val2) });
+      update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + val) });
+      update(ref(database, `rooms/${roomId}/players/${targetPlayer.id}`), { [field]: Math.max(0, (targetPlayer[field] || 0) - val) });
       
-      addLog(`${val1 > 0 ? '+' : ''}${val1} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" et ${val2 > 0 ? '+' : ''}${val2} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, 'manual');
+      const label = field === 'wins' ? 'Victoire' : 'Défaite';
+      addLog(`${val > 0 ? '+' : ''}${val} ${label} "${player.name}" et ${-val > 0 ? '+' : ''}${-val} ${label} "${targetPlayer.name}"`, 'manual');
     } else {
       addLog(`Modification du Classement en échec`, 'error');
     }
@@ -163,33 +164,3 @@ export default function GamePage({ roomId, onLeave }) {
       </table>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Suivi des rencontres :</h3>
-        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.values(matches).map((m, i) => (
-          <div key={i} style={{ borderBottom: '1px solid #444', padding: '8px 5px' }}>
-            👑 {m.p1Name} <strong>{m.p1Wins}</strong> vs 🎱 {m.p2Name} <strong>{m.p2Wins}</strong>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Historique :</h3>
-        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
-        {logs.map(log => (
-          <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            {log.type === 'match' ? (
-              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
-            ) : (
-              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFD700' : '#FFD700' }}>{log.message}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
