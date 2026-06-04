@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
@@ -17,10 +17,7 @@ export default function GamePage({ roomId, onLeave }) {
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
-    return `${day}/${month}/${year}`;
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
   };
 
   useEffect(() => {
@@ -86,10 +83,9 @@ export default function GamePage({ roomId, onLeave }) {
     const lPlayer = players.find(p => p.id === loser);
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
-    const ids = [winner, loser].sort();
-    const matchKey = ids.join('_vs_');
-    const existing = matches[matchKey] || { p1Id: ids[0], p2Id: ids[1], p1Name: wPlayer.name, p2Name: lPlayer.name, p1Wins: 0, p2Wins: 0 };
-    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), { ...existing, p1Wins: (existing.p1Wins || 0) + (winner === existing.p1Id ? 1 : 0), p2Wins: (existing.p2Wins || 0) + (winner === existing.p2Id ? 1 : 0) });
+    const matchKey = [winner, loser].sort().join('_vs_');
+    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, p1Wins: 0, p2Wins: 0 };
+    update(ref(database, `rooms/${roomId}/matches/${matchKey}`), { ...existing, p1Wins: (existing.p1Wins || 0) + (winner === winner ? 1 : 0), p2Wins: (existing.p2Wins || 0) + (loser === loser ? 1 : 0) });
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -101,20 +97,60 @@ export default function GamePage({ roomId, onLeave }) {
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
 
-  const removePlayer = (playerId, playerName) => {
-    if (prompt("Mot de passe suppression") === 'root') {
-      remove(ref(database, `rooms/${roomId}/players/${playerId}`));
-      addLog(`${playerName} a été supprimé`, 'remove');
-    } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
-  };
-
-  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
-  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
-  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
-
   return (
     <div className="card">
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>Validez {modal
+            <p>Validez {modalAction?.type === 'plus' ? "l'ajout" : "le retrait"} d'une {modalAction?.field === 'wins' ? 'victoire' : 'défaite'} ?</p>
+            <button onClick={executeAdjustment}>Valider</button>
+            <button onClick={() => setIsModalOpen(false)}>Annuler</button>
+          </div>
+        </div>
+      )}
+      {matchModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
+            <p>Action sur le duel :</p>
+            <button onClick={() => handleMatchAction('reset', matchModal)}>Réinitialiser Scores</button>
+            <button onClick={() => handleMatchAction('delete', matchModal)} style={{ color: 'red' }}>Supprimer Duel</button>
+            <button onClick={() => setMatchModal(null)}>Annuler</button>
+          </div>
+        </div>
+      )}
+
+      <button onClick={onLeave}>← Retour</button>
+      <h2>Salle : {roomId}</h2>
+      
+      <h3>Classement :</h3>
+      <table style={{ width: '100%', color: '#fff' }}>
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={p.id}>
+              <td>{p.name}</td>
+              <td>{p.wins} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }}>🔴</button></td>
+              <td>{p.losses} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }}>🔴</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3>Suivi des rencontres :</h3>
+      {Object.entries(matches).map(([key, m]) => (
+        <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', borderBottom: '1px solid #444' }}>
+          <span>{m.p1Name} {m.p1Wins} vs {m.p2Name} {m.p2Wins}</span>
+          <button onClick={() => setMatchModal(key)}>🎱</button>
+        </div>
+      ))}
+
+      <h3>Historique :</h3>
+      <div style={{ background: '#111', padding: '10px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFD700' : '#fff' }}>
+            {formatDate(log.timestamp)} - {log.message}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
