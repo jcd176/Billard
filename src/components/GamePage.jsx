@@ -122,4 +122,37 @@ export default function GamePage({ roomId, onLeave }) {
 
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
-  const selectStyle = { width: '100
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
+
+  return (
+    <div className="card">
+      <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
+      <h2>Salle : {roomId}</h2>
+      <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
+        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
+        <button onClick={addPlayer} className="btn-primary">Ajouter</button>
+      </div>
+
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
+          <option value="">👑 Vainqueur</option>
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+        </select>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
+          <option value="">🎱 Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+        </select>
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Classement :</h3>
+        <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
+      </div>
+      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
+        <tbody>
+          {players.map((p, i) => (
+            <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
+              <td style={{ padding: '8
