@@ -80,7 +80,7 @@ export default function GamePage({ roomId, onLeave }) {
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
 
     const matchKey = [winner, loser].sort().join('_vs_');
-    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, wins: 0 };
+    const existing = matches[matchKey] || { p1Name: wPlayer.name, p2Name: lPlayer.name, p1Id: winner, p2Id: loser, wins: 0 };
     update(ref(database, `rooms/${roomId}/matches/${matchKey}`), {
       p1Name: wPlayer.name,
       p2Name: lPlayer.name,
@@ -97,26 +97,18 @@ export default function GamePage({ roomId, onLeave }) {
     if (prompt("Mot de passe pour vider l'historique ?") === 'root') {
       set(ref(database, `rooms/${roomId}/logs`), null);
       addLog("Remise à zéro de l'historique !", 'reset');
-    } else {
-      addLog("Réinitialisation de l'historique en échec", 'error');
     }
   };
 
   const resetRanking = () => {
     if (prompt("Mot de passe pour vider tout le classement ?") === 'root') {
       set(ref(database, `rooms/${roomId}/players`), null);
-      addLog("Classement réinitialisé !", 'reset');
-    } else {
-      addLog("Réinitialisation du classement en échec", 'error');
     }
   };
 
   const resetMatches = () => {
     if (prompt("Mot de passe pour vider le suivi des rencontres ?") === 'root') {
       set(ref(database, `rooms/${roomId}/matches`), null);
-      addLog("Suivi des rencontres réinitialisé !", 'reset');
-    } else {
-      addLog("Réinitialisation du suivi en échec", 'error');
     }
   };
 
@@ -124,17 +116,12 @@ export default function GamePage({ roomId, onLeave }) {
     const currentVal = player[field] || 0;
     const newVal = type === 'plus' ? currentVal + 1 : Math.max(0, currentVal - 1);
     update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-    const direction = type === 'plus' ? '+' : '-';
-    const fieldName = field === 'wins' ? 'victoire' : 'défaite';
-    addLog(`Ajout manuel de ${direction}1 ${fieldName} pour "${player.name}"`, 'manual');
+    addLog(`Ajout manuel de ${type === 'plus' ? '+' : '-'}1 ${field} pour "${player.name}"`, 'manual');
   };
 
   const removePlayer = (playerId, playerName) => {
     if (prompt("Saisissez le mot de passe") === 'root') {
       remove(ref(database, `rooms/${roomId}/players/${playerId}`));
-      addLog(`${playerName} a été supprimé`, 'remove');
-    } else {
-      addLog(`Suppression de "${playerName}" en échec`, 'error');
     }
   };
 
@@ -171,7 +158,7 @@ export default function GamePage({ roomId, onLeave }) {
         <thead>
           <tr style={{ borderBottom: '1px solid #444' }}>
             <th style={{ textAlign: 'left', padding: '8px' }}>Joueur</th>
-            <th>Vict</th><th>Déf</th><th>%Vict</th><th></th>
+            <th>Vict</th><th>Déf</th><th>%</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -201,7 +188,7 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td style={{ textAlign: 'center' }}>{winRate}%</td>
                 <td style={{ textAlign: 'center' }}>
-                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '24px' }}>🎱</button>
+                  <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
                 </td>
               </tr>
             );
@@ -215,41 +202,14 @@ export default function GamePage({ roomId, onLeave }) {
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
         {Object.values(matches).map((m, i) => {
-          // Trouver les données actuelles des joueurs pour afficher les scores mis à jour
-          const p1 = players.find(p => p.name === m.p1Name);
-          const p2 = players.find(p => p.name === m.p2Name);
-          
+          const p1 = players.find(p => p.id === m.p1Id);
+          const p2 = players.find(p => p.id === m.p2Id);
           return (
             <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>
-              👑 {m.p1Name} ({p1?.wins || 0}) vs 🎱 {m.p2Name} ({p2?.losses || 0}) : <strong>{m.wins} confrontation(s)</strong>
+              👑 {m.p1Name} ({p1?.wins || 0}) vs 🎱 {m.p2Name} ({p2?.wins || 0}) : {m.wins} Match(s)
             </div>
           );
         })}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Historique :</h3>
-        <button onClick={resetLogs} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>↻</button>
-      </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
-        {logs.map((log) => (
-          <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888', marginRight: '5px' }}>{formatDate(log.timestamp)}</span>
-            {log.type === 'match' ? (
-              <span>
-                <span style={{ color: '#00FF00' }}>{log.message.split('MATCH:')[1].split('|')[0]}👑</span>
-                <span style={{ color: '#FFFFFF' }}> a gagné contre </span>
-                <span style={{ color: '#FF0000' }}>{log.message.split('|')[1]}🎱</span>
-              </span>
-            ) : log.type === 'leader' ? (
-              <span style={{ color: '#FFD700' }}>👑{log.message}</span>
-            ) : (
-              <span style={{ color: log.type === 'add' ? '#00FF00' : log.type === 'remove' ? '#FF0000' : log.type === 'error' ? '#EE82EE' : log.type === 'manual' ? '#FFA500' : '#FFD700' }}>
-                {log.message}
-              </span>
-            )}
-          </div>
-        ))}
       </div>
     </div>
   );
