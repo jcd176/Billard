@@ -28,15 +28,6 @@ export default function GamePage({ roomId, onLeave }) {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
-      if (sorted.length > 0 && sorted[0].wins > 0) {
-        const currentLeader = sorted[0];
-        const now = Date.now();
-        if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id && now - lastLeaderAnnouncementRef.current > 5000) {
-          addLog(`${currentLeader.name} Passe en tête !`, 'leader');
-          lastLeaderAnnouncementRef.current = now;
-        }
-        prevLeaderIdRef.current = currentLeader.id;
-      }
       setPlayers(sorted);
     });
 
@@ -118,11 +109,11 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
-          {players.map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
-          {players.map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
@@ -145,14 +136,20 @@ export default function GamePage({ roomId, onLeave }) {
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres : <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button></h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+      </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
         {Object.values(matches).map((m, i) => (
           <div key={i} style={{ borderBottom: '1px solid #444', padding: '5px' }}>👑 {m.p1Name} ({m.p1Wins}) vs 🎱 {m.p2Name} ({m.p2Wins}) : {m.p1Wins + m.p2Wins} Match(s)</div>
         ))}
       </div>
 
-      <h3>Historique : <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button></h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map(log => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
