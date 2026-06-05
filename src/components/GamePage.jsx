@@ -59,14 +59,21 @@ export default function GamePage({ roomId, onLeave }) {
   const executeAdjustment = () => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
-      const { player, type, field } = modalAction;
-      const change = type === 'plus' ? 1 : -1;
-      const newVal = Math.max(0, (player[field] || 0) + change);
-      update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-      // Message formaté ici pour être traité par le bloc de rendu des logs
-      addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
+      const { player, type, field, matchId, matchNames } = modalAction;
+      
+      if (matchId) {
+        // Suppression d'une rencontre
+        remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
+        addLog(`Rencontre ${matchNames} supprimée`, 'remove');
+      } else {
+        // Ajustement classique
+        const change = type === 'plus' ? 1 : -1;
+        const newVal = Math.max(0, (player[field] || 0) + change);
+        update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
+        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
+      }
     } else {
-      addLog(`Echec modification Classement`, 'error');
+      addLog(`Echec modification ${modalAction.matchId ? 'Suppression rencontre' : 'Classement'}`, 'error');
     }
     setIsModalOpen(false);
   };
@@ -131,7 +138,7 @@ export default function GamePage({ roomId, onLeave }) {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>Confirmer la modification ?</p>
+            <p>{modalAction?.matchId ? "Supprimer la rencontre ?" : "Confirmer la modification ?"}</p>
             <button onClick={executeAdjustment} className="btn-primary">Valider</button>
             <button onClick={() => setIsModalOpen(false)}>Annuler</button>
           </div>
@@ -200,8 +207,9 @@ export default function GamePage({ roomId, onLeave }) {
           const leader = m.w1 >= m.w2 ? { name: m.p1, score: m.w1 } : { name: m.p2, score: m.w2 };
           const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
           return (
-            <div key={id} style={{ marginBottom: '5px' }}>
-              👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})
+            <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
+              <button onClick={() => { setModalAction({matchId: id, matchNames: `${leader.name} vs ${follower.name}`}); setIsModalOpen(true); }} style={btnAction}>🎱</button>
             </div>
           );
         })}
