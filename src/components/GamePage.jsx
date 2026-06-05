@@ -33,7 +33,6 @@ export default function GamePage({ roomId, onLeave }) {
       
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
-        // Ajout d'une condition pour éviter les doublons intempestifs
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
           addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
         }
@@ -82,8 +81,26 @@ export default function GamePage({ roomId, onLeave }) {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
+    
+    // Update player stats
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+    
+    // Update match history
+    const matchId = [wPlayer.name, lPlayer.name].sort().join('_vs_');
+    const existingMatch = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, w1: 0, w2: 0, count: 0 };
+    
+    // Logic: Always identify players by their names to track score
+    const isW1 = wPlayer.name === existingMatch.p1;
+    const updateMatch = {
+      p1: existingMatch.p1,
+      p2: existingMatch.p2,
+      w1: isW1 ? existingMatch.w1 + 1 : existingMatch.w1,
+      w2: !isW1 ? existingMatch.w2 + 1 : existingMatch.w2,
+      count: existingMatch.count + 1
+    };
+    
+    set(ref(database, `rooms/${roomId}/matches/${matchId}`), updateMatch);
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -176,9 +193,17 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => (
-          <div key={id}>👑 {m.p1} vs 🎱 {m.p2} : {m.count} partie(s)</div>
-        ))}
+        {Object.entries(matches).map(([id, m]) => {
+          const winnerName = m.w1 > m.w2 ? m.p1 : (m.w2 > m.w1 ? m.p2 : (m.w1 >= m.w2 ? m.p1 : m.p2));
+          const loserName = winnerName === m.p1 ? m.p2 : m.p1;
+          const winnerScore = winnerName === m.p1 ? m.w1 : m.w2;
+          
+          return (
+            <div key={id} style={{ marginBottom: '5px' }}>
+              👑 {winnerName} ({winnerScore}) vs 🎱 {loserName} : {m.count} partie(s)
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
