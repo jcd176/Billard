@@ -63,7 +63,8 @@ export default function GamePage({ roomId, onLeave }) {
       const change = type === 'plus' ? 1 : -1;
       const newVal = Math.max(0, (player[field] || 0) + change);
       update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-      addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, 'manual');
+      // Message formaté ici pour être traité par le bloc de rendu des logs
+      addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
     } else {
       addLog(`Echec modification Classement`, 'error');
     }
@@ -217,7 +218,15 @@ export default function GamePage({ roomId, onLeave }) {
             {log.type === 'match' ? (
               <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
             ) : (
-              <span style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : '#FFD700' }}>{log.message}</span>
+              <span style={{ 
+                color: log.type === 'error' ? '#EE82EE' : 
+                       log.type === 'add' ? '#0f0' : 
+                       log.type === 'remove' ? '#f00' : 
+                       log.type === 'manual_plus' ? '#00BFFF' : 
+                       log.type === 'manual_minus' ? '#800000' : '#FFD700' 
+              }}>
+                {log.message}
+              </span>
             )}
           </div>
         ))}
