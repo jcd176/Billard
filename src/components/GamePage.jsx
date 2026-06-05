@@ -103,7 +103,13 @@ export default function GamePage({ roomId, onLeave }) {
 
   const resetAction = (type, path) => {
     if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
-      set(ref(database, `rooms/${roomId}/${path}`), null);
+      if (type === 'classement') {
+        players.forEach(p => {
+          update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 });
+        });
+      } else {
+        set(ref(database, `rooms/${roomId}/${path}`), null);
+      }
       addLog(`Réinitialisation de ${type} effectuée`, 'reset');
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
