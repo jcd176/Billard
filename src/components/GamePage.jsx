@@ -18,10 +18,7 @@ export default function GamePage({ roomId, onLeave }) {
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = String(date.getFullYear()).slice(-2);
-    return `${day}/${month}/${year}`;
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
   };
 
   useEffect(() => {
@@ -107,7 +104,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
-  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '16px' };
+  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
 
   return (
@@ -147,7 +144,7 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
       </div>
       <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
-        <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th></tr></thead>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th></th></tr></thead>
         <tbody>
           {players.map((p, i) => (
             <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
@@ -164,18 +161,24 @@ export default function GamePage({ roomId, onLeave }) {
                   <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
                 </span>
               </td>
-              <td><button onClick={() => removePlayer(p.id, p.name)} style={btnAction}>🎱</button></td>
+              <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>Suivi des rencontres :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+      </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
         {Object.entries(matches).map(([id, m]) => <div key={id}>👑 {m.p1} vs 🎱 {m.p2} : {m.count} partie(s)</div>)}
       </div>
 
-      <h3>Historique :</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
       <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
         {logs.map(log => (
           <div key={log.id} style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : '#FFD700', marginBottom: '5px' }}>
