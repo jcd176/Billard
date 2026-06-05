@@ -33,7 +33,6 @@ export default function GamePage({ roomId, onLeave }) {
       
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
-        // Ajout d'une condition pour éviter les doublons intempestifs
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
           addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
         }
@@ -176,9 +175,17 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => (
-          <div key={id}>👑 {m.p1} vs 🎱 {m.p2} : {m.count} partie(s)</div>
-        ))}
+        {Object.entries(matches).map(([id, m]) => {
+          const p1 = players.find(p => p.name === m.p1) || { wins: 0 };
+          const p2 = players.find(p => p.name === m.p2) || { wins: 0 };
+          const leader = p1.wins >= p2.wins ? { name: m.p1, wins: p1.wins } : { name: m.p2, wins: p2.wins };
+          const follower = p1.wins >= p2.wins ? { name: m.p2, wins: p2.wins } : { name: m.p1, wins: p1.wins };
+          return (
+            <div key={id}>
+              👑 {leader.name} ({leader.wins} victoires) vs 🎱 {follower.name} ({follower.wins} victoires) : {m.count} partie(s)
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
