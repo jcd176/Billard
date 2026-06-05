@@ -18,7 +18,10 @@ export default function GamePage({ roomId, onLeave }) {
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
   };
 
   useEffect(() => {
@@ -80,11 +83,6 @@ export default function GamePage({ roomId, onLeave }) {
     const lPlayer = players.find(p => p.id === loser);
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
-    
-    const matchId = [winner, loser].sort().join('_');
-    const existing = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, count: 0 };
-    update(ref(database, `rooms/${roomId}/matches/${matchId}`), { p1: wPlayer.name, p2: lPlayer.name, count: (existing.count || 0) + 1 });
-
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -177,20 +175,4 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => <div key={id}>👑 {m.p1} vs 🎱 {m.p2} : {m.count} partie(s)</div>)}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Historique :</h3>
-        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
-        {logs.map(log => (
-          <div key={log.id} style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : '#FFD700', marginBottom: '5px' }}>
-            {formatDate(log.timestamp)} - {log.message}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        {Object.entries(matches).map(([id, m]) => <div key={id}>👑
