@@ -82,15 +82,13 @@ export default function GamePage({ roomId, onLeave }) {
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
     
-    // Update player global stats
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     
-    // Update head-to-head tracking
     const matchId = [wPlayer.name, lPlayer.name].sort().join('_vs_');
     const existing = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, w1: 0, w2: 0, count: 0 };
-    
     const isW1 = wPlayer.name === existing.p1;
+    
     set(ref(database, `rooms/${roomId}/matches/${matchId}`), {
       p1: existing.p1,
       p2: existing.p2,
@@ -202,4 +200,22 @@ export default function GamePage({ roomId, onLeave }) {
         })}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : '#FFD700' }}>{log.message}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
