@@ -72,7 +72,7 @@ export default function GamePage({ roomId, onLeave }) {
       }
     } else {
       if (modalAction.matchId) {
-        addLog(`Echec suppression Rencontre ${modalAction.matchNames}`, 'error');
+        addLog(`Echec suppression Rencontre "${modalAction.matchNames}"`, 'error');
       } else {
         addLog(`Echec modification Classement`, 'error');
       }
@@ -211,7 +211,7 @@ export default function GamePage({ roomId, onLeave }) {
           return (
             <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-              <button onClick={() => { setModalAction({matchId: id, matchNames: `${leader.name} vs ${follower.name}`}); setIsModalOpen(true); }} style={btnAction}>🎱</button>
+              <button onClick={() => { setModalAction({matchId: id, matchNames: `${leader.name} vs ${follower.name}`}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
             </div>
           );
         })}
