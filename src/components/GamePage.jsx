@@ -175,4 +175,27 @@ export default function GamePage({ roomId, onLeave }) {
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
       <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => <div key={id}>👑
+        {Object.entries(matches).map(([id, m]) => (
+          <div key={id}>👑 {m.p1} vs 🎱 {m.p2} : {m.count} partie(s)</div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'error' ? '#EE82EE' : log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : '#FFD700' }}>{log.message}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
