@@ -14,7 +14,6 @@ export default function GamePage({ roomId, onLeave }) {
   const [modalAction, setModalAction] = useState(null);
 
   const prevLeaderIdRef = useRef(null);
-  const lastLeaderAnnouncementRef = useRef(0);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -31,6 +30,16 @@ export default function GamePage({ roomId, onLeave }) {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
+      
+      // Log du changement de leader
+      if (sorted.length > 0) {
+        const currentLeader = sorted[0];
+        if (prevLeaderIdRef.current && prevLeaderIdRef.current !== currentLeader.id) {
+          addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
+        }
+        prevLeaderIdRef.current = currentLeader.id;
+      }
+      
       setPlayers(sorted);
     });
 
@@ -98,7 +107,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
-  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '20px' };
+  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '2px 5px', fontSize: '16px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
 
   return (
@@ -106,10 +115,7 @@ export default function GamePage({ roomId, onLeave }) {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>
-              Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une 
-              {modalAction.field === 'wins' ? ' victoire' : ' défaite'} ?
-            </p>
+            <p>Validez {modalAction.type === 'plus' ? "l'ajout" : "le retrait"} d'une {modalAction.field === 'wins' ? ' victoire' : ' défaite'} ?</p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button onClick={executeAdjustment} className="btn-primary">Valider</button>
               <button onClick={() => setIsModalOpen(false)}>Annuler</button>
@@ -151,10 +157,22 @@ export default function GamePage({ roomId, onLeave }) {
             return (
               <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
                 <td style={{ padding: '8px' }}>{i === 0 && '👑 '}{p.name}</td>
-                <td style={{ padding: '8px' }}>{p.wins || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
-                <td style={{ padding: '8px' }}>{p.losses || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button><button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button></td>
+                <td style={{ padding: '8px', display: 'flex', alignItems: 'center' }}>
+                  {p.wins || 0}
+                  <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '5px' }}>
+                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                  </div>
+                </td>
+                <td style={{ padding: '8px', display: 'flex', alignItems: 'center' }}>
+                  {p.losses || 0}
+                  <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '5px' }}>
+                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                  </div>
+                </td>
                 <td style={{ padding: '8px' }}>{winRate}%</td>
-                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '28px' }}>🎱</button></td>
+                <td style={{ textAlign: 'center' }}><button onClick={() => removePlayer(p.id, p.name)} style={{ ...btnAction, fontSize: '20px' }}>🎱</button></td>
               </tr>
             );
           })}
@@ -184,7 +202,7 @@ export default function GamePage({ roomId, onLeave }) {
             {log.type === 'match' ? (
               <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
             ) : (
-              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'error' ? '#EE82EE' : '#FFD700' }}>{log.message}</span>
+              <span style={{ color: log.type === 'add' ? '#0f0' : log.type === 'remove' ? '#f00' : log.type === 'leader' ? '#FFD700' : '#FFD700' }}>{log.message}</span>
             )}
           </div>
         ))}
