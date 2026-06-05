@@ -174,4 +174,31 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Suivi des rencontres :</h3>
         <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
       </div>
-      <div style={{ background: '#2
+      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+        {matches && Object.entries(matches).map(([id, m]) => {
+          const p1Data = players.find(p => p.name === m.p1) || { wins: 0 };
+          const p2Data = players.find(p => p.name === m.p2) || { wins: 0 };
+          const p1Wins = p1Data.wins || 0;
+          const p2Wins = p2Data.wins || 0;
+          const leader = p1Wins >= p2Wins ? { name: m.p1, wins: p1Wins } : { name: m.p2, wins: p2Wins };
+          const follower = p1Wins >= p2Wins ? { name: m.p2, wins: p2Wins } : { name: m.p1, wins: p1Wins };
+          return (
+            <div key={id} style={{ marginBottom: '5px' }}>
+              👑 {leader.name} ({leader.wins} victoires) vs 🎱 {follower.name} ({follower.wins} victoires) : {m.count} partie(s)
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+        {logs.map(log => (
+          <div key={log.id} style={{ marginBottom: '5px' }}>
+            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+            {log.type === 'match' ? (
+              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+            ) : (
+              <span style={{ color: log.type === 'error' ? '#
