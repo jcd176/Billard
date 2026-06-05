@@ -141,4 +141,37 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Classement :</h3>
         <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
       </div>
-      <table style
+      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
+        <tbody>
+          {players.map((p, i) => {
+            const total = (p.wins || 0) + (p.losses || 0);
+            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+            return (
+              <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                <td>{i === 0 && '👑 '}{p.name}</td>
+                <td>{p.wins || 0}
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                  </span>
+                </td>
+                <td>{p.losses || 0}
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                  </span>
+                </td>
+                <td>{winRate}%</td>
+                <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+      </div>
+      <div style={{ background: '#2
