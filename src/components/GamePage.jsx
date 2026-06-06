@@ -11,6 +11,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [loser, setLoser] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
   const [targetPlayerId, setTargetPlayerId] = useState('');
   const [matchOption, setMatchOption] = useState('delete');
@@ -129,6 +130,7 @@ export default function GamePage({ roomId, onLeave }) {
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     setNewPlayerName('');
+    setIsAddPlayerOpen(false);
   };
 
   const declareMatch = () => {
@@ -148,7 +150,6 @@ export default function GamePage({ roomId, onLeave }) {
     });
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     
-    // Déclenchement PopUp avec le nouveau format
     setMatchPopup({ winner: wPlayer.name, loser: lPlayer.name });
     setTimeout(() => setMatchPopup(null), 3000);
     
@@ -178,12 +179,24 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
-      {/* PopUp de confirmation de match */}
       {matchPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
              <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
              <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+          </div>
+        </div>
+      )}
+
+      {isAddPlayerOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
+            <h3 style={{marginTop: 0}}>Ajouter un joueur</h3>
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none'}} />
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={addPlayer} className="btn-primary" style={{...modalBtnStyle, background: '#007bff'}}>Ajouter</button>
+                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666'}}>Retour</button>
+            </div>
           </div>
         </div>
       )}
@@ -222,13 +235,12 @@ export default function GamePage({ roomId, onLeave }) {
       )}
 
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
-      <h2>Salle : {roomId}</h2>
       
-      <div style={{ display: 'flex', gap: '5px', marginBottom: '20px' }}>
-        <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" />
-        <button onClick={addPlayer} className="btn-primary">Ajouter</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h2>Salle : {roomId}</h2>
+        <button onClick={() => setIsAddPlayerOpen(true)} style={{...btnReset, fontSize: '20px', cursor: 'pointer'}}>➕👤</button>
       </div>
-
+      
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
