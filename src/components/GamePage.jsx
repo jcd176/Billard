@@ -17,7 +17,6 @@ export default function GamePage({ roomId, onLeave }) {
   const [matchOption, setMatchOption] = useState('delete');
   const [matchPopup, setMatchPopup] = useState(null);
 
-  // États pour le pliage des sections
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
   const [showHistory, setShowHistory] = useState(true);
@@ -275,7 +274,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
         <div>
-            <button onClick={() => setShowRanking(!showRanking)} style={btnReset}>{showRanking ? '▲' : '▼'}</button>
+            <button onClick={() => setShowRanking(!showRanking)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showRanking ? '▲' : '▼'}</button>
             <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
         </div>
       </div>
@@ -313,7 +312,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Suivi des rencontres :</h3>
         <div>
-            <button onClick={() => setShowMatches(!showMatches)} style={btnReset}>{showMatches ? '▲' : '▼'}</button>
+            <button onClick={() => setShowMatches(!showMatches)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showMatches ? '▲' : '▼'}</button>
             <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
         </div>
       </div>
@@ -335,7 +334,7 @@ export default function GamePage({ roomId, onLeave }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
         <div>
-            <button onClick={() => setShowHistory(!showHistory)} style={btnReset}>{showHistory ? '▲' : '▼'}</button>
+            <button onClick={() => setShowHistory(!showHistory)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showHistory ? '▲' : '▼'}</button>
             <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
         </div>
       </div>
