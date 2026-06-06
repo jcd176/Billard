@@ -76,7 +76,7 @@ export default function GamePage({ roomId, onLeave }) {
           set(ref(database, `rooms/${roomId}/matches/${matchId}`), { p1: p1Name, p2: p2Name, w1: 0, w2: 0, count: 0 });
           if (p1) update(ref(database, `rooms/${roomId}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
           if (p2) update(ref(database, `rooms/${roomId}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
-          addLog(`Reset partie "${matchNames}"`, 'remove');
+          addLog(`Réinitialisation partie "${matchNames}"`, 'remove');
         }
       } else {
         const targetPlayer = players.find(p => p.id === targetPlayerId);
@@ -90,7 +90,7 @@ export default function GamePage({ roomId, onLeave }) {
       }
     } else {
       if (modalAction.matchId) {
-        addLog(`Echec ${modalAction.matchId ? (matchOption === 'delete' ? 'Suppression' : 'Reset') : ''} partie "${modalAction.matchNames}"`, 'error');
+        addLog(`Echec ${modalAction.matchId ? (matchOption === 'delete' ? 'Suppression' : 'Réinitialisation') : ''} partie "${modalAction.matchNames}"`, 'error');
       } else {
         addLog(`Echec modification Classement`, 'error');
       }
@@ -99,7 +99,6 @@ export default function GamePage({ roomId, onLeave }) {
     setIsModalOpen(false);
   };
 
-  // ... (addPlayer, declareMatch, resetAction, removePlayer functions remain unchanged)
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
@@ -161,7 +160,7 @@ export default function GamePage({ roomId, onLeave }) {
                   <p>Action sur "{modalAction.matchNames}"</p>
                   <select value={matchOption} onChange={(e) => setMatchOption(e.target.value)} style={selectStyle}>
                     <option value="delete">Supprimer la rencontre</option>
-                    <option value="reset">Réinitialiser les scores</option>
+                    <option value="reset">Réinitialiser la rencontre</option>
                   </select>
                 </>
             ) : (
