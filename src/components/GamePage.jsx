@@ -189,13 +189,13 @@ export default function GamePage({ roomId, onLeave }) {
       )}
 
       {isAddPlayerOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
             <h3 style={{marginTop: 0}}>Ajouter un joueur</h3>
             <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={addPlayer} className="btn-primary" style={{...modalBtnStyle, background: '#007bff'}}>Ajouter</button>
-                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#aaa', color: '#000'}}>Retour</button>
+                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#bbbbbb', color: '#000'}}>Retour</button>
             </div>
           </div>
         </div>
@@ -236,22 +236,22 @@ export default function GamePage({ roomId, onLeave }) {
 
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       
-      {/* Modification : Alignement et positionnement tout à droite */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
         <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(true)} 
           style={{ 
             background: 'transparent', 
             border: 'none', 
-            fontSize: '24px', 
             cursor: 'pointer',
             padding: '0',
-            display: 'flex', // Pour centrer l'icône dans le bouton
-            alignItems: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '18px'
           }}
         >
-          ➕👤
+          <span style={{ color: '#FFFFFF', fontWeight: 'bold' }}>➕</span>
+          <span style={{ color: '#FFFFFF', marginLeft: '2px' }}>👤</span>
         </button>
       </div>
       
