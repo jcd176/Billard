@@ -236,22 +236,22 @@ export default function GamePage({ roomId, onLeave }) {
 
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      {/* Modification : Alignement et positionnement tout à droite */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(true)} 
           style={{ 
             background: 'transparent', 
             border: 'none', 
+            fontSize: '24px', 
             cursor: 'pointer',
             padding: '0',
-            display: 'flex',
-            alignItems: 'center',
-            fontSize: '24px'
+            display: 'flex', // Pour centrer l'icône dans le bouton
+            alignItems: 'center'
           }}
         >
-          <span style={{ color: '#fff' }}>➕</span>
-          <span style={{ color: '#fff' }}>👤</span>
+          ➕👤
         </button>
       </div>
       
