@@ -69,14 +69,20 @@ export default function GamePage({ roomId, onLeave }) {
           const snapshot = await get(playersRef);
           const allPlayers = snapshot.val();
           
-          Object.entries(allPlayers).forEach(([id, p]) => {
-            if (p.name === matchData.p1) {
-              update(ref(database, `rooms/${roomId}/players/${id}`), { wins: Math.max(0, (p.wins || 0) - matchData.w1) });
-            }
-            if (p.name === matchData.p2) {
-              update(ref(database, `rooms/${roomId}/players/${id}`), { losses: Math.max(0, (p.losses || 0) - matchData.w2) });
-            }
-          });
+          if (allPlayers) {
+            Object.entries(allPlayers).forEach(([id, p]) => {
+              const playerName = p.name.trim().toLowerCase();
+              const mP1 = matchData.p1.trim().toLowerCase();
+              const mP2 = matchData.p2.trim().toLowerCase();
+
+              if (playerName === mP1) {
+                update(ref(database, `rooms/${roomId}/players/${id}`), { wins: Math.max(0, (p.wins || 0) - matchData.w1) });
+              }
+              if (playerName === mP2) {
+                update(ref(database, `rooms/${roomId}/players/${id}`), { losses: Math.max(0, (p.losses || 0) - matchData.w2) });
+              }
+            });
+          }
         }
         remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
         addLog(`Rencontre ${matchNames} supprimée`, 'remove');
@@ -230,59 +236,4 @@ export default function GamePage({ roomId, onLeave }) {
                 </td>
                 <td>{p.losses || 0}
                   <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
-                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-                  </span>
-                </td>
-                <td>{winRate}%</td>
-                <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Suivi des rencontres :</h3>
-        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => {
-          const leader = m.w1 >= m.w2 ? { name: m.p1, score: m.w1 } : { name: m.p2, score: m.w2 };
-          const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
-          return (
-            <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-              <button onClick={() => { setModalAction({matchId: id, matchNames: `${leader.name} vs ${follower.name}`}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Historique :</h3>
-        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
-      </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
-        {logs.map(log => (
-          <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            {log.type === 'match' ? (
-              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
-            ) : (
-              <span style={{ 
-                color: log.type === 'error' ? '#EE82EE' : 
-                       log.type === 'add' ? '#0f0' : 
-                       log.type === 'remove' ? '#f00' : 
-                       log.type === 'manual_plus' ? '#00BFFF' : 
-                       log.type === 'manual_minus' ? '#800000' : '#FFD700' 
-              }}>
-                {log.message}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+                    <button onClick={()
