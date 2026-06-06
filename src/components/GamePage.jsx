@@ -81,9 +81,24 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   const addPlayer = () => {
-    if (!newPlayerName.trim()) return;
-    push(ref(database, `rooms/${roomId}/players`), { name: newPlayerName, wins: 0, losses: 0 });
-    addLog(`${newPlayerName} a rejoint la salle`, 'add');
+    const trimmedName = newPlayerName.trim();
+    if (!trimmedName) return;
+    
+    // Vérification longueur max
+    if (trimmedName.length > 12) {
+      alert("Le nom est trop long (max 12 caractères).");
+      return;
+    }
+
+    // Vérification unicité (insensible à la casse)
+    const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
+    if (exists) {
+      alert("Ce nom de joueur existe déjà.");
+      return;
+    }
+
+    push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
+    addLog(`${trimmedName} a rejoint la salle`, 'add');
     setNewPlayerName('');
   };
 
