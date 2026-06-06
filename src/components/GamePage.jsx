@@ -35,12 +35,11 @@ export default function GamePage({ roomId, onLeave }) {
       
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
-        // SÉCURITÉ : On vérifie le dernier log avant d'ajouter
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
-          const lastLog = logs[0]?.message; // logs est déjà trié par le .reverse()
+          const lastLog = logs[0]?.message;
           const msg = `Nouveau leader : ${currentLeader.name} 👑`;
           if (lastLog !== msg) {
-             addLog(msg, 'leader');
+              addLog(msg, 'leader');
           }
         }
         prevLeaderIdRef.current = currentLeader.id;
@@ -59,7 +58,7 @@ export default function GamePage({ roomId, onLeave }) {
     });
 
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [roomId, logs]); // Ajout de logs en dépendance pour la vérification
+  }, [roomId, logs]);
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
@@ -89,8 +88,25 @@ export default function GamePage({ roomId, onLeave }) {
         const change = type === 'plus' ? 1 : -1;
         const mainField = field;
         const otherField = field === 'wins' ? 'losses' : 'wins';
+        
         update(ref(database, `rooms/${roomId}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
         update(ref(database, `rooms/${roomId}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
+        
+        // Mise à jour de la rencontre associée si elle existe
+        const matchKey = [player.name, targetPlayer.name].sort().join('_vs_');
+        if (matches[matchKey]) {
+            const m = matches[matchKey];
+            const isP1 = m.p1 === player.name;
+            const updateObj = {};
+            if (field === 'wins') {
+                updateObj[isP1 ? 'w1' : 'w2'] = Math.max(0, (isP1 ? m.w1 : m.w2) + change);
+            } else {
+                updateObj[isP1 ? 'w2' : 'w1'] = Math.max(0, (isP1 ? m.w2 : m.w1) + change);
+            }
+            updateObj.count = Math.max(0, (m.count || 0) + change);
+            update(ref(database, `rooms/${roomId}/matches/${matchKey}`), updateObj);
+        }
+
         addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
