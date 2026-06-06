@@ -203,15 +203,6 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      {playerPopup && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
-          <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
-             <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '24px' }}>{playerPopup} a rejoint la salle</h2>
-          </div>
-        </div>
-      )}
-
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -256,6 +247,13 @@ export default function GamePage({ roomId, onLeave }) {
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
+
+        {playerPopup && (
+            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
+                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                <div style={{ fontSize: '16px' }}>{playerPopup} a rejoint la salle</div>
+            </div>
+        )}
 
         {isAddPlayerOpen && (
           <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
