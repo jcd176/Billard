@@ -73,9 +73,7 @@ export default function GamePage({ roomId, onLeave }) {
         const mainField = field;
         const otherField = field === 'wins' ? 'losses' : 'wins';
 
-        // Mise à jour joueur principal
         update(ref(database, `rooms/${roomId}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
-        // Mise à jour joueur cible
         update(ref(database, `rooms/${roomId}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
         
         const logMsg = change > 0 
@@ -98,17 +96,9 @@ export default function GamePage({ roomId, onLeave }) {
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
-    
-    if (trimmedName.length > 12) {
-      alert("Le nom est trop long (max 12 caractères).");
-      return;
-    }
-
+    if (trimmedName.length > 12) { alert("Le nom est trop long."); return; }
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
-    if (exists) {
-      alert("Ce nom de joueur existe déjà.");
-      return;
-    }
+    if (exists) { alert("Ce nom existe déjà."); return; }
 
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint la salle`, 'add');
@@ -119,22 +109,17 @@ export default function GamePage({ roomId, onLeave }) {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
-    
     update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
     update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
-    
     const matchId = [wPlayer.name, lPlayer.name].sort().join('_vs_');
     const existing = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, w1: 0, w2: 0, count: 0 };
     const isW1 = wPlayer.name === existing.p1;
-    
     set(ref(database, `rooms/${roomId}/matches/${matchId}`), {
-      p1: existing.p1,
-      p2: existing.p2,
+      p1: existing.p1, p2: existing.p2,
       w1: isW1 ? existing.w1 + 1 : existing.w1,
       w2: !isW1 ? existing.w2 + 1 : existing.w2,
       count: existing.count + 1
     });
-
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setWinner(''); setLoser('');
   };
@@ -142,12 +127,8 @@ export default function GamePage({ roomId, onLeave }) {
   const resetAction = (type, path) => {
     if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
       if (type === 'classement') {
-        players.forEach(p => {
-          update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 });
-        });
-      } else {
-        set(ref(database, `rooms/${roomId}/${path}`), null);
-      }
+        players.forEach(p => update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 }));
+      } else { set(ref(database, `rooms/${roomId}/${path}`), null); }
       addLog(`Réinitialisation de ${type} effectuée`, 'reset');
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
@@ -162,17 +143,19 @@ export default function GamePage({ roomId, onLeave }) {
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
+  // Style uniforme pour les boutons de la modale
+  const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   return (
     <div className="card">
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '300px' }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
             {modalAction?.matchId ? (
                 <p>Supprimer la rencontre "{modalAction.matchNames}" ?</p>
             ) : (
                 <>
-                    <p>
+                    <p style={{marginBottom: '15px'}}>
                         {modalAction.type === 'plus' && modalAction.field === 'wins' ? "Sélectionner un joueur pour ajouter une défaite." :
                          modalAction.type === 'minus' && modalAction.field === 'wins' ? "Sélectionner un joueur pour retirer une défaite." :
                          modalAction.type === 'plus' && modalAction.field === 'losses' ? "Sélectionner un joueur pour ajouter une Victoire." :
@@ -184,8 +167,10 @@ export default function GamePage({ roomId, onLeave }) {
                     </select>
                 </>
             )}
-            <button onClick={executeAdjustment} className="btn-primary" disabled={!modalAction.matchId && !targetPlayerId}>Valider</button>
-            <button onClick={() => { setIsModalOpen(false); setTargetPlayerId(''); }}>Annuler</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button onClick={executeAdjustment} className="btn-primary" style={{...modalBtnStyle, background: '#007bff', color: '#fff'}} disabled={!modalAction.matchId && !targetPlayerId}>Valider</button>
+                <button onClick={() => { setIsModalOpen(false); setTargetPlayerId(''); }} style={{...modalBtnStyle, background: '#666', color: '#fff'}}>Annuler</button>
+            </div>
           </div>
         </div>
       )}
