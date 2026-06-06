@@ -13,6 +13,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
   const [targetPlayerId, setTargetPlayerId] = useState('');
+  const [matchOption, setMatchOption] = useState('delete'); // 'delete' ou 'reset'
 
   const prevLeaderIdRef = useRef(null);
 
@@ -49,7 +50,7 @@ export default function GamePage({ roomId, onLeave }) {
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
-      setLogs(list.reverse()); // Suppression du slice(0, 10) pour conserver tout l'historique
+      setLogs(list.reverse());
     });
 
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
@@ -60,31 +61,36 @@ export default function GamePage({ roomId, onLeave }) {
   const executeAdjustment = () => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
-      const { player, type, field, matchId, matchNames } = modalAction;
+      const { player, type, field, matchId, matchNames, p1Name, p2Name, w1, w2 } = modalAction;
       
       if (matchId) {
-        remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
-        addLog(`Rencontre ${matchNames} supprimée`, 'remove');
+        const p1 = players.find(p => p.name === p1Name);
+        const p2 = players.find(p => p.name === p2Name);
+
+        if (matchOption === 'delete') {
+          remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
+          if (p1) update(ref(database, `rooms/${roomId}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
+          if (p2) update(ref(database, `rooms/${roomId}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
+          addLog(`Suppression partie "${matchNames}"`, 'remove');
+        } else {
+          set(ref(database, `rooms/${roomId}/matches/${matchId}`), { p1: p1Name, p2: p2Name, w1: 0, w2: 0, count: 0 });
+          if (p1) update(ref(database, `rooms/${roomId}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
+          if (p2) update(ref(database, `rooms/${roomId}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
+          addLog(`Reset partie "${matchNames}"`, 'remove');
+        }
       } else {
         const targetPlayer = players.find(p => p.id === targetPlayerId);
         if (!targetPlayer) return;
-
         const change = type === 'plus' ? 1 : -1;
         const mainField = field;
         const otherField = field === 'wins' ? 'losses' : 'wins';
-
         update(ref(database, `rooms/${roomId}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
         update(ref(database, `rooms/${roomId}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
-        
-        const logMsg = change > 0 
-            ? `${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`
-            : `${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`;
-        
-        addLog(logMsg, change > 0 ? 'manual_plus' : 'manual_minus');
+        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
       if (modalAction.matchId) {
-        addLog(`Echec suppression Rencontre "${modalAction.matchNames}"`, 'error');
+        addLog(`Echec ${modalAction.matchId ? (matchOption === 'delete' ? 'Suppression' : 'Reset') : ''} partie "${modalAction.matchNames}"`, 'error');
       } else {
         addLog(`Echec modification Classement`, 'error');
       }
@@ -93,13 +99,13 @@ export default function GamePage({ roomId, onLeave }) {
     setIsModalOpen(false);
   };
 
+  // ... (addPlayer, declareMatch, resetAction, removePlayer functions remain unchanged)
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
     if (trimmedName.length > 12) { alert("Le nom est trop long."); return; }
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) { alert("Ce nom existe déjà."); return; }
-
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     setNewPlayerName('');
@@ -151,7 +157,13 @@ export default function GamePage({ roomId, onLeave }) {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
             {modalAction?.matchId ? (
-                <p>Supprimer la rencontre "{modalAction.matchNames}" ?</p>
+                <>
+                  <p>Action sur "{modalAction.matchNames}"</p>
+                  <select value={matchOption} onChange={(e) => setMatchOption(e.target.value)} style={selectStyle}>
+                    <option value="delete">Supprimer la rencontre</option>
+                    <option value="reset">Réinitialiser les scores</option>
+                  </select>
+                </>
             ) : (
                 <>
                     <p style={{marginBottom: '15px'}}>
@@ -238,7 +250,7 @@ export default function GamePage({ roomId, onLeave }) {
           return (
             <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-              <button onClick={() => { setModalAction({matchId: id, matchNames: `${leader.name} vs ${follower.name}`}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
+              <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
             </div>
           );
         })}
