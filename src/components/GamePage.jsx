@@ -49,7 +49,7 @@ export default function GamePage({ roomId, onLeave }) {
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
-      setLogs(list.reverse().slice(0, 10));
+      setLogs(list.reverse()); // Suppression du slice(0, 10) pour conserver tout l'historique
     });
 
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
@@ -143,7 +143,6 @@ export default function GamePage({ roomId, onLeave }) {
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
-  // Style uniforme pour les boutons de la modale
   const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   return (
@@ -249,7 +248,7 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Historique :</h3>
         <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
       </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
         {logs.map(log => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
             <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
