@@ -16,6 +16,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [targetPlayerId, setTargetPlayerId] = useState('');
   const [matchOption, setMatchOption] = useState('delete');
   const [matchPopup, setMatchPopup] = useState(null);
+  const [playerPopup, setPlayerPopup] = useState(null);
 
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
@@ -139,6 +140,10 @@ export default function GamePage({ roomId, onLeave }) {
     if (exists) { alert("Ce nom existe déjà."); return; }
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint la salle`, 'add');
+    
+    setPlayerPopup(trimmedName);
+    setTimeout(() => setPlayerPopup(null), 2000);
+    
     setNewPlayerName('');
     setIsAddPlayerOpen(false);
   };
@@ -194,6 +199,15 @@ export default function GamePage({ roomId, onLeave }) {
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
              <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
              <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+          </div>
+        </div>
+      )}
+
+      {playerPopup && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
+          <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
+             <div style={{ fontSize: '60px', marginBottom: '10px' }}>👤</div>
+             <h2 style={{ margin: '0', fontSize: '24px' }}>Bienvenue {playerPopup} !</h2>
           </div>
         </div>
       )}
