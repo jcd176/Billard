@@ -174,7 +174,7 @@ export default function GamePage({ roomId, onLeave }) {
 
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
-  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
   const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   return (
@@ -192,7 +192,7 @@ export default function GamePage({ roomId, onLeave }) {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
             <h3 style={{marginTop: 0}}>Ajouter un joueur</h3>
-            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none'}} />
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={addPlayer} className="btn-primary" style={{...modalBtnStyle, background: '#007bff'}}>Ajouter</button>
                 <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#aaa', color: '#000'}}>Retour</button>
@@ -251,7 +251,7 @@ export default function GamePage({ roomId, onLeave }) {
             alignItems: 'center'
           }}
         >
-          ➕👤
+          <span style={{ color: '#ffffff' }}>➕👤</span>
         </button>
       </div>
       
