@@ -19,6 +19,13 @@ export default function GamePage({ roomId, onLeave }) {
 
   const prevLeaderIdRef = useRef(null);
 
+  // Style for white icons
+  const whiteIconStyle = { 
+    filter: 'brightness(0) invert(1)', 
+    fontSize: '14px', 
+    display: 'inline-block' 
+  };
+
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -179,6 +186,7 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
+      {/* ... (matchPopup and Modals kept same) ... */}
       {matchPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
@@ -244,17 +252,17 @@ export default function GamePage({ roomId, onLeave }) {
             background: 'transparent', 
             border: 'none', 
             cursor: 'pointer',
-            padding: '0',
+            padding: '5px',
             display: 'flex',
-            alignItems: 'center',
-            fontSize: '18px'
+            alignItems: 'center'
           }}
         >
-          <span style={{ color: '#FFFFFF', fontWeight: 'bold' }}>➕</span>
-          <span style={{ color: '#FFFFFF', marginLeft: '2px' }}>👤</span>
+          <span style={whiteIconStyle}>➕</span>
+          <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
       </div>
       
+      {/* ... (rest of the table and logs remain same) ... */}
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
