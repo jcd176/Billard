@@ -13,7 +13,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
   const [targetPlayerId, setTargetPlayerId] = useState('');
-  const [matchOption, setMatchOption] = useState('delete'); // 'delete' ou 'reset'
+  const [matchOption, setMatchOption] = useState('delete');
 
   const prevLeaderIdRef = useRef(null);
 
@@ -35,10 +35,13 @@ export default function GamePage({ roomId, onLeave }) {
       
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
+        // Log unique pour le nouveau leader
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
           addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
         }
         prevLeaderIdRef.current = currentLeader.id;
+      } else {
+        prevLeaderIdRef.current = null;
       }
       setPlayers(sorted);
     });
@@ -90,7 +93,7 @@ export default function GamePage({ roomId, onLeave }) {
       }
     } else {
       if (modalAction.matchId) {
-        addLog(`Echec ${modalAction.matchId ? (matchOption === 'delete' ? 'Suppression' : 'Réinitialisation') : ''} partie "${modalAction.matchNames}"`, 'error');
+        addLog(`Echec ${matchOption === 'delete' ? 'Suppression' : 'Réinitialisation'} partie "${modalAction.matchNames}"`, 'error');
       } else {
         addLog(`Echec modification Classement`, 'error');
       }
