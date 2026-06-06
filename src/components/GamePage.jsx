@@ -12,6 +12,7 @@ export default function GamePage({ roomId, onLeave }) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
+  const [targetPlayerId, setTargetPlayerId] = useState('');
 
   const prevLeaderIdRef = useRef(null);
 
@@ -65,10 +66,23 @@ export default function GamePage({ roomId, onLeave }) {
         remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
         addLog(`Rencontre ${matchNames} supprimée`, 'remove');
       } else {
+        const targetPlayer = players.find(p => p.id === targetPlayerId);
+        if (!targetPlayer) return;
+
         const change = type === 'plus' ? 1 : -1;
-        const newVal = Math.max(0, (player[field] || 0) + change);
-        update(ref(database, `rooms/${roomId}/players/${player.id}`), { [field]: newVal });
-        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
+        const mainField = field;
+        const otherField = field === 'wins' ? 'losses' : 'wins';
+
+        // Mise à jour joueur principal
+        update(ref(database, `rooms/${roomId}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
+        // Mise à jour joueur cible
+        update(ref(database, `rooms/${roomId}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
+        
+        const logMsg = change > 0 
+            ? `${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`
+            : `${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`;
+        
+        addLog(logMsg, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
       if (modalAction.matchId) {
@@ -77,6 +91,7 @@ export default function GamePage({ roomId, onLeave }) {
         addLog(`Echec modification Classement`, 'error');
       }
     }
+    setTargetPlayerId('');
     setIsModalOpen(false);
   };
 
@@ -84,13 +99,11 @@ export default function GamePage({ roomId, onLeave }) {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
     
-    // Vérification longueur max
     if (trimmedName.length > 12) {
       alert("Le nom est trop long (max 12 caractères).");
       return;
     }
 
-    // Vérification unicité (insensible à la casse)
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) {
       alert("Ce nom de joueur existe déjà.");
@@ -154,10 +167,25 @@ export default function GamePage({ roomId, onLeave }) {
     <div className="card">
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
-            <p>{modalAction?.matchId ? `Supprimer la rencontre "${modalAction.matchNames}" ?` : "Confirmer la modification ?"}</p>
-            <button onClick={executeAdjustment} className="btn-primary">Valider</button>
-            <button onClick={() => setIsModalOpen(false)}>Annuler</button>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '300px' }}>
+            {modalAction?.matchId ? (
+                <p>Supprimer la rencontre "{modalAction.matchNames}" ?</p>
+            ) : (
+                <>
+                    <p>
+                        {modalAction.type === 'plus' && modalAction.field === 'wins' ? "Sélectionner un joueur pour ajouter une défaite." :
+                         modalAction.type === 'minus' && modalAction.field === 'wins' ? "Sélectionner un joueur pour retirer une défaite." :
+                         modalAction.type === 'plus' && modalAction.field === 'losses' ? "Sélectionner un joueur pour ajouter une Victoire." :
+                         "Sélectionner un joueur pour retirer une Victoire."}
+                    </p>
+                    <select value={targetPlayerId} onChange={(e) => setTargetPlayerId(e.target.value)} style={selectStyle}>
+                        <option value="">Choisir un joueur</option>
+                        {players.filter(p => p.id !== modalAction.player.id).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                </>
+            )}
+            <button onClick={executeAdjustment} className="btn-primary" disabled={!modalAction.matchId && !targetPlayerId}>Valider</button>
+            <button onClick={() => { setIsModalOpen(false); setTargetPlayerId(''); }}>Annuler</button>
           </div>
         </div>
       )}
