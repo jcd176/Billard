@@ -32,17 +32,6 @@ export default function GamePage({ roomId, onLeave }) {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
-      
-      if (sorted.length > 0) {
-        const currentLeader = sorted[0];
-        // Log unique pour le nouveau leader
-        if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
-          addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
-        }
-        prevLeaderIdRef.current = currentLeader.id;
-      } else {
-        prevLeaderIdRef.current = null;
-      }
       setPlayers(sorted);
     });
 
@@ -58,6 +47,17 @@ export default function GamePage({ roomId, onLeave }) {
 
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
   }, [roomId]);
+
+  // Logique isolée pour éviter les logs en double
+  useEffect(() => {
+    if (players.length > 0) {
+      const currentLeader = players[0];
+      if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
+        addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
+      }
+      prevLeaderIdRef.current = currentLeader.id;
+    }
+  }, [players]);
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
