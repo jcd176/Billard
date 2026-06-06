@@ -19,7 +19,7 @@ export default function GamePage({ roomId, onLeave }) {
 
   const prevLeaderIdRef = useRef(null);
 
-  // Style for white icons
+  // Style pour icônes forcées blanches et réduites
   const whiteIconStyle = { 
     filter: 'brightness(0) invert(1)', 
     fontSize: '14px', 
@@ -186,7 +186,6 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
-      {/* ... (matchPopup and Modals kept same) ... */}
       {matchPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
@@ -198,7 +197,7 @@ export default function GamePage({ roomId, onLeave }) {
 
       {isAddPlayerOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000 }}>
-          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px', border: '1px solid #555' }}>
             <h3 style={{marginTop: 0}}>Ajouter un joueur</h3>
             <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -262,7 +261,6 @@ export default function GamePage({ roomId, onLeave }) {
         </button>
       </div>
       
-      {/* ... (rest of the table and logs remain same) ... */}
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
