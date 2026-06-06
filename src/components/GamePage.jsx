@@ -16,6 +16,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [matchOption, setMatchOption] = useState('delete');
 
   const prevLeaderIdRef = useRef(null);
+  const lastLeaderLogTime = useRef(0); // Nouveau verrou temporel
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -48,12 +49,19 @@ export default function GamePage({ roomId, onLeave }) {
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
   }, [roomId]);
 
-  // Logique isolée pour éviter les logs en double
+  // Logique renforcée pour éviter les duplications
   useEffect(() => {
     if (players.length > 0) {
       const currentLeader = players[0];
-      if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
+      const now = Date.now();
+      
+      // On vérifie : 1) que le leader a changé, 2) qu'il s'est écoulé au moins 2s depuis le dernier log leader
+      if (prevLeaderIdRef.current !== null && 
+          prevLeaderIdRef.current !== currentLeader.id && 
+          (now - lastLeaderLogTime.current > 2000)) {
+        
         addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
+        lastLeaderLogTime.current = now; // On met à jour l'horodatage du verrou
       }
       prevLeaderIdRef.current = currentLeader.id;
     }
