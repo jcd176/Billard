@@ -14,7 +14,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [modalAction, setModalAction] = useState(null);
   const [targetPlayerId, setTargetPlayerId] = useState('');
   const [matchOption, setMatchOption] = useState('delete');
-  const [matchPopup, setMatchPopup] = useState(null); // Nouvel état pour la PopUp
+  const [matchPopup, setMatchPopup] = useState(null);
 
   const prevLeaderIdRef = useRef(null);
 
@@ -148,8 +148,8 @@ export default function GamePage({ roomId, onLeave }) {
     });
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     
-    // Trigger de la PopUp
-    setMatchPopup(`MATCH "${wPlayer.name}" CONTRE "${lPlayer.name}" DÉCLARÉ`);
+    // Déclenchement PopUp avec le nouveau format
+    setMatchPopup({ winner: wPlayer.name, loser: lPlayer.name });
     setTimeout(() => setMatchPopup(null), 3000);
     
     setWinner(''); setLoser('');
@@ -183,7 +183,7 @@ export default function GamePage({ roomId, onLeave }) {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
              <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
-             <h2 style={{ textTransform: 'uppercase' }}>{matchPopup}</h2>
+             <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
           </div>
         </div>
       )}
