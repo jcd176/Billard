@@ -17,6 +17,11 @@ export default function GamePage({ roomId, onLeave }) {
   const [matchOption, setMatchOption] = useState('delete');
   const [matchPopup, setMatchPopup] = useState(null);
 
+  // États pour le pliage des sections
+  const [showRanking, setShowRanking] = useState(true);
+  const [showMatches, setShowMatches] = useState(true);
+  const [showHistory, setShowHistory] = useState(true);
+
   const prevLeaderIdRef = useRef(null);
 
   const whiteIconStyle = { 
@@ -233,32 +238,14 @@ export default function GamePage({ roomId, onLeave }) {
         <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
-          style={{ 
-            background: 'transparent', 
-            border: 'none', 
-            cursor: 'pointer',
-            padding: '5px',
-            display: 'flex',
-            alignItems: 'center'
-          }}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
         >
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
 
         {isAddPlayerOpen && (
-          <div style={{ 
-            position: 'absolute', 
-            top: '40px', 
-            right: '0', 
-            background: '#333', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            zIndex: 3000, 
-            width: '200px',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-            border: '1px solid #555'
-          }}>
+          <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
             <input 
                 value={newPlayerName} 
                 onChange={(e) => setNewPlayerName(e.target.value)} 
@@ -287,78 +274,93 @@ export default function GamePage({ roomId, onLeave }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
-        <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
+        <div>
+            <button onClick={() => setShowRanking(!showRanking)} style={btnReset}>{showRanking ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
+        </div>
       </div>
-      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
-        <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
-        <tbody>
-          {players.map((p, i) => {
-            const total = (p.wins || 0) + (p.losses || 0);
-            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
-            return (
-              <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                <td>{i === 0 && '👑 '}{p.name}</td>
-                <td>{p.wins || 0}
-                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
-                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-                  </span>
-                </td>
-                <td>{p.losses || 0}
-                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
-                    <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                    <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-                  </span>
-                </td>
-                <td>{winRate}%</td>
-                <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {showRanking && (
+        <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+            <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
+            <tbody>
+            {players.map((p, i) => {
+                const total = (p.wins || 0) + (p.losses || 0);
+                const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+                return (
+                <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                    <td>{i === 0 && '👑 '}{p.name}</td>
+                    <td>{p.wins || 0}
+                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    </span>
+                    </td>
+                    <td>{p.losses || 0}
+                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    </span>
+                    </td>
+                    <td>{winRate}%</td>
+                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                </tr>
+                );
+            })}
+            </tbody>
+        </table>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Suivi des rencontres :</h3>
-        <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+        <div>
+            <button onClick={() => setShowMatches(!showMatches)} style={btnReset}>{showMatches ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+        </div>
       </div>
-      <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
-        {Object.entries(matches).map(([id, m]) => {
-          const leader = m.w1 >= m.w2 ? { name: m.p1, score: m.w1 } : { name: m.p2, score: m.w2 };
-          const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
-          return (
-            <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-              <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
-            </div>
-          );
-        })}
-      </div>
+      {showMatches && (
+        <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+            {Object.entries(matches).map(([id, m]) => {
+            const leader = m.w1 >= m.w2 ? { name: m.p1, score: m.w1 } : { name: m.p2, score: m.w2 };
+            const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
+            return (
+                <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
+                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>⚙️</button>
+                </div>
+            );
+            })}
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
-        <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+        <div>
+            <button onClick={() => setShowHistory(!showHistory)} style={btnReset}>{showHistory ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+        </div>
       </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
-        {logs.map(log => (
-          <div key={log.id} style={{ marginBottom: '5px' }}>
-            <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
-            {log.type === 'match' ? (
-              <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
-            ) : (
-              <span style={{ 
-                color: log.type === 'error' ? '#EE82EE' : 
-                       log.type === 'add' ? '#0f0' : 
-                       log.type === 'remove' ? '#f00' : 
-                       log.type === 'manual_plus' ? '#00BFFF' : 
-                       log.type === 'manual_minus' ? '#800000' : '#FFD700' 
-              }}>
-                {log.message}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
+      {showHistory && (
+        <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
+            {logs.map(log => (
+            <div key={log.id} style={{ marginBottom: '5px' }}>
+                <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+                {log.type === 'match' ? (
+                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+                ) : (
+                <span style={{ 
+                    color: log.type === 'error' ? '#EE82EE' : 
+                        log.type === 'add' ? '#0f0' : 
+                        log.type === 'remove' ? '#f00' : 
+                        log.type === 'manual_plus' ? '#00BFFF' : 
+                        log.type === 'manual_minus' ? '#800000' : '#FFD700' 
+                }}>
+                    {log.message}
+                </span>
+                )}
+            </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
