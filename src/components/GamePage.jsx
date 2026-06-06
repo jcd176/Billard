@@ -195,7 +195,7 @@ export default function GamePage({ roomId, onLeave }) {
             <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none'}} />
             <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={addPlayer} className="btn-primary" style={{...modalBtnStyle, background: '#007bff'}}>Ajouter</button>
-                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666'}}>Retour</button>
+                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#888'}}>Retour</button>
             </div>
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function GamePage({ roomId, onLeave }) {
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <h2>Salle : {roomId}</h2>
-        <button onClick={() => setIsAddPlayerOpen(true)} style={{...btnReset, fontSize: '20px', cursor: 'pointer'}}>➕👤</button>
+        <button onClick={() => setIsAddPlayerOpen(true)} style={btnReset}>➕👤</button>
       </div>
       
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
