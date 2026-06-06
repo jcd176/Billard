@@ -249,9 +249,16 @@ export default function GamePage({ roomId, onLeave }) {
         </button>
 
         {playerPopup && (
-            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
+            <div style={{ 
+                position: 'absolute', top: '40px', right: '0', zIndex: 4000, 
+                backgroundImage: 'url(https://images.unsplash.com/photo-1542226394-0f3b555812e9?q=80&w=600)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                padding: '25px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px',
+                textShadow: '2px 2px 4px #000'
+            }}>
                 <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
-                <div style={{ fontSize: '16px' }}>{playerPopup} a rejoint la salle</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
 
