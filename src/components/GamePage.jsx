@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ref, onValue, remove, push, update, set } from 'firebase/database';
+import { ref, onValue, remove, push, update, set, get } from 'firebase/database';
 import { database } from '../services/firebase';
 
 export default function GamePage({ roomId, onLeave }) {
@@ -49,7 +49,7 @@ export default function GamePage({ roomId, onLeave }) {
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
-      setLogs(list.reverse().slice(0, 10));
+      setLogs(list.reverse());
     });
 
     return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
@@ -57,12 +57,27 @@ export default function GamePage({ roomId, onLeave }) {
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
-  const executeAdjustment = () => {
+  const executeAdjustment = async () => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
       const { player, type, field, matchId, matchNames } = modalAction;
       
       if (matchId) {
+        const matchData = matches[matchId];
+        if (matchData) {
+          const playersRef = ref(database, `rooms/${roomId}/players`);
+          const snapshot = await get(playersRef);
+          const allPlayers = snapshot.val();
+          
+          Object.entries(allPlayers).forEach(([id, p]) => {
+            if (p.name === matchData.p1) {
+              update(ref(database, `rooms/${roomId}/players/${id}`), { wins: Math.max(0, (p.wins || 0) - matchData.w1) });
+            }
+            if (p.name === matchData.p2) {
+              update(ref(database, `rooms/${roomId}/players/${id}`), { losses: Math.max(0, (p.losses || 0) - matchData.w2) });
+            }
+          });
+        }
         remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
         addLog(`Rencontre ${matchNames} supprimée`, 'remove');
       } else {
@@ -143,7 +158,6 @@ export default function GamePage({ roomId, onLeave }) {
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px' };
-  // Style uniforme pour les boutons de la modale
   const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   return (
@@ -249,7 +263,7 @@ export default function GamePage({ roomId, onLeave }) {
         <h3>Historique :</h3>
         <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
       </div>
-      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px' }}>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
         {logs.map(log => (
           <div key={log.id} style={{ marginBottom: '5px' }}>
             <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
