@@ -139,6 +139,8 @@ export default function GamePage({ roomId, onLeave }) {
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) { alert("Ce nom existe déjà."); return; }
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
+    
+    // Modification ici : texte "Joueur" en vert
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     
     setPlayerPopup(trimmedName);
@@ -249,8 +251,9 @@ export default function GamePage({ roomId, onLeave }) {
         </button>
 
         {playerPopup && (
-            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: 'transparent', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
+            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
                 <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                {/* Modification ici : nom en vert */}
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
