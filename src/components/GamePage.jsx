@@ -18,6 +18,8 @@ export default function GamePage({ roomId, onLeave }) {
   const [matchPopup, setMatchPopup] = useState(null);
   const [playerPopup, setPlayerPopup] = useState(null);
 
+  const declareBtnRef = useRef(null);
+
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
   const [showHistory, setShowHistory] = useState(true);
@@ -139,8 +141,6 @@ export default function GamePage({ roomId, onLeave }) {
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) { alert("Ce nom existe déjà."); return; }
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
-    
-    // Modification ici : texte "Joueur" en vert
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     
     setPlayerPopup(trimmedName);
@@ -196,12 +196,16 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
+      {/* Popup de match placée dynamiquement */}
       {matchPopup && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
-          <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
-             <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
-          </div>
+        <div style={{ 
+          position: 'fixed', 
+          top: (declareBtnRef.current?.getBoundingClientRect().top - 80) + 'px', 
+          left: declareBtnRef.current?.getBoundingClientRect().left + 'px',
+          width: declareBtnRef.current?.offsetWidth + 'px',
+          background: '#222', padding: '10px', borderRadius: '8px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 3000 
+        }}>
+             <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{matchPopup.winner} 👑 vs {matchPopup.loser} 🎱</div>
         </div>
       )}
 
@@ -251,10 +255,16 @@ export default function GamePage({ roomId, onLeave }) {
         </button>
 
         {playerPopup && (
-            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
+            <div style={{ 
+                position: 'absolute', top: '40px', right: '0', zIndex: 4000, 
+                backgroundImage: 'url(https://images.unsplash.com/photo-1542226394-0f3b555812e9?q=80&w=600)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                padding: '25px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px',
+                textShadow: '2px 2px 4px #000'
+            }}>
                 <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
-                {/* Modification ici : nom en vert */}
-                <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
 
@@ -283,7 +293,7 @@ export default function GamePage({ roomId, onLeave }) {
           <option value="">🎱 Perdant</option>
           {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
-        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
+        <button ref={declareBtnRef} onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
