@@ -19,7 +19,6 @@ export default function GamePage({ roomId, onLeave }) {
 
   const prevLeaderIdRef = useRef(null);
 
-  // Style for white icons
   const whiteIconStyle = { 
     filter: 'brightness(0) invert(1)', 
     fontSize: '14px', 
@@ -186,25 +185,11 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
-      {/* ... (matchPopup and Modals kept same) ... */}
       {matchPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
              <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
              <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
-          </div>
-        </div>
-      )}
-
-      {isAddPlayerOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000 }}>
-          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
-            <h3 style={{marginTop: 0}}>Ajouter un joueur</h3>
-            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
-            <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={addPlayer} className="btn-primary" style={{...modalBtnStyle, background: '#007bff'}}>Ajouter</button>
-                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#bbbbbb', color: '#000'}}>Retour</button>
-            </div>
           </div>
         </div>
       )}
@@ -244,10 +229,10 @@ export default function GamePage({ roomId, onLeave }) {
 
       <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
       
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
         <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
         <button 
-          onClick={() => setIsAddPlayerOpen(true)} 
+          onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
           style={{ 
             background: 'transparent', 
             border: 'none', 
@@ -260,9 +245,34 @@ export default function GamePage({ roomId, onLeave }) {
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
+
+        {isAddPlayerOpen && (
+          <div style={{ 
+            position: 'absolute', 
+            top: '40px', 
+            right: '0', 
+            background: '#333', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            zIndex: 3000, 
+            width: '200px',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+            border: '1px solid #555'
+          }}>
+            <input 
+                value={newPlayerName} 
+                onChange={(e) => setNewPlayerName(e.target.value)} 
+                placeholder="Nom du joueur" 
+                style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} 
+            />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff', fontSize: '14px'}}>Ajouter</button>
+                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666', color: '#fff', fontSize: '14px'}}>Fermer</button>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* ... (rest of the table and logs remain same) ... */}
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
