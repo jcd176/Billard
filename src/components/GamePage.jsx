@@ -243,11 +243,11 @@ export default function GamePage({ roomId, onLeave }) {
           style={{ 
             background: 'transparent', 
             border: 'none', 
-            fontSize: '24px', 
             cursor: 'pointer',
             padding: '0',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            fontSize: '24px'
           }}
         >
           <span style={{ color: '#fff' }}>➕</span>
