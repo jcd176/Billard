@@ -206,8 +206,8 @@ export default function GamePage({ roomId, onLeave }) {
       {playerPopup && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
           <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
-             <div style={{ fontSize: '60px', marginBottom: '10px' }}>👤</div>
-             <h2 style={{ margin: '0', fontSize: '24px' }}>Bienvenue {playerPopup} !</h2>
+             <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
+             <h2 style={{ margin: '0', fontSize: '24px' }}>{playerPopup} a rejoint la salle</h2>
           </div>
         </div>
       )}
