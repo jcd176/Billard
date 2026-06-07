@@ -9,13 +9,13 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
   // Utilisation des IDs en minuscules pour correspondre aux identifiants sport
   const sportIcons = {
-    'billard': '🎱',
-    'pingpong': '🏓',
-    'skate': '🛹',
-    'tennis': '🎾',
-    'palets': '🥏',
-    'petanque': '🔘',
-    'babyfoot': '⚽'
+    'Billard': '🎱',
+    'Ping Pong': '🏓',
+    'Skate': '🛹',
+    'Tennis': '🎾',
+    'Palets': '🥏',
+    'Petanque': '🔘',
+    'Baby Foot': '⚽'
   };
 
   useEffect(() => {
