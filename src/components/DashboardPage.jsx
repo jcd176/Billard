@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../services/firebase'; // Import identique à RoomListPage
+import { auth } from '../services/firebase';
 
 export default function DashboardPage({ onSelectSport, onLogout }) {
   const [selected, setSelected] = useState('');
-  const [displayName, setDisplayName] = useState('');
-
-  useEffect(() => {
-    // On écoute les changements d'état de l'utilisateur
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setDisplayName(user.displayName);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
 
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
@@ -52,9 +41,9 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Affichage du nom */}
+      {/* Titre Score Game */}
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        Salut {displayName || 'Joueur'} !
+        Score Game
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
