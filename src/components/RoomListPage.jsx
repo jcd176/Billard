@@ -22,6 +22,15 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     return onValue(roomsRef, (s) => setRooms(s.val() || {}));
   }, [sport]);
 
+  // Gestion du changement de la checkbox
+  const handleCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    if (checked) {
+      alert("Un mot de passe sera demandé pour sa suppression.");
+    }
+    setIsMain(checked);
+  };
+
   const createRoom = () => {
     if (!newRoomName.trim()) return;
     push(ref(database, `rooms/${sport}`), { 
@@ -34,17 +43,14 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   };
 
   const handleDelete = (id, data) => {
-    // 1. Demande de confirmation systématique pour TOUTES les salles
     const confirmed = window.confirm(`Voulez-vous supprimer la partie "${data.name}" ?`);
     if (!confirmed) return;
 
-    // 2. Vérification du MDP uniquement si la partie est principale (isMain)
     if (data.isMain) {
       const password = prompt("Saisissez le mot de passe :");
       if (password !== 'root') return alert("Mot de passe incorrect.");
     }
     
-    // 3. Suppression si confirmé (et MDP validé si nécessaire)
     remove(ref(database, `rooms/${sport}/${id}`));
   };
 
@@ -73,7 +79,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
           style={{ flex: 1 }}
         />
         <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: '#fff' }}>
-          <input type="checkbox" checked={isMain} onChange={(e) => setIsMain(e.target.checked)} />
+          <input type="checkbox" checked={isMain} onChange={handleCheckboxChange} />
           👑
         </label>
       </div>
