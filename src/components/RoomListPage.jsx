@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, push, remove, update } from 'firebase/database';
+import { ref, onValue, push, remove } from 'firebase/database';
 import { database } from '../services/firebase';
 
 export default function RoomListPage({ sport, onBack, onJoin }) {
   const [rooms, setRooms] = useState({});
   const [newRoomName, setNewRoomName] = useState('');
+  const [isMain, setIsMain] = useState(false); // État pour la case à cocher
 
   const sportIcons = {
     'Billard': '🎱',
@@ -23,8 +24,13 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
   const createRoom = () => {
     if (!newRoomName.trim()) return;
-    push(ref(database, `rooms/${sport}`), { name: newRoomName, createdAt: Date.now(), isMain: false });
+    push(ref(database, `rooms/${sport}`), { 
+      name: newRoomName, 
+      createdAt: Date.now(), 
+      isMain: isMain // On enregistre l'état choisi ici
+    });
     setNewRoomName('');
+    setIsMain(false); // Réinitialisation après création
   };
 
   const handleDelete = (id, isMain) => {
@@ -35,13 +41,9 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     remove(ref(database, `rooms/${sport}/${id}`));
   };
 
-  const toggleMain = (id, currentStatus) => {
-    update(ref(database, `rooms/${sport}/${id}`), { isMain: !currentStatus });
-  };
-
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton retour identique au Dashboard */}
+      {/* Bouton retour rond rouge */}
       <button 
         onClick={onBack} 
         style={{
@@ -56,26 +58,30 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Salles : {sport}</h2>
       
-      <input className="join-input" placeholder="Nom de la salle" value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)} />
+      {/* Zone de création */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+        <input 
+          className="join-input" 
+          placeholder="Nom de la salle" 
+          value={newRoomName} 
+          onChange={(e) => setNewRoomName(e.target.value)} 
+          style={{ flex: 1 }}
+        />
+        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <input type="checkbox" checked={isMain} onChange={(e) => setIsMain(e.target.checked)} />
+          👑
+        </label>
+      </div>
+      
       <button onClick={createRoom} className="btn-primary" style={{width: '100%', marginBottom: '40px'}}>Créer</button>
 
+      {/* Liste des salles */}
       {Object.entries(rooms).map(([id, data]) => (
         <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-          {/* Checkbox Couronne */}
-          <input 
-            type="checkbox" 
-            checked={data.isMain || false} 
-            onChange={() => toggleMain(id, data.isMain)}
-            style={{ cursor: 'pointer' }}
-          />
-          <span>👑</span>
-
-          {/* Bouton nom de la partie */}
+          {data.isMain && <span>👑</span>}
           <button onClick={() => onJoin(id)} style={{ flex: 1, textAlign: 'left', padding: '10px' }}>
             {data.name}
           </button>
-          
-          {/* Bouton suppression avec icône spécifique au sport */}
           <button onClick={() => handleDelete(id, data.isMain)}>
             {sportIcons[sport] || '🗑️'}
           </button>
