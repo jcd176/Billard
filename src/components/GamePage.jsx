@@ -228,10 +228,30 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
+      {/* Bouton Retour modifié */}
+      <button 
+        onClick={onLeave} 
+        style={{ 
+          background: 'red', 
+          border: 'none', 
+          borderRadius: '50%', 
+          width: '40px', 
+          height: '40px', 
+          cursor: 'pointer', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: 'white', 
+          fontSize: '20px',
+          marginBottom: '10px'
+        }}
+      >
+        ←
+      </button>
+
+      <h2 style={{ margin: '0 0 20px 0' }}>Salle : {roomId}</h2>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-        <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
