@@ -79,7 +79,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
         <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
           {data.isMain && <span>👑</span>}
           
-          {/* Bouton du nom sans fond ni bordure (juste texte) */}
+          {/* Bouton du nom en texte blanc sans fond */}
           <button 
             onClick={() => onJoin(id)} 
             style={{ 
@@ -89,7 +89,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
               border: 'none', 
               cursor: 'pointer', 
               fontSize: '1rem',
-              color: '#333'
+              color: '#fff' // Texte en blanc
             }}
           >
             {data.name}
