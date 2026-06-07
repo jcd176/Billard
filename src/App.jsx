@@ -3,67 +3,48 @@ import { auth } from './services/firebase';
 import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
 import RoomListPage from './components/RoomListPage';
-import GamePage from './components/GamePage'; 
+import GamePage from './components/GamePage';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('login'); // 'login' | 'dashboard' | 'room-list' | 'game'
+  const [view, setView] = useState('login');
   const [selectedSport, setSelectedSport] = useState(null);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   useEffect(() => {
     return auth.onAuthStateChanged((u) => {
-      if (u) {
-        setUser(u);
-        setView('dashboard');
-      } else {
-        setUser(null);
-        setView('login');
-      }
+      setUser(u);
+      setView(u ? 'dashboard' : 'login');
     });
   }, []);
 
-  const renderCurrentView = () => {
-    switch (view) {
-      case 'login':
-        return <HomePage onUserLogin={() => setView('dashboard')} />;
-        
-      case 'dashboard':
-        return (
-          <DashboardPage 
-            onSelectSport={(sport) => { 
-              setSelectedSport(sport); 
-              setView('room-list'); 
-            }} 
-            onLogout={() => auth.signOut()} 
-          />
-        );
-
-      case 'room-list':
-        return (
-          <RoomListPage 
-            sport={selectedSport} 
-            onBack={() => setView('dashboard')}
-            onJoin={(roomId) => { 
-              setSelectedRoomId(roomId); 
-              setView('game'); 
-            }}
-          />
-        );
-
-      case 'game':
-        return (
-          <GamePage 
-            roomId={selectedRoomId} 
-            sport={selectedSport}
-            onLeave={() => setView('room-list')} 
-          />
-        );
-
-      default:
-        return <HomePage onUserLogin={() => setView('dashboard')} />;
-    }
+  const renderView = () => {
+    if (view === 'login') return <HomePage onUserLogin={() => setView('dashboard')} />;
+    
+    if (view === 'dashboard') return (
+      <DashboardPage 
+        user={user} 
+        onSelectSport={(s) => { setSelectedSport(s); setView('room-list'); }} 
+        onLogout={() => auth.signOut()} 
+      />
+    );
+    
+    if (view === 'room-list') return (
+      <RoomListPage 
+        sport={selectedSport} 
+        onBack={() => setView('dashboard')} 
+        onJoin={(id) => { setSelectedRoomId(id); setView('game'); }} 
+      />
+    );
+    
+    if (view === 'game') return (
+      <GamePage 
+        roomId={selectedRoomId} 
+        sport={selectedSport} 
+        onLeave={() => setView('room-list')} 
+      />
+    );
   };
 
-  return <div className="container">{renderCurrentView()}</div>;
+  return <div className="container">{renderView()}</div>;
 }
