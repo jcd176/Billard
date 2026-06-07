@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { auth } from '../services/firebase'; // Import identique à RoomListPage
 
-export default function DashboardPage({ user, onSelectSport, onLogout }) {
+export default function DashboardPage({ onSelectSport, onLogout }) {
   const [selected, setSelected] = useState('');
+  const [displayName, setDisplayName] = useState('');
 
-  // DEBUG : Affichez ceci dans la console F12 pour voir ce qui est stocké dans l'utilisateur
-  console.log("Données utilisateur:", user);
+  useEffect(() => {
+    // On écoute les changements d'état de l'utilisateur
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setDisplayName(user.displayName);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
@@ -43,9 +52,9 @@ export default function DashboardPage({ user, onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Affichage du nom : on vérifie d'abord displayName, sinon on cherche dans les meta */}
+      {/* Affichage du nom */}
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        Salut {user?.displayName ? user.displayName : 'Joueur'} !
+        Salut {displayName || 'Joueur'} !
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
