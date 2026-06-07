@@ -1,45 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-export default function DashboardPage({ user, onSelectGame, onLogout }) {
-  const [selectedGame, setSelectedGame] = useState('');
-
-  if (!user) return <div className="card">Chargement...</div>;
+export default function DashboardPage({ user, onSelectSport, onLogout }) {
+  const sports = ['billard', 'pingpong', 'skate', 'tennis', 'palets', 'petanque', 'babyfoot'];
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <button onClick={onLogout} style={{ background: '#ff4d4d', color: '#fff', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}>
-          Déconnexion
+      <button onClick={onLogout} style={{float: 'right'}}>Déconnexion</button>
+      <h2>Salut {user?.displayName || 'Joueur'}</h2>
+      <p>Choisis ton sport :</p>
+      
+      {sports.map(sport => (
+        <button 
+          key={sport} 
+          onClick={() => onSelectSport(sport)} 
+          className="btn-primary" 
+          style={{display: 'block', width: '100%', marginBottom: '10px', textTransform: 'capitalize'}}
+        >
+          {sport}
         </button>
-      </div>
-      
-      <h2>Salut {user.displayName} !</h2>
-      <p>Choisis ta salle de jeu :</p>
-      
-      <select 
-        value={selectedGame}
-        onChange={(e) => setSelectedGame(e.target.value)} 
-        className="join-input"
-        style={{ width: '100%', padding: '10px', marginBottom: '20px', borderRadius: '4px' }}
-      >
-        <option value="">-- Sélectionner un sport --</option>
-        <option value="billard">🎱 Billard</option>
-        <option value="pingpong">🏓 Ping Pong</option>
-        <option value="skate">🛹 Skate</option>
-        <option value="tennis">🎾 Tennis</option>
-        <option value="palets">🎯 Palets</option>
-        <option value="petanque">🔘 Pétanque</option>
-        <option value="babyfoot">⚽ Baby Foot</option>
-      </select>
-
-      <button 
-        onClick={() => onSelectGame(selectedGame)} 
-        className="btn-primary" 
-        disabled={!selectedGame}
-        style={{ width: '100%', padding: '12px', border: 'none', borderRadius: '4px' }}
-      >
-        Accéder à la salle
-      </button>
+      ))}
     </div>
   );
 }
