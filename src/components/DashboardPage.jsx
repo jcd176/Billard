@@ -8,7 +8,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
     { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
     { id: 'skate', name: 'Skate', icon: '🛹' },
     { id: 'tennis', name: 'Tennis', icon: '🎾' },
-    { id: 'palets', name: 'Palets', icon: '🥏' }, // Icône disque pour le palet
+    { id: 'palets', name: 'Palets', icon: '🥏' },
     { id: 'petanque', name: 'Pétanque', icon: '🔘' },
     { id: 'babyfoot', name: 'Baby Foot', icon: '⚽' }
   ];
@@ -40,8 +40,14 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Titre Score Game */}
-      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
+      {/* Titre Score Game agrandi */}
+      <h2 style={{ 
+        textAlign: 'center', 
+        marginBottom: '30px', 
+        fontSize: '2.5rem', 
+        fontWeight: 'bold',
+        color: '#333'
+      }}>
         Score Game
       </h2>
 
