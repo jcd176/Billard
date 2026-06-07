@@ -7,22 +7,29 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   const [newRoomName, setNewRoomName] = useState('');
   const [isMain, setIsMain] = useState(false);
 
+  // Correspondance des icônes
   const sportIcons = {
-    'billard': '🎱',
-    'pingpong': '🏓',
-    'skate': '🛹',
-    'tennis': '🎾',
-    'palets': '🥏',
-    'petanque': '🔘',
-    'babyfoot': '⚽'
+    'billard': '🎱', 'pingpong': '🏓', 'skate': '🛹',
+    'tennis': '🎾', 'palets': '🥏', 'petanque': '🔘', 'babyfoot': '⚽'
+  };
+
+  // Correspondance des labels d'en-tête selon le sport
+  const sportLabels = {
+    'billard': 'Salle',
+    'pingpong': 'Match',
+    'skate': 'Session',
+    'tennis': 'Match',
+    'palets': 'Partie',
+    'petanque': 'Partie',
+    'babyfoot': 'Partie'
   };
 
   useEffect(() => {
+    // Les parties ne sont bien récupérées que pour le sport sélectionné
     const roomsRef = ref(database, `rooms/${sport}`);
     return onValue(roomsRef, (s) => setRooms(s.val() || {}));
   }, [sport]);
 
-  // Message formaté pour l'alerte
   const handleCheckboxChange = (e) => {
     const checked = e.target.checked;
     if (checked) {
@@ -45,12 +52,10 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   const handleDelete = (id, data) => {
     const confirmed = window.confirm(`Voulez-vous supprimer la partie "${data.name}" ?`);
     if (!confirmed) return;
-
     if (data.isMain) {
       const password = prompt("Saisissez le mot de passe :");
       if (password !== 'root') return alert("Mot de passe incorrect.");
     }
-    
     remove(ref(database, `rooms/${sport}/${id}`));
   };
 
@@ -68,12 +73,15 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
         ↩
       </button>
 
-      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Salles : {sport}</h2>
+      {/* Affichage dynamique du titre selon le sport */}
+      <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#fff', textTransform: 'capitalize' }}>
+        {sport.replace('pingpong', 'Ping Pong').replace('babyfoot', 'Baby Foot')} : {sportLabels[sport] || 'Salle'}
+      </h2>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
         <input 
           className="join-input" 
-          placeholder="Nom de la salle" 
+          placeholder={`Nom de la ${sportLabels[sport] || 'salle'}`} 
           value={newRoomName} 
           onChange={(e) => setNewRoomName(e.target.value)} 
           style={{ flex: 1 }}
