@@ -6,6 +6,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
+  const [roomName, setRoomName] = useState(roomId); // Ajout état pour le nom
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
@@ -40,6 +41,13 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
+    // Récupération du nom de la salle
+    const roomRef = ref(database, `rooms/billard/${roomId}/name`);
+    const unsubscribeRoom = onValue(roomRef, (snapshot) => {
+      const name = snapshot.val();
+      if (name) setRoomName(name);
+    });
+
     const playersRef = ref(database, `rooms/${roomId}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -70,7 +78,7 @@ export default function GamePage({ roomId, onLeave }) {
       setLogs(list.reverse());
     });
 
-    return () => { unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
+    return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
   }, [roomId, logs]);
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
@@ -228,10 +236,30 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      <button onClick={onLeave} style={{ marginBottom: '10px' }}>← Retour</button>
-      
+      {/* Bouton retour personnalisé */}
+      <button 
+        onClick={onLeave} 
+        style={{ 
+          background: '#ff4d4d', 
+          border: 'none', 
+          borderRadius: '50%', 
+          width: '40px', 
+          height: '40px', 
+          cursor: 'pointer', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: 'white', 
+          fontSize: '20px',
+          marginBottom: '15px'
+        }}
+      >
+        ←
+      </button>
+
+      {/* Titre Salle */}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-        <h2 style={{ margin: 0 }}>Salle : {roomId}</h2>
+        <h2 style={{ margin: '0 0 10px 0' }}>Salle : {roomName}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
@@ -263,8 +291,7 @@ export default function GamePage({ roomId, onLeave }) {
         )}
       </div>
       
-      {/* Conteneur avec position: 'relative' pour ancrer le popup */}
-      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '5px', position: 'relative' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
@@ -275,7 +302,6 @@ export default function GamePage({ roomId, onLeave }) {
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
-        {/* Popup maintenant ancré au conteneur parent */}
         {matchPopup && (
           <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
              <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
