@@ -140,7 +140,6 @@ export default function GamePage({ roomId, onLeave }) {
     if (exists) { alert("Ce nom existe déjà."); return; }
     push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
     
-    // Modification ici : texte "Joueur" en vert
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     
     setPlayerPopup(trimmedName);
@@ -196,15 +195,6 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
-      {matchPopup && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
-          <div style={{ background: '#222', padding: '30px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff' }}>
-             <div style={{ fontSize: '60px', marginBottom: '10px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '24px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
-          </div>
-        </div>
-      )}
-
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -253,7 +243,6 @@ export default function GamePage({ roomId, onLeave }) {
         {playerPopup && (
             <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
                 <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
-                {/* Modification ici : nom en vert */}
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
@@ -274,7 +263,7 @@ export default function GamePage({ roomId, onLeave }) {
         )}
       </div>
       
-      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px' }}>
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
@@ -284,6 +273,13 @@ export default function GamePage({ roomId, onLeave }) {
           {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
+        
+        {matchPopup && (
+          <div style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '200px' }}>
+             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
+             <h2 style={{ margin: '0', fontSize: '18px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
