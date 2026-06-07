@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 export default function DashboardPage({ user, onSelectSport, onLogout }) {
   const [selected, setSelected] = useState('');
 
+  // DEBUG : Affichez ceci dans la console F12 pour voir ce qui est stocké dans l'utilisateur
+  console.log("Données utilisateur:", user);
+
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
     { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
@@ -40,9 +43,9 @@ export default function DashboardPage({ user, onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Message de bienvenue personnalisé */}
+      {/* Affichage du nom : on vérifie d'abord displayName, sinon on cherche dans les meta */}
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        Salut {user?.displayName || 'Joueur'} !
+        Salut {user?.displayName ? user.displayName : 'Joueur'} !
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
