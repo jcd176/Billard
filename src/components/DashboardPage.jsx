@@ -15,28 +15,34 @@ export default function DashboardPage({ user, onSelectSport, onLogout }) {
 
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton déconnexion en haut à gauche */}
+      {/* Bouton déconnexion rond, rouge avec flèche blanche */}
       <button 
         onClick={onLogout} 
         style={{
           position: 'absolute',
           top: '20px',
           left: '20px',
+          width: '45px',
+          height: '45px',
+          borderRadius: '50%',
           background: '#ff4d4d',
-          color: 'white',
+          color: '#fff',
           border: 'none',
-          padding: '8px 12px',
-          borderRadius: '6px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           cursor: 'pointer',
-          fontWeight: 'bold'
+          fontSize: '20px',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
         }}
+        title="Déconnexion"
       >
-        Déconnexion
+        ↩
       </button>
 
-      {/* Message de bienvenue avec espacement */}
+      {/* Message de bienvenue personnalisé */}
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
-        Salut "{user?.displayName || 'Joueur'}" !
+        Salut {user?.displayName || 'Joueur'} !
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
