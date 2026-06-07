@@ -7,14 +7,15 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   const [newRoomName, setNewRoomName] = useState('');
   const [isMain, setIsMain] = useState(false);
 
+  // Utilisation des IDs en minuscules pour correspondre aux identifiants sport
   const sportIcons = {
-    'Billard': '🎱',
-    'Ping Pong': '🏓',
-    'Skate': '🛹',
-    'Tennis': '🎾',
-    'Palets': '🥏',
-    'Pétanque': '🔘',
-    'Baby Foot': '⚽'
+    'billard': '🎱',
+    'pingpong': '🏓',
+    'skate': '🛹',
+    'tennis': '🎾',
+    'palets': '🥏',
+    'petanque': '🔘',
+    'babyfoot': '⚽'
   };
 
   useEffect(() => {
@@ -43,7 +44,6 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton retour */}
       <button 
         onClick={onBack} 
         style={{
@@ -74,28 +74,20 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
       
       <button onClick={createRoom} className="btn-primary" style={{width: '100%', marginBottom: '40px'}}>Créer</button>
 
-      {/* Liste des salles */}
       {Object.entries(rooms).map(([id, data]) => (
         <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
           {data.isMain && <span>👑</span>}
           
-          {/* Bouton du nom en texte blanc sans fond */}
           <button 
             onClick={() => onJoin(id)} 
             style={{ 
-              flex: 1, 
-              textAlign: 'left', 
-              background: 'transparent', 
-              border: 'none', 
-              cursor: 'pointer', 
-              fontSize: '1rem',
-              color: '#fff' // Texte en blanc
+              flex: 1, textAlign: 'left', background: 'transparent', 
+              border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#fff' 
             }}
           >
             {data.name}
           </button>
           
-          {/* Bouton de suppression avec icône dynamique */}
           <button 
             onClick={() => handleDelete(id, data.isMain)}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
