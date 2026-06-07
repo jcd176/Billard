@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { signInAnonymously, signInWithGoogle } from '@/services/auth';
+import { signInAnonymously } from '../services/auth';
 import { updateProfile } from 'firebase/auth';
-import { auth } from '@/services/firebase';
 
 export default function HomePage({ onUserLogin }) {
   const [loading, setLoading] = useState(false);
@@ -14,7 +13,7 @@ export default function HomePage({ onUserLogin }) {
     try {
       const user = await signInAnonymously();
       await updateProfile(user, { displayName: guestPseudo.trim() });
-      onUserLogin(user);
+      onUserLogin();
     } catch (err) { alert(err.message); }
     setLoading(false);
   };
@@ -26,7 +25,9 @@ export default function HomePage({ onUserLogin }) {
         <form onSubmit={handleAnonLogin}>
           <input className="join-input" placeholder="Votre pseudo" 
                  value={guestPseudo} onChange={(e) => setGuestPseudo(e.target.value)} />
-          <button type="submit" className="btn-primary">Entrer en jeu</button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? '...' : 'Entrer en jeu'}
+          </button>
         </form>
       </div>
     </div>
