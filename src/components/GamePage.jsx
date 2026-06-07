@@ -263,6 +263,7 @@ export default function GamePage({ roomId, onLeave }) {
         )}
       </div>
       
+      {/* Conteneur avec position: 'relative' pour ancrer le popup */}
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
@@ -274,10 +275,11 @@ export default function GamePage({ roomId, onLeave }) {
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
+        {/* Popup maintenant ancré au conteneur parent */}
         {matchPopup && (
-          <div style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '200px' }}>
+          <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
              <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '18px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
           </div>
         )}
       </div>
