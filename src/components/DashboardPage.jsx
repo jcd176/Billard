@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 
 export default function DashboardPage({ onSelectSport, onLogout }) {
   const [selected, setSelected] = useState('');
+  
+  // Couleur utilisée pour le texte Score Game et le bouton
+  const themeColor = '#00d0ff'; 
 
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
@@ -32,7 +35,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          fontSize: '28px', // Flèche agrandie
+          fontSize: '28px',
           boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
         }}
         title="Déconnexion"
@@ -40,13 +43,13 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Titre Score Game avec la couleur du bouton Valider le sport (#00d0ff) */}
+      {/* Titre Score Game avec la couleur du bouton */}
       <h2 style={{ 
         textAlign: 'center', 
         marginBottom: '30px', 
         fontSize: '2.5rem', 
         fontWeight: 'bold',
-        color: '#00d0ff' 
+        color: themeColor 
       }}>
         Score Game
       </h2>
@@ -68,17 +71,12 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
           ))}
         </select>
 
+        {/* Bouton utilisant la classe btn-primary standard (la couleur du bouton n'est plus écrasée par du style inline) */}
         <button 
           onClick={() => selected && onSelectSport(selected)} 
           disabled={!selected}
           className="btn-primary"
-          style={{ 
-            width: '100%', 
-            padding: '12px', 
-            borderRadius: '6px',
-            backgroundColor: '#00d0ff', // Couleur utilisée pour le texte Score Game
-            border: 'none'
-          }}
+          style={{ width: '100%', padding: '12px', borderRadius: '6px' }}
         >
           Valider le sport
         </button>
