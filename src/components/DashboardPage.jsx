@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { auth } from '../services/firebase';
+import React, { useState } from 'react';
 
 export default function DashboardPage({ onSelectSport, onLogout }) {
   const [selected, setSelected] = useState('');
@@ -9,7 +8,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
     { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
     { id: 'skate', name: 'Skate', icon: '🛹' },
     { id: 'tennis', name: 'Tennis', icon: '🎾' },
-    { id: 'palets', name: 'Palets', icon: '🎯' },
+    { id: 'palets', name: 'Palets', icon: '🥏' }, // Icône disque pour le palet
     { id: 'petanque', name: 'Pétanque', icon: '🔘' },
     { id: 'babyfoot', name: 'Baby Foot', icon: '⚽' }
   ];
