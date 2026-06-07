@@ -7,7 +7,6 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   const [newRoomName, setNewRoomName] = useState('');
   const [isMain, setIsMain] = useState(false);
 
-  // Utilisation des IDs en minuscules pour correspondre aux identifiants sport
   const sportIcons = {
     'billard': '🎱',
     'pingpong': '🏓',
@@ -34,11 +33,18 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     setIsMain(false);
   };
 
-  const handleDelete = (id, isMain) => {
-    if (isMain) {
+  const handleDelete = (id, data) => {
+    // 1. Demande de confirmation systématique pour TOUTES les salles
+    const confirmed = window.confirm(`Voulez-vous supprimer la partie "${data.name}" ?`);
+    if (!confirmed) return;
+
+    // 2. Vérification du MDP uniquement si la partie est principale (isMain)
+    if (data.isMain) {
       const password = prompt("Saisissez le mot de passe :");
       if (password !== 'root') return alert("Mot de passe incorrect.");
     }
+    
+    // 3. Suppression si confirmé (et MDP validé si nécessaire)
     remove(ref(database, `rooms/${sport}/${id}`));
   };
 
@@ -66,7 +72,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
           onChange={(e) => setNewRoomName(e.target.value)} 
           style={{ flex: 1 }}
         />
-        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: '#fff' }}>
           <input type="checkbox" checked={isMain} onChange={(e) => setIsMain(e.target.checked)} />
           👑
         </label>
@@ -89,7 +95,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
           </button>
           
           <button 
-            onClick={() => handleDelete(id, data.isMain)}
+            onClick={() => handleDelete(id, data)}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
           >
             {sportIcons[sport] || '🗑️'}
