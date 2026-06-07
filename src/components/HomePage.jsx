@@ -13,7 +13,7 @@ export default function HomePage({ onUserLogin }) {
     try {
       const user = await signInAnonymously();
       await updateProfile(user, { displayName: guestPseudo.trim() });
-      onUserLogin();
+      onUserLogin(); // Notifie App.jsx de la connexion
     } catch (err) { alert(err.message); }
     setLoading(false);
   };
@@ -23,10 +23,14 @@ export default function HomePage({ onUserLogin }) {
       <div className="card">
         <h2>Connexion</h2>
         <form onSubmit={handleAnonLogin}>
-          <input className="join-input" placeholder="Votre pseudo" 
-                 value={guestPseudo} onChange={(e) => setGuestPseudo(e.target.value)} />
+          <input 
+            className="join-input" 
+            placeholder="Votre pseudo" 
+            value={guestPseudo} 
+            onChange={(e) => setGuestPseudo(e.target.value)} 
+          />
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? '...' : 'Entrer en jeu'}
+            {loading ? 'Connexion...' : 'Entrer en jeu'}
           </button>
         </form>
       </div>
