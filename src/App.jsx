@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './services/firebase';
 import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
-import GamePage from './components/GamePage';
-// Ajoutez vos imports pour les autres pages ici
-// import PingPongPage from './components/PingPongPage';
+import RoomListPage from './components/RoomListPage';
+import GamePage from './components/GamePage'; 
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('login'); // 'login', 'dashboard', 'game'
-  const [activeGame, setActiveGame] = useState(null);
+  const [view, setView] = useState('login'); // 'login' | 'dashboard' | 'room-list' | 'game'
+  const [selectedSport, setSelectedSport] = useState(null);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   useEffect(() => {
     return auth.onAuthStateChanged((u) => {
@@ -27,21 +27,39 @@ export default function App() {
     switch (view) {
       case 'login':
         return <HomePage onUserLogin={() => setView('dashboard')} />;
+        
       case 'dashboard':
         return (
           <DashboardPage 
-            user={user} 
-            onSelectGame={(game) => { setActiveGame(game); setView('game'); }} 
+            onSelectSport={(sport) => { 
+              setSelectedSport(sport); 
+              setView('room-list'); 
+            }} 
             onLogout={() => auth.signOut()} 
           />
         );
+
+      case 'room-list':
+        return (
+          <RoomListPage 
+            sport={selectedSport} 
+            onBack={() => setView('dashboard')}
+            onJoin={(roomId) => { 
+              setSelectedRoomId(roomId); 
+              setView('game'); 
+            }}
+          />
+        );
+
       case 'game':
         return (
           <GamePage 
-            roomId={activeGame?.toUpperCase() || 'SALLE'} 
-            onLeave={() => setView('dashboard')} 
+            roomId={selectedRoomId} 
+            sport={selectedSport}
+            onLeave={() => setView('room-list')} 
           />
         );
+
       default:
         return <HomePage onUserLogin={() => setView('dashboard')} />;
     }
