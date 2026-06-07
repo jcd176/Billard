@@ -5,7 +5,7 @@ import { database } from '../services/firebase';
 export default function RoomListPage({ sport, onBack, onJoin }) {
   const [rooms, setRooms] = useState({});
   const [newRoomName, setNewRoomName] = useState('');
-  const [isMain, setIsMain] = useState(false); // État pour la case à cocher
+  const [isMain, setIsMain] = useState(false);
 
   const sportIcons = {
     'Billard': '🎱',
@@ -27,10 +27,10 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     push(ref(database, `rooms/${sport}`), { 
       name: newRoomName, 
       createdAt: Date.now(), 
-      isMain: isMain // On enregistre l'état choisi ici
+      isMain: isMain 
     });
     setNewRoomName('');
-    setIsMain(false); // Réinitialisation après création
+    setIsMain(false);
   };
 
   const handleDelete = (id, isMain) => {
@@ -43,7 +43,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton retour rond rouge */}
+      {/* Bouton retour */}
       <button 
         onClick={onBack} 
         style={{
@@ -58,7 +58,6 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
 
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Salles : {sport}</h2>
       
-      {/* Zone de création */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
         <input 
           className="join-input" 
@@ -79,10 +78,28 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
       {Object.entries(rooms).map(([id, data]) => (
         <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
           {data.isMain && <span>👑</span>}
-          <button onClick={() => onJoin(id)} style={{ flex: 1, textAlign: 'left', padding: '10px' }}>
+          
+          {/* Bouton du nom sans fond ni bordure (juste texte) */}
+          <button 
+            onClick={() => onJoin(id)} 
+            style={{ 
+              flex: 1, 
+              textAlign: 'left', 
+              background: 'transparent', 
+              border: 'none', 
+              cursor: 'pointer', 
+              fontSize: '1rem',
+              color: '#333'
+            }}
+          >
             {data.name}
           </button>
-          <button onClick={() => handleDelete(id, data.isMain)}>
+          
+          {/* Bouton de suppression avec icône dynamique */}
+          <button 
+            onClick={() => handleDelete(id, data.isMain)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+          >
             {sportIcons[sport] || '🗑️'}
           </button>
         </div>
