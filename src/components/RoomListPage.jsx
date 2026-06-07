@@ -22,11 +22,11 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     return onValue(roomsRef, (s) => setRooms(s.val() || {}));
   }, [sport]);
 
-  // Gestion du changement de la checkbox
+  // Gestion du changement de la checkbox avec le nouveau message
   const handleCheckboxChange = (e) => {
     const checked = e.target.checked;
     if (checked) {
-      alert("Un mot de passe sera demandé pour sa suppression.");
+      alert("Un mot de passe sera demandé pour sa suppression.\nContactez l'administrateur.");
     }
     setIsMain(checked);
   };
