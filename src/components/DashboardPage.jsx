@@ -46,7 +46,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         marginBottom: '30px', 
         fontSize: '2.5rem', 
         fontWeight: 'bold',
-        color: '#333' // Retour à la couleur d'origine
+        color: '#ff4d4d' // Retour à la couleur d'origine
       }}>
         Score Game
       </h2>
