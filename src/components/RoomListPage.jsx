@@ -22,7 +22,7 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     return onValue(roomsRef, (s) => setRooms(s.val() || {}));
   }, [sport]);
 
-  // Gestion du changement de la checkbox avec le nouveau message
+  // Message formaté pour l'alerte
   const handleCheckboxChange = (e) => {
     const checked = e.target.checked;
     if (checked) {
