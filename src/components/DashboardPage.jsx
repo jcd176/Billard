@@ -15,7 +15,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
 
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton déconnexion rond, rouge avec flèche blanche */}
+      {/* Bouton déconnexion rond, rouge avec flèche blanche agrandie */}
       <button 
         onClick={onLogout} 
         style={{
@@ -32,7 +32,7 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          fontSize: '20px',
+          fontSize: '28px', // Flèche agrandie
           boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
         }}
         title="Déconnexion"
@@ -40,13 +40,13 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Titre Score Game avec la taille agrandie et la couleur d'origine */}
+      {/* Titre Score Game avec la couleur du bouton Valider le sport (#00d0ff) */}
       <h2 style={{ 
         textAlign: 'center', 
         marginBottom: '30px', 
         fontSize: '2.5rem', 
         fontWeight: 'bold',
-        color: '#ff4d4d' // Retour à la couleur d'origine
+        color: '#00d0ff' 
       }}>
         Score Game
       </h2>
@@ -72,7 +72,13 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
           onClick={() => selected && onSelectSport(selected)} 
           disabled={!selected}
           className="btn-primary"
-          style={{ width: '100%', padding: '12px', borderRadius: '6px' }}
+          style={{ 
+            width: '100%', 
+            padding: '12px', 
+            borderRadius: '6px',
+            backgroundColor: '#00d0ff', // Couleur utilisée pour le texte Score Game
+            border: 'none'
+          }}
         >
           Valider le sport
         </button>
