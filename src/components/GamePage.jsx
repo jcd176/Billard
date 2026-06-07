@@ -9,6 +9,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
+  const [roomName, setRoomName] = useState('Chargement...');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
@@ -40,6 +41,12 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
+    // Récupération du nom de la salle
+    const roomRef = ref(database, `rooms/${roomId}/name`);
+    onValue(roomRef, (snapshot) => {
+      setRoomName(snapshot.val() || roomId);
+    });
+
     const playersRef = ref(database, `rooms/${roomId}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -228,47 +235,34 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      {/* Bouton Retour modifié */}
+      {/* Bouton Retour rouge rond */}
       <button 
         onClick={onLeave} 
-        style={{ 
-          background: 'red', 
-          border: 'none', 
-          borderRadius: '50%', 
-          width: '40px', 
-          height: '40px', 
-          cursor: 'pointer', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          color: 'white', 
-          fontSize: '20px',
-          marginBottom: '10px'
-        }}
+        style={{ background: 'red', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '20px', marginBottom: '10px' }}
       >
         ←
       </button>
 
-      <h2 style={{ margin: '0 0 20px 0' }}>Salle : {roomId}</h2>
-      
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+      {/* Titre Salle */}
+      <h2 style={{ margin: '0 0 10px 0' }}>Salle : {roomName}</h2>
+
+      {/* Bouton Ajouter Joueur séparé */}
+      <div style={{ marginBottom: '20px' }}>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
+          style={{ background: '#333', border: '1px solid #555', color: '#fff', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}
         >
-          <span style={whiteIconStyle}>➕</span>
-          <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
+          + Ajouter un joueur
         </button>
-
+        
         {playerPopup && (
-            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
-                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+            <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', color: '#fff' }}>
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
 
         {isAddPlayerOpen && (
-          <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
+          <div style={{ marginTop: '10px', background: '#333', padding: '15px', borderRadius: '8px', width: '100%', maxWidth: '300px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
             <input 
                 value={newPlayerName} 
                 onChange={(e) => setNewPlayerName(e.target.value)} 
@@ -283,8 +277,7 @@ export default function GamePage({ roomId, onLeave }) {
         )}
       </div>
       
-      {/* Conteneur avec position: 'relative' pour ancrer le popup */}
-      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', position: 'relative' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
@@ -295,22 +288,15 @@ export default function GamePage({ roomId, onLeave }) {
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
-        {/* Popup maintenant ancré au conteneur parent */}
         {matchPopup && (
-          <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
-             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+          <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000 }}>
+             <div style={{ fontSize: '30px' }}>🎱</div>
+             <h2 style={{ margin: '0', fontSize: '18px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>Classement :</h3>
-        <div>
-            <button onClick={() => setShowRanking(!showRanking)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showRanking ? '▲' : '▼'}</button>
-            <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
-        </div>
-      </div>
+      <h3>Classement :</h3>
       {showRanking && (
         <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
             <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
@@ -342,13 +328,7 @@ export default function GamePage({ roomId, onLeave }) {
         </table>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Suivi des rencontres :</h3>
-        <div>
-            <button onClick={() => setShowMatches(!showMatches)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showMatches ? '▲' : '▼'}</button>
-            <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
-        </div>
-      </div>
+      <h3>Suivi des rencontres :</h3>
       {showMatches && (
         <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
             {Object.entries(matches).map(([id, m]) => {
@@ -364,15 +344,8 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <h3>Historique :</h3>
-        <div>
-            <button onClick={() => setShowHistory(!showHistory)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showHistory ? '▲' : '▼'}</button>
-            <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
-        </div>
-      </div>
-      {showHistory && (
-        <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
+      <h3>Historique :</h3>
+      <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
             {logs.map(log => (
             <div key={log.id} style={{ marginBottom: '5px' }}>
                 <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
@@ -391,8 +364,7 @@ export default function GamePage({ roomId, onLeave }) {
                 )}
             </div>
             ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
