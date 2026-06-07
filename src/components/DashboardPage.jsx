@@ -1,24 +1,16 @@
 import React from 'react';
 
 export default function DashboardPage({ user, onSelectSport, onLogout }) {
-  const sports = ['billard', 'pingpong', 'skate', 'tennis', 'palets', 'petanque', 'babyfoot'];
+  // Liste des sports avec leurs icônes associées
+  const sports = [
+    { id: 'billard', name: 'Billard', icon: '🎱' },
+    { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
+    { id: 'skate', name: 'Skate', icon: '🛹' },
+    { id: 'tennis', name: 'Tennis', icon: '🎾' },
+    { id: 'palets', name: 'Palets', icon: '🎯' },
+    { id: 'petanque', name: 'Pétanque', icon: '🔘' },
+    { id: 'babyfoot', name: 'Baby Foot', icon: '⚽' }
+  ];
 
   return (
-    <div className="card">
-      <button onClick={onLogout} style={{float: 'right'}}>Déconnexion</button>
-      <h2>Salut {user?.displayName || 'Joueur'}</h2>
-      <p>Choisis ton sport :</p>
-      
-      {sports.map(sport => (
-        <button 
-          key={sport} 
-          onClick={() => onSelectSport(sport)} 
-          className="btn-primary" 
-          style={{display: 'block', width: '100%', marginBottom: '10px', textTransform: 'capitalize'}}
-        >
-          {sport}
-        </button>
-      ))}
-    </div>
-  );
-}
+    <div className="card" style={{ position: 'relative',
