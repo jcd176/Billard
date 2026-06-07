@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function DashboardPage({ user, onSelectSport, onLogout }) {
+  const [selected, setSelected] = useState('');
+
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
     { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
@@ -12,7 +14,8 @@ export default function DashboardPage({ user, onSelectSport, onLogout }) {
   ];
 
   return (
-    <div className="card" style={{ position: 'relative', paddingTop: '60px' }}>
+    <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
+      {/* Bouton déconnexion en haut à gauche */}
       <button 
         onClick={onLogout} 
         style={{
@@ -25,41 +28,42 @@ export default function DashboardPage({ user, onSelectSport, onLogout }) {
           padding: '8px 12px',
           borderRadius: '6px',
           cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '14px'
+          fontWeight: 'bold'
         }}
       >
         Déconnexion
       </button>
 
-      <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>
-        Salut {user?.displayName || 'Joueur'} !
+      {/* Message de bienvenue avec espacement */}
+      <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>
+        Salut "{user?.displayName || 'Joueur'}" !
       </h2>
-      <p style={{ textAlign: 'center', color: '#ccc', marginBottom: '30px' }}>
-        Sélectionnez votre sport pour voir les salles
-      </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-        {sports.map((sport) => (
-          <button 
-            key={sport.id} 
-            onClick={() => onSelectSport(sport.id)}
-            className="btn-primary"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              borderRadius: '12px',
-              fontSize: '18px',
-              gap: '10px'
-            }}
-          >
-            <span style={{ fontSize: '40px' }}>{sport.icon}</span>
-            <span>{sport.name}</span>
-          </button>
-        ))}
+      <div style={{ marginBottom: '20px' }}>
+        <p style={{ textAlign: 'center', marginBottom: '10px' }}>Sélectionnez votre sport :</p>
+        
+        <select 
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="join-input"
+          style={{ width: '100%', padding: '12px', borderRadius: '6px', fontSize: '16px', marginBottom: '20px' }}
+        >
+          <option value="">-- Choisir un sport --</option>
+          {sports.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.icon} {sport.name}
+            </option>
+          ))}
+        </select>
+
+        <button 
+          onClick={() => selected && onSelectSport(selected)} 
+          disabled={!selected}
+          className="btn-primary"
+          style={{ width: '100%', padding: '12px', borderRadius: '6px' }}
+        >
+          Valider le sport
+        </button>
       </div>
     </div>
   );
