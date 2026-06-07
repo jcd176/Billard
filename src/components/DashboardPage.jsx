@@ -40,13 +40,13 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
         ↩
       </button>
 
-      {/* Titre Score Game agrandi */}
+      {/* Titre Score Game avec couleur et taille ajustée */}
       <h2 style={{ 
         textAlign: 'center', 
         marginBottom: '30px', 
         fontSize: '2.5rem', 
         fontWeight: 'bold',
-        color: '#333'
+        color: '#007bff' // Couleur bleue appliquée ici
       }}>
         Score Game
       </h2>
