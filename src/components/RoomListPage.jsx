@@ -19,9 +19,9 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
     'pingpong': 'Match',
     'skate': 'Session',
     'tennis': 'Match',
-    'palets': 'Partie',
-    'petanque': 'Partie',
-    'babyfoot': 'Partie'
+    'palets': 'Jeu',
+    'petanque': 'Jeu',
+    'babyfoot': 'Match'
   };
 
   useEffect(() => {
