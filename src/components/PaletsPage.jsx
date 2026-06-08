@@ -41,7 +41,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
-    const roomRef = ref(database, `rooms/billard/${roomId}/name`);
+    const roomRef = ref(database, `rooms/palets/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       if (snapshot.exists()) setRoomName(snapshot.val());
     });
