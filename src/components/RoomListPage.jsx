@@ -17,11 +17,11 @@ export default function RoomListPage({ sport, onBack, onJoin }) {
   const sportLabels = {
     'billard': 'Salle',
     'pingpong': 'Match',
-    'skate': 'Session',
-    'tennis': 'Match',
+    'babyfoot': 'Match',
     'palets': 'Jeu',
     'petanque': 'Jeu',
-    'babyfoot': 'Match'
+    'skate': 'Session',
+    'tennis': 'Match'
   };
 
   useEffect(() => {
