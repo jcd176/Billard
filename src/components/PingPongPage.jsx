@@ -2,12 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
-export default function GamePage({ roomId, onLeave }) {
+export default function GamePage({ roomId, sport, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
-  // Correction : Initialisation avec une chaîne vide ou un texte par défaut en attendant la donnée Firebase
-  const [roomName, setRoomName] = useState('Chargement...'); 
+  const [roomName, setRoomName] = useState(roomId);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
@@ -42,14 +41,10 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
-    // Modification : S'assure que le chemin récupère bien le nom réel du jeu (ex: pingpong)
-    const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
+    // Correction ici : le chemin dynamique utilise le prop 'sport' fourni
+    const roomRef = ref(database, `rooms/${sport}/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setRoomName(snapshot.val());
-      } else {
-        setRoomName("Match créé"); // Valeur de repli si le nom n'existe pas
-      }
+      if (snapshot.exists()) setRoomName(snapshot.val());
     });
 
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -83,7 +78,7 @@ export default function GamePage({ roomId, onLeave }) {
     });
 
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [roomId]); // Suppression de 'logs' dans les dépendances pour éviter les boucles inutiles
+  }, [roomId, sport]); 
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
@@ -240,33 +235,11 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
-      <button 
-        onClick={onLeave} 
-        style={{ 
-          background: '#ff4d4d', 
-          border: 'none', 
-          borderRadius: '50%', 
-          width: '40px', 
-          height: '40px', 
-          cursor: 'pointer', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          color: 'white', 
-          fontSize: '24px',
-          marginBottom: '10px'
-        }}
-      >
-        ↩
-      </button>
+      <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', marginBottom: '10px' }}>↩</button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
-        {/* Affichage modifié ici */}
-        <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
-        <button 
-          onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
-        >
+        <h2 style={{ margin: 0 }}>Salle : {roomName}</h2>
+        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}>
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
@@ -280,12 +253,7 @@ export default function GamePage({ roomId, onLeave }) {
 
         {isAddPlayerOpen && (
           <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
-            <input 
-                value={newPlayerName} 
-                onChange={(e) => setNewPlayerName(e.target.value)} 
-                placeholder="Nom du joueur" 
-                style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} 
-            />
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '5px' }}>
                 <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff', fontSize: '14px'}}>Ajouter</button>
                 <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666', color: '#fff', fontSize: '14px'}}>Fermer</button>
@@ -304,7 +272,6 @@ export default function GamePage({ roomId, onLeave }) {
           {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
-        
         {matchPopup && (
           <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
              <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
