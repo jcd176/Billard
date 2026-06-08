@@ -13,6 +13,7 @@ export default function GamePage({ roomId, onLeave }) {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
+  const [isLiveScoreOpen, setIsLiveScoreOpen] = useState(false); // Nouvelle modal pour score live
   const [modalAction, setModalAction] = useState(null);
   const [targetPlayerId, setTargetPlayerId] = useState('');
   const [matchOption, setMatchOption] = useState('delete');
@@ -41,7 +42,8 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
-    const roomRef = ref(database, `rooms/billard/${roomId}/name`);
+    // Chemin mis à jour vers pingpong
+    const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       if (snapshot.exists()) setRoomName(snapshot.val());
     });
@@ -201,6 +203,7 @@ export default function GamePage({ roomId, onLeave }) {
 
   return (
     <div className="card">
+      {/* Modale Paramètres existante */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -234,51 +237,42 @@ export default function GamePage({ roomId, onLeave }) {
         </div>
       )}
 
+      {/* Modale Score Live */}
+      {isLiveScoreOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center' }}>
+            <h3>Score en Direct</h3>
+            <p>Affichage du score de la rencontre sélectionnée...</p>
+            <button onClick={() => setIsLiveScoreOpen(false)} style={modalBtnStyle}>Valider Partie</button>
+            <button onClick={() => setIsLiveScoreOpen(false)} style={{...modalBtnStyle, background: '#f00', marginTop: '10px'}}>Annuler</button>
+          </div>
+        </div>
+      )}
+
       <button 
         onClick={onLeave} 
-        style={{ 
-            background: '#ff4d4d', 
-            border: 'none', 
-            borderRadius: '50%', 
-            width: '40px', 
-            height: '40px', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: 'white', 
-            fontSize: '24px',
-            marginBottom: '10px'
-        }}
+        style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', marginBottom: '10px' }}
       >
         ↩
       </button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>Salle : {roomName}</h2>
-        <button 
-          onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
-        >
+        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}>
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
 
         {playerPopup && (
             <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
-                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🏓</div>
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
 
         {isAddPlayerOpen && (
           <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
-            <input 
-                value={newPlayerName} 
-                onChange={(e) => setNewPlayerName(e.target.value)} 
-                placeholder="Nom du joueur" 
-                style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} 
-            />
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '5px' }}>
                 <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff', fontSize: '14px'}}>Ajouter</button>
                 <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666', color: '#fff', fontSize: '14px'}}>Fermer</button>
@@ -293,15 +287,15 @@ export default function GamePage({ roomId, onLeave }) {
           {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
-          <option value="">🎱 Perdant</option>
-          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+          <option value="">🏓 Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🏓 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
         {matchPopup && (
           <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
-             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🏓</div>
+             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🏓</h2>
           </div>
         )}
       </div>
@@ -336,7 +330,7 @@ export default function GamePage({ roomId, onLeave }) {
                     </span>
                     </td>
                     <td>{winRate}%</td>
-                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🏓</button></td>
                 </tr>
                 );
             })}
@@ -358,8 +352,8 @@ export default function GamePage({ roomId, onLeave }) {
             const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
             return (
                 <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
+                <span onClick={() => setIsLiveScoreOpen(true)} style={{cursor: 'pointer'}}>👑 {leader.name} ({leader.score}) vs 🏓 {follower.name} ({follower.score})</span>
+                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🏓</button>
                 </div>
             );
             })}
@@ -379,7 +373,7 @@ export default function GamePage({ roomId, onLeave }) {
             <div key={log.id} style={{ marginBottom: '5px' }}>
                 <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
                 {log.type === 'match' ? (
-                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🏓</span></span>
                 ) : (
                 <span style={{ 
                     color: log.type === 'error' ? '#EE82EE' : 
