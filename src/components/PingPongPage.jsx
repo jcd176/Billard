@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
-export default function GamePage({ roomId, sport, onLeave }) { // Ajout de 'sport' en prop pour localiser la donnée
+export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
+  // Correction : Initialisation avec une chaîne vide ou un texte par défaut en attendant la donnée Firebase
   const [roomName, setRoomName] = useState('Chargement...'); 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
@@ -41,13 +42,13 @@ export default function GamePage({ roomId, sport, onLeave }) { // Ajout de 'spor
   };
 
   useEffect(() => {
-    // Correction : Utilisation du sport pour cibler le bon nœud dans Firebase
-    const roomRef = ref(database, `rooms/${sport}/${roomId}/name`);
+    // Modification : S'assure que le chemin récupère bien le nom réel du jeu (ex: pingpong)
+    const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       if (snapshot.exists()) {
         setRoomName(snapshot.val());
       } else {
-        setRoomName("Match");
+        setRoomName("Match créé"); // Valeur de repli si le nom n'existe pas
       }
     });
 
@@ -82,7 +83,7 @@ export default function GamePage({ roomId, sport, onLeave }) { // Ajout de 'spor
     });
 
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [roomId, sport]); 
+  }, [roomId]); // Suppression de 'logs' dans les dépendances pour éviter les boucles inutiles
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
@@ -206,7 +207,6 @@ export default function GamePage({ roomId, sport, onLeave }) { // Ajout de 'spor
 
   return (
     <div className="card">
-      {/* ... (Modal logic remains same) */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -240,18 +240,168 @@ export default function GamePage({ roomId, sport, onLeave }) { // Ajout de 'spor
         </div>
       )}
 
-      <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', marginBottom: '10px' }}>↩</button>
+      <button 
+        onClick={onLeave} 
+        style={{ 
+          background: '#ff4d4d', 
+          border: 'none', 
+          borderRadius: '50%', 
+          width: '40px', 
+          height: '40px', 
+          cursor: 'pointer', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: 'white', 
+          fontSize: '24px',
+          marginBottom: '10px'
+        }}
+      >
+        ↩
+      </button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
+        {/* Affichage modifié ici */}
         <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
-        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}>
+        <button 
+          onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
+        >
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
-        {/* ... (Rest of component remains same) */}
+
+        {playerPopup && (
+            <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
+                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
+            </div>
+        )}
+
+        {isAddPlayerOpen && (
+          <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
+            <input 
+                value={newPlayerName} 
+                onChange={(e) => setNewPlayerName(e.target.value)} 
+                placeholder="Nom du joueur" 
+                style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} 
+            />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff', fontSize: '14px'}}>Ajouter</button>
+                <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666', color: '#fff', fontSize: '14px'}}>Fermer</button>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* (Reste du code identique...) */}
+      <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
+          <option value="">👑 Vainqueur</option>
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+        </select>
+        <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
+          <option value="">🎱 Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+        </select>
+        <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
+        
+        {matchPopup && (
+          <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
+             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
+             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3>Classement :</h3>
+        <div>
+            <button onClick={() => setShowRanking(!showRanking)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showRanking ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('classement', 'players')} style={btnReset}>↻</button>
+        </div>
+      </div>
+      {showRanking && (
+        <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+            <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
+            <tbody>
+            {players.map((p, i) => {
+                const total = (p.wins || 0) + (p.losses || 0);
+                const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+                return (
+                <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                    <td>{i === 0 && '👑 '}{p.name}</td>
+                    <td>{p.wins || 0}
+                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    </span>
+                    </td>
+                    <td>{p.losses || 0}
+                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                    </span>
+                    </td>
+                   <td>{winRate}%</td>
+                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                </tr>
+                );
+            })}
+            </tbody>
+        </table>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Suivi des rencontres :</h3>
+        <div>
+            <button onClick={() => setShowMatches(!showMatches)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showMatches ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('suivi', 'matches')} style={btnReset}>↻</button>
+        </div>
+      </div>
+      {showMatches && (
+        <div style={{ background: '#222', padding: '10px', borderRadius: '5px' }}>
+            {Object.entries(matches).map(([id, m]) => {
+            const leader = m.w1 >= m.w2 ? { name: m.p1, score: m.w1 } : { name: m.p2, score: m.w2 };
+            const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
+            return (
+                <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
+                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
+                </div>
+            );
+            })}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <h3>Historique :</h3>
+        <div>
+            <button onClick={() => setShowHistory(!showHistory)} style={{...btnReset, fontSize: '14px', marginRight: '10px'}}>{showHistory ? '▲' : '▼'}</button>
+            <button onClick={() => resetAction('historique', 'logs')} style={btnReset}>↻</button>
+        </div>
+      </div>
+      {showHistory && (
+        <div style={{ background: '#111', padding: '10px', borderRadius: '5px', fontSize: '14px', maxHeight: '300px', overflowY: 'auto' }}>
+            {logs.map(log => (
+            <div key={log.id} style={{ marginBottom: '5px' }}>
+                <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
+                {log.type === 'match' ? (
+                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+                ) : (
+                <span style={{ 
+                    color: log.type === 'error' ? '#EE82EE' : 
+                        log.type === 'add' ? '#0f0' : 
+                        log.type === 'remove' ? '#f00' : 
+                        log.type === 'manual_plus' ? '#00BFFF' : 
+                        log.type === 'manual_minus' ? '#800000' : '#FFD700' 
+                }}>
+                    {log.message}
+                </span>
+                )}
+            </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
