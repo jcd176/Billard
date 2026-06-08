@@ -335,7 +335,7 @@ export default function GamePage({ roomId, onLeave }) {
                         <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
                     </span>
                     </td>
-                    <td>{winRate}%</td>
+                   <td>{winRate}%</td>
                     <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
                 </tr>
                 );
