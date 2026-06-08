@@ -255,7 +255,7 @@ export default function GamePage({ roomId, onLeave }) {
       </button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Salle : {roomName}</h2>
+        <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
