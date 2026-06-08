@@ -6,8 +6,7 @@ export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
-  // Correction : Initialisation avec une chaîne vide ou un texte par défaut en attendant la donnée Firebase
-  const [roomName, setRoomName] = useState('Chargement...'); 
+  const [roomName, setRoomName] = useState('Chargement...');
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
@@ -42,14 +41,10 @@ export default function GamePage({ roomId, onLeave }) {
   };
 
   useEffect(() => {
-    // Modification : S'assure que le chemin récupère bien le nom réel du jeu (ex: pingpong)
+    // Chemin corrigé pour récupérer le nom de la salle
     const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setRoomName(snapshot.val());
-      } else {
-        setRoomName("Match créé"); // Valeur de repli si le nom n'existe pas
-      }
+      if (snapshot.exists()) setRoomName(snapshot.val());
     });
 
     const playersRef = ref(database, `rooms/${roomId}/players`);
@@ -83,7 +78,7 @@ export default function GamePage({ roomId, onLeave }) {
     });
 
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [roomId]); // Suppression de 'logs' dans les dépendances pour éviter les boucles inutiles
+  }, [roomId]); 
 
   const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
 
@@ -261,7 +256,6 @@ export default function GamePage({ roomId, onLeave }) {
       </button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
-        {/* Affichage modifié ici */}
         <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
         <button 
           onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
