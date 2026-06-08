@@ -9,11 +9,11 @@ export default function DashboardPage({ onSelectSport, onLogout }) {
   const sports = [
     { id: 'billard', name: 'Billard', icon: '🎱' },
     { id: 'pingpong', name: 'Ping Pong', icon: '🏓' },
-    { id: 'skate', name: 'Skate', icon: '🛹' },
-    { id: 'tennis', name: 'Tennis', icon: '🎾' },
+    { id: 'babyfoot', name: 'Pétanque', icon: '⚽' },
     { id: 'palets', name: 'Palets', icon: '🥏' },
     { id: 'petanque', name: 'Pétanque', icon: '🔘' },
-    { id: 'babyfoot', name: 'Baby Foot', icon: '⚽' }
+    { id: 'skate', name: 'Skate', icon: '🛹' },
+    { id: 'tennis', name: 'Tennis', icon: '🎾' }
   ];
 
   return (
