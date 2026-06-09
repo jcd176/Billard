@@ -3,6 +3,9 @@ import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
  
 export default function GamePage({ roomId, onLeave }) {
+  // Chemin de base unifié pour pointer vers rooms/pingpong/{roomId}
+  const path = `rooms/pingpong/${roomId}`;
+
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
@@ -48,13 +51,12 @@ export default function GamePage({ roomId, onLeave }) {
   };
  
   useEffect(() => {
-    // CORRECTION : Chemin Firebase corrigé pour pointer vers rooms/pingpong/{roomId}/name
-    const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
+    const roomRef = ref(database, `${path}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       setRoomName(snapshot.exists() ? snapshot.val() : "Match créé");
     });
  
-    const playersRef = ref(database, `rooms/${roomId}/players`);
+    const playersRef = ref(database, `${path}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
@@ -72,10 +74,10 @@ export default function GamePage({ roomId, onLeave }) {
       setPlayers(sorted);
     });
  
-    const matchesRef = ref(database, `rooms/${roomId}/matches`);
+    const matchesRef = ref(database, `${path}/matches`);
     const unsubscribeMatches = onValue(matchesRef, (snapshot) => setMatches(snapshot.val() || {}));
  
-    const logsRef = ref(database, `rooms/${roomId}/logs`);
+    const logsRef = ref(database, `${path}/logs`);
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
@@ -83,9 +85,9 @@ export default function GamePage({ roomId, onLeave }) {
     });
  
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [roomId]);
+  }, [path, logs]);
  
-  const addLog = (message, type) => push(ref(database, `rooms/${roomId}/logs`), { message, type, timestamp: Date.now() });
+  const addLog = (message, type) => push(ref(database, `${path}/logs`), { message, type, timestamp: Date.now() });
  
   const executeAdjustment = () => {
     const password = prompt("Saisissez le mot de passe");
@@ -97,14 +99,14 @@ export default function GamePage({ roomId, onLeave }) {
         const p2 = players.find(p => p.name === p2Name);
  
         if (matchOption === 'delete') {
-          remove(ref(database, `rooms/${roomId}/matches/${matchId}`));
-          if (p1) update(ref(database, `rooms/${roomId}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
-          if (p2) update(ref(database, `rooms/${roomId}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
+          remove(ref(database, `${path}/matches/${matchId}`));
+          if (p1) update(ref(database, `${path}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
+          if (p2) update(ref(database, `${path}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
           addLog(`Suppression partie "${matchNames}"`, 'remove');
         } else {
-          set(ref(database, `rooms/${roomId}/matches/${matchId}`), { p1: p1Name, p2: p2Name, w1: 0, w2: 0, count: 0 });
-          if (p1) update(ref(database, `rooms/${roomId}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
-          if (p2) update(ref(database, `rooms/${roomId}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
+          set(ref(database, `${path}/matches/${matchId}`), { p1: p1Name, p2: p2Name, w1: 0, w2: 0, count: 0 });
+          if (p1) update(ref(database, `${path}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
+          if (p2) update(ref(database, `${path}/players/${p2.id}`), { wins: Math.max(0, (p2.wins || 0) - w2), losses: Math.max(0, (p2.losses || 0) - w1) });
           addLog(`Réinitialisation partie "${matchNames}"`, 'remove');
         }
       } else {
@@ -114,8 +116,8 @@ export default function GamePage({ roomId, onLeave }) {
         const mainField = field;
         const otherField = field === 'wins' ? 'losses' : 'wins';
         
-        update(ref(database, `rooms/${roomId}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
-        update(ref(database, `rooms/${roomId}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
+        update(ref(database, `${path}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
+        update(ref(database, `${path}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
         
         const matchKey = [player.name, targetPlayer.name].sort().join('_vs_');
         if (matches[matchKey]) {
@@ -128,7 +130,7 @@ export default function GamePage({ roomId, onLeave }) {
                 updateObj[isP1 ? 'w2' : 'w1'] = Math.max(0, (isP1 ? m.w2 : m.w1) + change);
             }
             updateObj.count = Math.max(0, (m.count || 0) + change);
-            update(ref(database, `rooms/${roomId}/matches/${matchKey}`), updateObj);
+            update(ref(database, `${path}/matches/${matchKey}`), updateObj);
         }
  
         addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
@@ -150,7 +152,7 @@ export default function GamePage({ roomId, onLeave }) {
     if (trimmedName.length > 12) { alert("Le nom est trop long."); return; }
     const exists = players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) { alert("Ce nom existe déjà."); return; }
-    push(ref(database, `rooms/${roomId}/players`), { name: trimmedName, wins: 0, losses: 0 });
+    push(ref(database, `${path}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint la salle`, 'add');
     setPlayerPopup(trimmedName);
     setTimeout(() => setPlayerPopup(null), 2000);
@@ -162,18 +164,18 @@ export default function GamePage({ roomId, onLeave }) {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
     const lPlayer = players.find(p => p.id === loser);
-    update(ref(database, `rooms/${roomId}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
-    update(ref(database, `rooms/${roomId}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+    update(ref(database, `${path}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
+    update(ref(database, `${path}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
     const matchId = [wPlayer.name, lPlayer.name].sort().join('_vs_');
     const existing = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, w1: 0, w2: 0, count: 0 };
     const isW1 = wPlayer.name === existing.p1;
-    set(ref(database, `rooms/${roomId}/matches/${matchId}`), {
+    set(ref(database, `${path}/matches/${matchId}`), {
       p1: existing.p1, p2: existing.p2,
       w1: isW1 ? existing.w1 + 1 : existing.w1,
       w2: !isW1 ? existing.w2 + 1 : existing.w2,
       count: existing.count + 1
     });
-   addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
+    addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
     setMatchPopup({ winner: wPlayer.name, loser: lPlayer.name });
     setTimeout(() => setMatchPopup(null), 3000);
     setWinner(''); setLoser('');
@@ -185,24 +187,24 @@ export default function GamePage({ roomId, onLeave }) {
     const lId = scoreP1 > scoreP2 ? liveP2Id : liveP1Id;
     const wPlayer = players.find(p => p.id === wId);
     const lPlayer = players.find(p => p.id === lId);
-    update(ref(database, `rooms/${roomId}/players/${wId}`), { wins: (wPlayer.wins || 0) + 1 });
-    update(ref(database, `rooms/${roomId}/players/${lId}`), { losses: (lPlayer.losses || 0) + 1 });
+    update(ref(database, `${path}/players/${wId}`), { wins: (wPlayer.wins || 0) + 1 });
+    update(ref(database, `${path}/players/${lId}`), { losses: (lPlayer.losses || 0) + 1 });
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name} (${scoreP1}-${scoreP2})`, 'match');
     setIsLiveModalOpen(false); setScoreP1(0); setScoreP2(0); setLiveP1Id(''); setLiveP2Id('');
   };
  
-  const resetAction = (type, path) => {
+  const resetAction = (type, subPath) => {
     if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
       if (type === 'classement') {
-        players.forEach(p => update(ref(database, `rooms/${roomId}/players/${p.id}`), { wins: 0, losses: 0 }));
-      } else { set(ref(database, `rooms/${roomId}/${path}`), null); }
+        players.forEach(p => update(ref(database, `${path}/players/${p.id}`), { wins: 0, losses: 0 }));
+      } else { set(ref(database, `${path}/${subPath}`), null); }
       addLog(`Réinitialisation de ${type} effectuée`, 'reset');
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
  
   const removePlayer = (playerId, playerName) => {
     if (prompt("Mot de passe suppression") === 'root') {
-      remove(ref(database, `rooms/${roomId}/players/${playerId}`));
+      remove(ref(database, `${path}/players/${playerId}`));
       addLog(`${playerName} a été supprimé`, 'remove');
     } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
   };
