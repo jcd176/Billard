@@ -48,6 +48,7 @@ export default function GamePage({ roomId, onLeave }) {
   };
  
   useEffect(() => {
+    // CORRECTION : Chemin Firebase corrigé pour pointer vers rooms/pingpong/{roomId}/name
     const roomRef = ref(database, `rooms/pingpong/${roomId}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       setRoomName(snapshot.exists() ? snapshot.val() : "Match créé");
@@ -177,7 +178,7 @@ export default function GamePage({ roomId, onLeave }) {
     setTimeout(() => setMatchPopup(null), 3000);
     setWinner(''); setLoser('');
   };
-
+ 
   const finishLiveMatch = () => {
     if (!liveP1Id || !liveP2Id || liveP1Id === liveP2Id) return;
     const wId = scoreP1 > scoreP2 ? liveP1Id : liveP2Id;
@@ -208,9 +209,8 @@ export default function GamePage({ roomId, onLeave }) {
  
   return (
     <div className="card">
-      {/* Bouton Live ajouté */}
       <button onClick={() => setIsLiveModalOpen(true)} style={{ width: '100%', marginBottom: '10px', padding: '10px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🏓 Lancer Partie Live</button>
-
+ 
       {isLiveModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
           <h2 style={{ color: '#fff' }}>Match Live 🏓</h2>
@@ -229,7 +229,7 @@ export default function GamePage({ roomId, onLeave }) {
           <button onClick={finishLiveMatch} style={{ marginTop: '20px', padding: '10px' }}>Terminer</button>
         </div>
       )}
-
+ 
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -325,21 +325,21 @@ export default function GamePage({ roomId, onLeave }) {
                 const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
                 return (
                 <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                    <td>{i === 0 && '👑 '}{p.name}</td>
-                    <td>{p.wins || 0}
-                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                  <td>{i === 0 && '👑 '}{p.name}</td>
+                  <td>{p.wins || 0}
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
                         <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
                         <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-                    </span>
-                    </td>
-                    <td>{p.losses || 0}
-                    <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
+                  </span>
+                  </td>
+                  <td>{p.losses || 0}
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
                         <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
                         <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
-                    </span>
-                    </td>
+                  </span>
+                  </td>
                   <td>{winRate}%</td>
-                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                  <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
                 </tr>
                 );
             })}
