@@ -2,9 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
  
-export default function GamePage({ roomId, onLeave }) {
-  // Chemin de base unifié pour pointer vers rooms/pingpong/{roomId}
-  const path = `rooms/pingpong/${roomId}`;
+export default function GamePage({ roomId, onLeave, sport = 'pingpong' }) { // Ajout de la prop sport
+  // Chemin de base unifié
+  const path = `rooms/${sport}/${roomId}`;
+
+  // Logique pour le label dynamique
+  const sportLabels = {
+    'billard': 'Salle', 'pingpong': 'Match', 'babyfoot': 'Match',
+    'palets': 'Jeu', 'petanque': 'Jeu', 'skate': 'Session', 'tennis': 'Match'
+  };
+  const label = sportLabels[sport] || 'Salle';
 
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
@@ -268,7 +275,7 @@ export default function GamePage({ roomId, onLeave }) {
       <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', marginBottom: '10px' }}>↩</button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
+        <h2 style={{ margin: 0 }}>{label} : {roomName}</h2>
         <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}>
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
@@ -388,10 +395,10 @@ export default function GamePage({ roomId, onLeave }) {
                 ) : (
                 <span style={{ 
                     color: log.type === 'error' ? '#EE82EE' : 
-                          log.type === 'add' ? '#0f0' : 
-                          log.type === 'remove' ? '#f00' : 
-                          log.type === 'manual_plus' ? '#00BFFF' : 
-                          log.type === 'manual_minus' ? '#800000' : '#FFD700' 
+                        log.type === 'add' ? '#0f0' : 
+                        log.type === 'remove' ? '#f00' : 
+                        log.type === 'manual_plus' ? '#00BFFF' : 
+                        log.type === 'manual_minus' ? '#800000' : '#FFD700' 
                 }}>
                     {log.message}
                 </span>
