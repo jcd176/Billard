@@ -13,8 +13,9 @@ export default function GamePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
 
   useEffect(() => {
+    // CORRECTION : Le chemin est 'skate/ROOM_ID/players'
     if (!roomId) return;
-    const playersRef = ref(database, `rooms/${roomId}/players`);
+    const playersRef = ref(database, `skate/${roomId}/players`);
     
     return onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -22,39 +23,38 @@ export default function GamePage({ roomId, onLeave }) {
         setPlayers([]);
         return;
       }
-      // Transformation des données pour inclure l'ID et s'assurer que tricks existe
+      
       const list = Object.entries(data).map(([id, p]) => ({
         id,
         ...p,
-        tricks: p.tricks || {} // Sécurité : on initialise l'objet tricks s'il est vide
+        // Si 'tricks' n'existe pas encore dans Firebase, on initialise un objet vide
+        tricks: p.tricks || {} 
       }));
       setPlayers(list);
     });
   }, [roomId]);
 
   const toggleTrick = (playerId, trickId, currentStatus) => {
-    // On cible précisément le champ dans Firebase
-    const trickRef = ref(database, `rooms/${roomId}/players/${playerId}/tricks/${trickId}`);
-    update(ref(database, `rooms/${roomId}/players/${playerId}/tricks`), { 
+    // CORRECTION : Le chemin d'écriture doit correspondre à la lecture
+    const tricksRef = ref(database, `skate/${roomId}/players/${playerId}/tricks`);
+    update(tricksRef, { 
       [trickId]: !currentStatus 
     });
   };
 
   return (
-    <div style={{ background: '#1a1a1a', color: '#fff', padding: '20px', minHeight: '100vh' }}>
-      <button onClick={onLeave} style={{ marginBottom: '20px' }}>↩ Retour</button>
+    <div style={{ padding: '20px', background: '#222', color: '#fff', minHeight: '100vh' }}>
+      <button onClick={onLeave} style={{ marginBottom: '20px' }}>⬅ Retour</button>
       <h1>Progression Minirampe</h1>
       
-      {players.length === 0 && <p>Aucun joueur trouvé dans cette salle.</p>}
-
       {players.map(p => (
-        <div key={p.id} style={{ background: '#2d2d2d', padding: '15px', marginBottom: '20px', borderRadius: '8px' }}>
-          <h2 style={{ color: '#007bff' }}>{p.name}</h2>
+        <div key={p.id} style={{ background: '#333', padding: '15px', marginBottom: '20px', borderRadius: '8px' }}>
+          <h2>{p.name}</h2>
           
           {Object.entries(TRICK_LEVELS).map(([level, tricks]) => (
-            <div key={level} style={{ marginTop: '10px' }}>
-              <h4 style={{ margin: '5px 0', borderBottom: '1px solid #444' }}>{level}</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '5px' }}>
+            <div key={level} style={{ marginTop: '15px' }}>
+              <h4 style={{ color: '#aaa', margin: '5px 0' }}>{level}</h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {tricks.map(trick => {
                   const isDone = p.tricks[trick.id] === true;
                   return (
@@ -62,11 +62,11 @@ export default function GamePage({ roomId, onLeave }) {
                       key={trick.id}
                       onClick={() => toggleTrick(p.id, trick.id, isDone)}
                       style={{ 
-                        background: isDone ? '#0f0' : '#444',
+                        background: isDone ? '#0f0' : '#555',
                         color: isDone ? '#000' : '#fff',
                         border: 'none',
                         padding: '8px 12px',
-                        borderRadius: '20px',
+                        borderRadius: '4px',
                         cursor: 'pointer'
                       }}
                     >
