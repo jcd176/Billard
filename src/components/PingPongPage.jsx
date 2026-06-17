@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
- 
+
 export default function GamePage({ roomId, onLeave }) {
-  // Chemin de base unifié pour pointer vers rooms/pingpong/{roomId}
   const path = `rooms/pingpong/${roomId}`;
- 
+
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
@@ -14,13 +13,12 @@ export default function GamePage({ roomId, onLeave }) {
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
   
-  // --- Ajout pour le mode Live (sans altérer l'existant) ---
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false);
   const [scoreP1, setScoreP1] = useState(0);
   const [scoreP2, setScoreP2] = useState(0);
   const [liveP1Id, setLiveP1Id] = useState('');
   const [liveP2Id, setLiveP2Id] = useState('');
- 
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
@@ -32,15 +30,15 @@ export default function GamePage({ roomId, onLeave }) {
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
   const [showHistory, setShowHistory] = useState(true);
- 
+  
   const prevLeaderIdRef = useRef(null);
- 
+  
   const whiteIconStyle = { filter: 'brightness(0) invert(1)', fontSize: '14px', display: 'inline-block' };
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
   const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
   const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
- 
+
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -49,14 +47,13 @@ export default function GamePage({ roomId, onLeave }) {
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
   };
- 
+
   useEffect(() => {
-    // CORRECTION : On écoute le champ 'name' de la room spécifique dans Firebase
     const roomRef = ref(database, `${path}/name`);
     const unsubscribeRoom = onValue(roomRef, (snapshot) => {
       setRoomName(snapshot.exists() ? snapshot.val() : "Match");
     });
- 
+
     const playersRef = ref(database, `${path}/players`);
     const unsubscribePlayers = onValue(playersRef, (snapshot) => {
       const data = snapshot.val();
@@ -74,22 +71,22 @@ export default function GamePage({ roomId, onLeave }) {
       }
       setPlayers(sorted);
     });
- 
+
     const matchesRef = ref(database, `${path}/matches`);
     const unsubscribeMatches = onValue(matchesRef, (snapshot) => setMatches(snapshot.val() || {}));
- 
+
     const logsRef = ref(database, `${path}/logs`);
     const unsubscribeLogs = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
       setLogs(list.reverse());
     });
- 
+
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
   }, [path, logs]);
- 
+
   const addLog = (message, type) => push(ref(database, `${path}/logs`), { message, type, timestamp: Date.now() });
- 
+
   const executeAdjustment = () => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
@@ -98,7 +95,7 @@ export default function GamePage({ roomId, onLeave }) {
       if (matchId) {
         const p1 = players.find(p => p.name === p1Name);
         const p2 = players.find(p => p.name === p2Name);
- 
+
         if (matchOption === 'delete') {
           remove(ref(database, `${path}/matches/${matchId}`));
           if (p1) update(ref(database, `${path}/players/${p1.id}`), { wins: Math.max(0, (p1.wins || 0) - w1), losses: Math.max(0, (p1.losses || 0) - w2) });
@@ -133,7 +130,7 @@ export default function GamePage({ roomId, onLeave }) {
             updateObj.count = Math.max(0, (m.count || 0) + change);
             update(ref(database, `${path}/matches/${matchKey}`), updateObj);
         }
- 
+
         addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
@@ -146,7 +143,7 @@ export default function GamePage({ roomId, onLeave }) {
     setTargetPlayerId('');
     setIsModalOpen(false);
   };
- 
+
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
     if (!trimmedName) return;
@@ -160,7 +157,7 @@ export default function GamePage({ roomId, onLeave }) {
     setNewPlayerName('');
     setIsAddPlayerOpen(false);
   };
- 
+
   const declareMatch = () => {
     if (!winner || !loser || winner === loser) return;
     const wPlayer = players.find(p => p.id === winner);
@@ -181,7 +178,7 @@ export default function GamePage({ roomId, onLeave }) {
     setTimeout(() => setMatchPopup(null), 3000);
     setWinner(''); setLoser('');
   };
- 
+
   const finishLiveMatch = () => {
     if (!liveP1Id || !liveP2Id || liveP1Id === liveP2Id) return;
     const wId = scoreP1 > scoreP2 ? liveP1Id : liveP2Id;
@@ -193,7 +190,7 @@ export default function GamePage({ roomId, onLeave }) {
     addLog(`MATCH:${wPlayer.name}|${lPlayer.name} (${scoreP1}-${scoreP2})`, 'match');
     setIsLiveModalOpen(false); setScoreP1(0); setScoreP2(0); setLiveP1Id(''); setLiveP2Id('');
   };
- 
+
   const resetAction = (type, subPath) => {
     if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
       if (type === 'classement') {
@@ -202,18 +199,18 @@ export default function GamePage({ roomId, onLeave }) {
       addLog(`Réinitialisation de ${type} effectuée`, 'reset');
     } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
- 
+
   const removePlayer = (playerId, playerName) => {
     if (prompt("Mot de passe suppression") === 'root') {
       remove(ref(database, `${path}/players/${playerId}`));
       addLog(`${playerName} a été supprimé`, 'remove');
     } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
   };
- 
+
   return (
     <div className="card">
       <button onClick={() => setIsLiveModalOpen(true)} style={{ width: '100%', marginBottom: '10px', padding: '10px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🏓 Lancer Partie Live</button>
- 
+
       {isLiveModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
           <h2 style={{ color: '#fff' }}>Match Live 🏓</h2>
@@ -232,7 +229,7 @@ export default function GamePage({ roomId, onLeave }) {
           <button onClick={finishLiveMatch} style={{ marginTop: '20px', padding: '10px' }}>Terminer</button>
         </div>
       )}
- 
+
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
@@ -265,23 +262,23 @@ export default function GamePage({ roomId, onLeave }) {
           </div>
         </div>
       )}
- 
+
       <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', marginBottom: '10px' }}>↩</button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Match : {roomName}</h2>
+        <h2 style={{ margin: 0 }}>Match</h2>
         <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}>
           <span style={whiteIconStyle}>➕</span>
           <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
         </button>
- 
+
         {playerPopup && (
             <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
                 <div style={{ fontSize: '40px', marginBottom: '5px' }}>🏓</div>
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
- 
+
         {isAddPlayerOpen && (
           <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
             <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
@@ -311,7 +308,7 @@ export default function GamePage({ roomId, onLeave }) {
           </div>
         )}
       </div>
- 
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
         <div>
@@ -349,7 +346,7 @@ export default function GamePage({ roomId, onLeave }) {
             </tbody>
         </table>
       )}
- 
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Suivi des rencontres :</h3>
         <div>
@@ -371,7 +368,7 @@ export default function GamePage({ roomId, onLeave }) {
             })}
         </div>
       )}
- 
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
         <div>
