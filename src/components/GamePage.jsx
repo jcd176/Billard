@@ -42,35 +42,33 @@ export default function GamePage({ sport, roomId, onLeave }) {
   };
 
   useEffect(() => {
-    const unsubscribeRoom = onValue(ref(database, `${basePath}/name`), (snap) => {
-      if (snap.exists()) setRoomName(snap.val());
-    });
+    const roomRef = ref(database, `${basePath}/name`);
+    const unsubscribeRoom = onValue(roomRef, (snapshot) => { if (snapshot.exists()) setRoomName(snapshot.val()); });
 
-    const unsubscribePlayers = onValue(ref(database, `${basePath}/players`), (snap) => {
-      const data = snap.val();
+    const playersRef = ref(database, `${basePath}/players`);
+    const unsubscribePlayers = onValue(playersRef, (snapshot) => {
+      const data = snapshot.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
-      
-      if (sorted.length > 0) {
-        const currentLeader = sorted[0];
-        if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
-          const lastLog = logs[0]?.message;
-          const msg = `Nouveau leader : ${currentLeader.name} 👑`;
-          if (lastLog !== msg) addLog(msg, 'leader');
-        }
-        prevLeaderIdRef.current = currentLeader.id;
+      if (sorted.length > 0 && prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== sorted[0].id) {
+        addLog(`Nouveau leader : ${sorted[0].name} 👑`, 'leader');
       }
+      prevLeaderIdRef.current = sorted.length > 0 ? sorted[0].id : null;
       setPlayers(sorted);
     });
 
-    const unsubscribeMatches = onValue(ref(database, `${basePath}/matches`), (snap) => setMatches(snap.val() || {}));
-    const unsubscribeLogs = onValue(ref(database, `${basePath}/logs`), (snap) => {
-      const data = snap.val();
-      setLogs(data ? Object.entries(data).map(([id, log]) => ({ id, ...log })).reverse() : []);
+    const matchesRef = ref(database, `${basePath}/matches`);
+    const unsubscribeMatches = onValue(matchesRef, (snapshot) => setMatches(snapshot.val() || {}));
+
+    const logsRef = ref(database, `${basePath}/logs`);
+    const unsubscribeLogs = onValue(logsRef, (snapshot) => {
+      const data = snapshot.val();
+      const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
+      setLogs(list.reverse());
     });
 
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [basePath, logs]);
+  }, [basePath]);
 
   const addLog = (message, type) => push(ref(database, `${basePath}/logs`), { message, type, timestamp: Date.now() });
 
@@ -96,9 +94,11 @@ export default function GamePage({ sport, roomId, onLeave }) {
         const targetPlayer = players.find(p => p.id === targetPlayerId);
         if (!targetPlayer) return;
         const change = type === 'plus' ? 1 : -1;
-        update(ref(database, `${basePath}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + change) });
-        update(ref(database, `${basePath}/players/${targetPlayerId}`), { [field === 'wins' ? 'losses' : 'wins']: Math.max(0, (targetPlayer[field === 'wins' ? 'losses' : 'wins'] || 0) + change) });
-        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
+        const mainField = field;
+        const otherField = field === 'wins' ? 'losses' : 'wins';
+        update(ref(database, `${basePath}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
+        update(ref(database, `${basePath}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
+        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
       addLog(modalAction.matchId ? "Echec modification partie" : "Echec modification Classement", 'error');
@@ -161,8 +161,8 @@ export default function GamePage({ sport, roomId, onLeave }) {
               <>
                 <p>Action sur "{modalAction.matchNames}"</p>
                 <select value={matchOption} onChange={(e) => setMatchOption(e.target.value)} style={selectStyle}>
-                  <option value="delete">Supprimer</option>
-                  <option value="reset">Réinitialiser</option>
+                  <option value="delete">Supprimer la rencontre</option>
+                  <option value="reset">Réinitialiser la rencontre</option>
                 </select>
               </>
             ) : (
@@ -216,6 +216,8 @@ export default function GamePage({ sport, roomId, onLeave }) {
           <button onClick={() => removePlayer(p.id, p.name)} style={btnAction}>🗑️</button>
         </div>
       ))}
+      
+      {/* Ajoutez ici la suite de votre JSX original (Matches et Logs) pour clore le composant */}
     </div>
   );
 }
