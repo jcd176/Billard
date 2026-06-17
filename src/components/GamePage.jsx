@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 import { SPORT_CONFIG } from './sportConfig';
-
+ 
 export default function GamePage({ sport, roomId, onLeave }) {
-  const config = SPORT_CONFIG[sport] || { name: 'Jeu', icon: '🎮', label: 'Match' };
   const basePath = `rooms/${sport}/${roomId}`;
-
+  const config = SPORT_CONFIG[sport] || { name: 'Jeu', icon: '🎮', label: 'Match' };
+  
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
@@ -14,7 +14,6 @@ export default function GamePage({ sport, roomId, onLeave }) {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [winner, setWinner] = useState('');
   const [loser, setLoser] = useState('');
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
@@ -22,32 +21,22 @@ export default function GamePage({ sport, roomId, onLeave }) {
   const [matchOption, setMatchOption] = useState('delete');
   const [matchPopup, setMatchPopup] = useState(null);
   const [playerPopup, setPlayerPopup] = useState(null);
-
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
   const [showHistory, setShowHistory] = useState(true);
-
   const prevLeaderIdRef = useRef(null);
-
+ 
   const whiteIconStyle = { filter: 'brightness(0) invert(1)', fontSize: '14px', display: 'inline-block' };
-  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
-  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
-  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
-  const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
-
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
   };
-
+ 
   useEffect(() => {
-    const roomRef = ref(database, `${basePath}/name`);
-    const unsubscribeRoom = onValue(roomRef, (snapshot) => { if (snapshot.exists()) setRoomName(snapshot.val()); });
-
-    const playersRef = ref(database, `${basePath}/players`);
-    const unsubscribePlayers = onValue(playersRef, (snapshot) => {
-      const data = snapshot.val();
+    const unsubscribeRoom = onValue(ref(database, `${basePath}/name`), (s) => { if (s.exists()) setRoomName(s.val()); });
+    const unsubscribePlayers = onValue(ref(database, `${basePath}/players`), (s) => {
+      const data = s.val();
       const list = data ? Object.entries(data).map(([id, p]) => ({ id, ...p })) : [];
       const sorted = list.sort((a, b) => (b.wins || 0) - (a.wins || 0));
       if (sorted.length > 0 && prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== sorted[0].id) {
@@ -56,22 +45,16 @@ export default function GamePage({ sport, roomId, onLeave }) {
       prevLeaderIdRef.current = sorted.length > 0 ? sorted[0].id : null;
       setPlayers(sorted);
     });
-
-    const matchesRef = ref(database, `${basePath}/matches`);
-    const unsubscribeMatches = onValue(matchesRef, (snapshot) => setMatches(snapshot.val() || {}));
-
-    const logsRef = ref(database, `${basePath}/logs`);
-    const unsubscribeLogs = onValue(logsRef, (snapshot) => {
-      const data = snapshot.val();
-      const list = data ? Object.entries(data).map(([id, log]) => ({ id, ...log })) : [];
-      setLogs(list.reverse());
+    const unsubscribeMatches = onValue(ref(database, `${basePath}/matches`), (s) => setMatches(s.val() || {}));
+    const unsubscribeLogs = onValue(ref(database, `${basePath}/logs`), (s) => {
+      const data = s.val();
+      setLogs(data ? Object.entries(data).map(([id, log]) => ({ id, ...log })).reverse() : []);
     });
-
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [basePath]);
-
+  }, [basePath, logs]);
+ 
   const addLog = (message, type) => push(ref(database, `${basePath}/logs`), { message, type, timestamp: Date.now() });
-
+ 
   const executeAdjustment = () => {
     const password = prompt("Saisissez le mot de passe");
     if (password === 'root') {
@@ -94,11 +77,9 @@ export default function GamePage({ sport, roomId, onLeave }) {
         const targetPlayer = players.find(p => p.id === targetPlayerId);
         if (!targetPlayer) return;
         const change = type === 'plus' ? 1 : -1;
-        const mainField = field;
-        const otherField = field === 'wins' ? 'losses' : 'wins';
-        update(ref(database, `${basePath}/players/${player.id}`), { [mainField]: Math.max(0, (player[mainField] || 0) + change) });
-        update(ref(database, `${basePath}/players/${targetPlayerId}`), { [otherField]: Math.max(0, (targetPlayer[otherField] || 0) + change) });
-        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}" : ${change > 0 ? '+' : ''}${change} ${otherField === 'wins' ? 'Victoire' : 'Défaite'} "${targetPlayer.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
+        update(ref(database, `${basePath}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + change) });
+        update(ref(database, `${basePath}/players/${targetPlayerId}`), { [field === 'wins' ? 'losses' : 'wins']: Math.max(0, (targetPlayer[field === 'wins' ? 'losses' : 'wins'] || 0) + change) });
+        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
     } else {
       addLog(modalAction.matchId ? "Echec modification partie" : "Echec modification Classement", 'error');
@@ -116,41 +97,47 @@ export default function GamePage({ sport, roomId, onLeave }) {
     setNewPlayerName(''); setIsAddPlayerOpen(false);
   };
 
-  const declareMatch = () => {
+const declareMatch = () => {
     if (!winner || !loser || winner === loser) return;
-    const wP = players.find(p => p.id === winner);
-    const lP = players.find(p => p.id === loser);
-    update(ref(database, `${basePath}/players/${winner}`), { wins: (wP.wins || 0) + 1 });
-    update(ref(database, `${basePath}/players/${loser}`), { losses: (lP.losses || 0) + 1 });
-    const matchId = [wP.name, lP.name].sort().join('_vs_');
-    const existing = matches[matchId] || { p1: wP.name, p2: lP.name, w1: 0, w2: 0, count: 0 };
-    const isW1 = wP.name === existing.p1;
-    set(ref(database, `${basePath}/matches/${matchId}`), { 
-      p1: existing.p1, p2: existing.p2, 
-      w1: isW1 ? existing.w1 + 1 : existing.w1, 
-      w2: !isW1 ? existing.w2 + 1 : existing.w2, 
-      count: existing.count + 1 
+    const wPlayer = players.find(p => p.id === winner);
+    const lPlayer = players.find(p => p.id === loser);
+    update(ref(database, `${basePath}/players/${winner}`), { wins: (wPlayer.wins || 0) + 1 });
+    update(ref(database, `${basePath}/players/${loser}`), { losses: (lPlayer.losses || 0) + 1 });
+    const matchId = [wPlayer.name, lPlayer.name].sort().join('_vs_');
+    const existing = matches[matchId] || { p1: wPlayer.name, p2: lPlayer.name, w1: 0, w2: 0, count: 0 };
+    const isW1 = wPlayer.name === existing.p1;
+    set(ref(database, `${basePath}/matches/${matchId}`), {
+      p1: existing.p1, p2: existing.p2,
+      w1: isW1 ? existing.w1 + 1 : existing.w1,
+      w2: !isW1 ? existing.w2 + 1 : existing.w2,
+      count: existing.count + 1
     });
-    addLog(`MATCH:${wP.name}|${lP.name}`, 'match');
-    setMatchPopup({ winner: wP.name, loser: lP.name });
+    addLog(`MATCH:${wPlayer.name}|${lPlayer.name}`, 'match');
+    setMatchPopup({ winner: wPlayer.name, loser: lPlayer.name });
     setTimeout(() => setMatchPopup(null), 3000);
     setWinner(''); setLoser('');
   };
 
   const resetAction = (type, path) => {
-    if (prompt(`Vider ${type} ?`) === 'root') {
-      if (type === 'classement') players.forEach(p => update(ref(database, `${basePath}/players/${p.id}`), { wins: 0, losses: 0 }));
-      else set(ref(database, `${basePath}/${path}`), null);
-      addLog(`Réinitialisation ${type}`, 'reset');
-    }
+    if (prompt(`Mot de passe pour vider ${type} ?`) === 'root') {
+      if (type === 'classement') {
+        players.forEach(p => update(ref(database, `${basePath}/players/${p.id}`), { wins: 0, losses: 0 }));
+      } else { set(ref(database, `${basePath}/${path}`), null); }
+      addLog(`Réinitialisation de ${type} effectuée`, 'reset');
+    } else { addLog(`Échec réinitialisation ${type}`, 'error'); }
   };
 
-  const removePlayer = (id, name) => {
-    if (prompt("Confirmer suppression") === 'root') {
-      remove(ref(database, `${basePath}/players/${id}`));
-      addLog(`${name} supprimé`, 'remove');
-    }
+  const removePlayer = (playerId, playerName) => {
+    if (prompt("Mot de passe suppression") === 'root') {
+      remove(ref(database, `${basePath}/players/${playerId}`));
+      addLog(`${playerName} a été supprimé`, 'remove');
+    } else { addLog(`Suppression de "${playerName}" en échec`, 'error'); }
   };
+
+  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
+  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
+  const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   return (
     <div className="card">
@@ -167,57 +154,68 @@ export default function GamePage({ sport, roomId, onLeave }) {
               </>
             ) : (
               <>
-                <p>Sélectionner un joueur cible.</p>
+                <p style={{marginBottom: '15px'}}>Sélectionner un joueur.</p>
                 <select value={targetPlayerId} onChange={(e) => setTargetPlayerId(e.target.value)} style={selectStyle}>
-                  <option value="">Choisir...</option>
+                  <option value="">Choisir un joueur</option>
                   {players.filter(p => p.id !== modalAction?.player?.id).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </>
             )}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={executeAdjustment} style={{...modalBtnStyle, background: '#007bff'}}>Valider</button>
-              <button onClick={() => setIsModalOpen(false)} style={{...modalBtnStyle, background: '#666'}}>Annuler</button>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <button onClick={executeAdjustment} className="btn-primary" style={{...modalBtnStyle, background: '#007bff', color: '#fff'}} disabled={!modalAction?.matchId && !targetPlayerId}>Valider</button>
+              <button onClick={() => { setIsModalOpen(false); setTargetPlayerId(''); }} style={{...modalBtnStyle, background: '#666', color: '#fff'}}>Annuler</button>
             </div>
           </div>
         </div>
       )}
 
-      <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', color: 'white', marginBottom: '10px' }}>↩</button>
+      <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', marginBottom: '10px' }}>↩</button>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2>{config.icon} {config.name} : {roomName}</h2>
-        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><span style={whiteIconStyle}>➕</span></button>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
+        <h2 style={{ margin: 0 }}>{config.icon} {config.name} : {roomName}</h2>
+        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}>
+          <span style={whiteIconStyle}>➕</span>
+        </button>
       </div>
 
       {isAddPlayerOpen && (
-        <div style={{ background: '#333', padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
-          <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom" style={{width: '100%', marginBottom: '10px', padding: '8px'}} />
-          <button onClick={addPlayer} style={{width: '100%', padding: '10px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '4px'}}>Ajouter</button>
+        <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', border: '1px solid #555' }}>
+          <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '8px', marginBottom: '10px'}} />
+          <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff'}}>Ajouter</button>
         </div>
       )}
 
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
-          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
           <option value="">🎱 Perdant</option>
-          {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} style={{ width: '100%', padding: '10px' }}>Déclarer {config.label}</button>
       </div>
 
-      <h3>Classement</h3>
-      {players.map((p, i) => (
-        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #444' }}>
-          <span>{i === 0 && '👑 '}{p.name}</span>
-          <span>{p.wins || 0}V - {p.losses || 0}D</span>
-          <button onClick={() => removePlayer(p.id, p.name)} style={btnAction}>🗑️</button>
-        </div>
-      ))}
-      
-      {/* Ajoutez ici la suite de votre JSX original (Matches et Logs) pour clore le composant */}
+      <h3>Classement :</h3>
+      <table style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
+        <thead><tr style={{ borderBottom: '1px solid #444' }}><th>Joueur</th><th>Vict</th><th>Déf</th><th>%</th><th></th></tr></thead>
+        <tbody>
+          {players.map((p, i) => {
+            const total = (p.wins || 0) + (p.losses || 0);
+            const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
+            return (
+              <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
+                <td>{i === 0 && '👑 '}{p.name}</td>
+                <td>{p.wins || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button></td>
+                <td>{p.losses || 0} <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button></td>
+                <td>{winRate}%</td>
+                <td><button onClick={() => removePlayer(p.id, p.name)} style={btnAction}>🎱</button></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
