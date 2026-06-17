@@ -32,9 +32,9 @@ export default function GamePage({ roomId, onLeave }) {
   const [showRanking, setShowRanking] = useState(true);
   const [showMatches, setShowMatches] = useState(true);
   const [showHistory, setShowHistory] = useState(true);
-  
+ 
   const prevLeaderIdRef = useRef(null);
-  
+ 
   const whiteIconStyle = { filter: 'brightness(0) invert(1)', fontSize: '14px', display: 'inline-block' };
   const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
   const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
