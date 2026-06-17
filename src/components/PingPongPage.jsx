@@ -277,7 +277,7 @@ export default function GamePage({ roomId, onLeave }) {
  
         {playerPopup && (
             <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
-                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🏓</div>
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
@@ -299,15 +299,15 @@ export default function GamePage({ roomId, onLeave }) {
           {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
-          <option value="">🎱 Perdant</option>
-          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+          <option value="">🏓 Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🏓 {p.name}</option>)}
         </select>
         <button onClick={declareMatch} style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
         {matchPopup && (
           <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px' }}>
-             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '18px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🏓</div>
+             <h2 style={{ margin: '0', fontSize: '18px' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🏓</h2>
           </div>
         )}
       </div>
@@ -342,7 +342,7 @@ export default function GamePage({ roomId, onLeave }) {
                   </span>
                   </td>
                   <td>{winRate}%</td>
-                  <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                  <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🏓</button></td>
                 </tr>
                 );
             })}
@@ -364,8 +364,8 @@ export default function GamePage({ roomId, onLeave }) {
             const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
             return (
                 <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
+                <span>👑 {leader.name} ({leader.score}) vs 🏓 {follower.name} ({follower.score})</span>
+                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🏓</button>
                 </div>
             );
             })}
@@ -385,7 +385,7 @@ export default function GamePage({ roomId, onLeave }) {
             <div key={log.id} style={{ marginBottom: '5px' }}>
                 <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
                 {log.type === 'match' ? (
-                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🏓</span></span>
                 ) : (
                 <span style={{ 
                     color: log.type === 'error' ? '#EE82EE' : 
