@@ -4,7 +4,7 @@ import { database } from '../services/firebase';
 import { SPORT_CONFIG } from './sportConfig';
 
 export default function GamePage({ sport, roomId, onLeave }) {
-  const config = SPORT_CONFIG[sport] || { name: 'Jeu', icon: '🎮', label: 'Partie' };
+  const config = SPORT_CONFIG[sport] || { name: 'Jeu', icon: '🎮', label: 'Match' };
   const basePath = `rooms/${sport}/${roomId}`;
 
   const [players, setPlayers] = useState([]);
@@ -30,6 +30,10 @@ export default function GamePage({ sport, roomId, onLeave }) {
   const prevLeaderIdRef = useRef(null);
 
   const whiteIconStyle = { filter: 'brightness(0) invert(1)', fontSize: '14px', display: 'inline-block' };
+  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
+  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
+  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
+  const modalBtnStyle = { flex: 1, padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -50,7 +54,9 @@ export default function GamePage({ sport, roomId, onLeave }) {
       if (sorted.length > 0) {
         const currentLeader = sorted[0];
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
-          addLog(`Nouveau leader : ${currentLeader.name} 👑`, 'leader');
+          const lastLog = logs[0]?.message;
+          const msg = `Nouveau leader : ${currentLeader.name} 👑`;
+          if (lastLog !== msg) addLog(msg, 'leader');
         }
         prevLeaderIdRef.current = currentLeader.id;
       }
@@ -64,7 +70,7 @@ export default function GamePage({ sport, roomId, onLeave }) {
     });
 
     return () => { unsubscribeRoom(); unsubscribePlayers(); unsubscribeMatches(); unsubscribeLogs(); };
-  }, [basePath]);
+  }, [basePath, logs]);
 
   const addLog = (message, type) => push(ref(database, `${basePath}/logs`), { message, type, timestamp: Date.now() });
 
@@ -92,15 +98,17 @@ export default function GamePage({ sport, roomId, onLeave }) {
         const change = type === 'plus' ? 1 : -1;
         update(ref(database, `${basePath}/players/${player.id}`), { [field]: Math.max(0, (player[field] || 0) + change) });
         update(ref(database, `${basePath}/players/${targetPlayerId}`), { [field === 'wins' ? 'losses' : 'wins']: Math.max(0, (targetPlayer[field === 'wins' ? 'losses' : 'wins'] || 0) + change) });
-        addLog(`Ajustement manuel sur ${player.name}`, 'manual_plus');
+        addLog(`${change > 0 ? '+' : ''}${change} ${field === 'wins' ? 'Victoire' : 'Défaite'} "${player.name}"`, change > 0 ? 'manual_plus' : 'manual_minus');
       }
+    } else {
+      addLog(modalAction.matchId ? "Echec modification partie" : "Echec modification Classement", 'error');
     }
-    setIsModalOpen(false);
+    setTargetPlayerId(''); setIsModalOpen(false);
   };
 
   const addPlayer = () => {
     const trimmedName = newPlayerName.trim();
-    if (!trimmedName || players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase())) return;
+    if (!trimmedName || trimmedName.length > 12 || players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase())) return;
     push(ref(database, `${basePath}/players`), { name: trimmedName, wins: 0, losses: 0 });
     addLog(`${trimmedName} a rejoint`, 'add');
     setPlayerPopup(trimmedName);
@@ -130,7 +138,7 @@ export default function GamePage({ sport, roomId, onLeave }) {
   };
 
   const resetAction = (type, path) => {
-    if (prompt(`Confirmer la réinitialisation de ${type} ?`) === 'root') {
+    if (prompt(`Vider ${type} ?`) === 'root') {
       if (type === 'classement') players.forEach(p => update(ref(database, `${basePath}/players/${p.id}`), { wins: 0, losses: 0 }));
       else set(ref(database, `${basePath}/${path}`), null);
       addLog(`Réinitialisation ${type}`, 'reset');
@@ -138,57 +146,76 @@ export default function GamePage({ sport, roomId, onLeave }) {
   };
 
   const removePlayer = (id, name) => {
-    if (prompt("Mot de passe suppression") === 'root') {
-        remove(ref(database, `${basePath}/players/${id}`));
-        addLog(`${name} supprimé`, 'remove');
+    if (prompt("Confirmer suppression") === 'root') {
+      remove(ref(database, `${basePath}/players/${id}`));
+      addLog(`${name} supprimé`, 'remove');
     }
   };
 
-  // Styles simplifiés et réutilisables
-  const btnReset = { background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' };
-  const btnAction = { border: 'none', background: 'none', cursor: 'pointer', padding: '0 4px', fontSize: '18px' };
-  const selectStyle = { width: '100%', marginBottom: '10px', padding: '10px', fontSize: '16px', borderRadius: '4px', boxSizing: 'border-box' };
-
   return (
     <div className="card">
+      {isModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#333', padding: '20px', borderRadius: '8px', color: '#fff', textAlign: 'center', minWidth: '320px' }}>
+            {modalAction?.matchId ? (
+              <>
+                <p>Action sur "{modalAction.matchNames}"</p>
+                <select value={matchOption} onChange={(e) => setMatchOption(e.target.value)} style={selectStyle}>
+                  <option value="delete">Supprimer</option>
+                  <option value="reset">Réinitialiser</option>
+                </select>
+              </>
+            ) : (
+              <>
+                <p>Sélectionner un joueur cible.</p>
+                <select value={targetPlayerId} onChange={(e) => setTargetPlayerId(e.target.value)} style={selectStyle}>
+                  <option value="">Choisir...</option>
+                  {players.filter(p => p.id !== modalAction?.player?.id).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </>
+            )}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={executeAdjustment} style={{...modalBtnStyle, background: '#007bff'}}>Valider</button>
+              <button onClick={() => setIsModalOpen(false)} style={{...modalBtnStyle, background: '#666'}}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', color: 'white', marginBottom: '10px' }}>↩</button>
       
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>{config.icon} {config.name} : {roomName}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h2>{config.icon} {config.name} : {roomName}</h2>
         <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><span style={whiteIconStyle}>➕</span></button>
       </div>
 
       {isAddPlayerOpen && (
-          <div style={{ background: '#333', padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
-              <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', marginBottom: '10px', padding: '8px'}} />
-              <button onClick={addPlayer} style={{width: '100%', padding: '10px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '4px'}}>Ajouter</button>
-          </div>
+        <div style={{ background: '#333', padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
+          <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom" style={{width: '100%', marginBottom: '10px', padding: '8px'}} />
+          <button onClick={addPlayer} style={{width: '100%', padding: '10px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '4px'}}>Ajouter</button>
+        </div>
       )}
 
-      {/* Reste du JSX : Logique de match, Classement et Historique utilisant basePath */}
-      {/* (Gardez la structure originale, assurez-vous simplement que les boutons et maps utilisent les données dynamiques) */}
-      
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
           <option value="">👑 Vainqueur</option>
           {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
-          <option value="">{config.icon} Perdant</option>
+          <option value="">🎱 Perdant</option>
           {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
         <button onClick={declareMatch} style={{ width: '100%', padding: '10px' }}>Déclarer {config.label}</button>
       </div>
 
-      <h3>Classement :</h3>
+      <h3>Classement</h3>
       {players.map((p, i) => (
-          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #444' }}>
-              <span>{i === 0 && '👑 '}{p.name}</span>
-              <span>{p.wins || 0}V - {p.losses || 0}D</span>
-          </div>
+        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #444' }}>
+          <span>{i === 0 && '👑 '}{p.name}</span>
+          <span>{p.wins || 0}V - {p.losses || 0}D</span>
+          <button onClick={() => removePlayer(p.id, p.name)} style={btnAction}>🗑️</button>
+        </div>
       ))}
-      
-      {/* ... Suite du rendu pour Historique et Matches ... */}
     </div>
   );
 }
