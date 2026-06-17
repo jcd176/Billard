@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
-export default function GamePage({ roomId, onLeave }) {
+export default function PingPongPage({ roomId, onLeave }) {
   const path = `rooms/pingpong/${roomId}`;
 
   const [players, setPlayers] = useState([]);
