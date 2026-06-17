@@ -2,7 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
+// Configuration des icônes par sport
+const SPORT_ICONS = {
+  billard: { win: '👑', loss: '🎱', add: '👤', plus: '🟢', minus: '🔴' },
+  pingpong: { win: '👑', loss: '🏓', add: '👤', plus: '🟢', minus: '🔴' },
+  tennis: { win: '👑', loss: '🎾', add: '👤', plus: '🟢', minus: '🔴' },
+  palets: { win: '👑', loss: '🥏', add: '👤', plus: '🟢', minus: '🔴' },
+  petanque: { win: '👑', loss: '🔘', add: '👤', plus: '🟢', minus: '🔴' },
+  babyfoot: { win: '👑', loss: '⚽', add: '👤', plus: '🟢', minus: '🔴' }
+};
+
 export default function GamePage({ sport, roomId, onLeave }) {
+  const icons = SPORT_ICONS[sport] || SPORT_ICONS.billard;
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState({});
   const [logs, setLogs] = useState([]);
@@ -56,7 +67,7 @@ export default function GamePage({ sport, roomId, onLeave }) {
         const currentLeader = sorted[0];
         if (prevLeaderIdRef.current !== null && prevLeaderIdRef.current !== currentLeader.id) {
           const lastLog = logs[0]?.message;
-          const msg = `Nouveau leader : ${currentLeader.name} 👑`;
+          const msg = `Nouveau leader : ${currentLeader.name} ${icons.win}`;
           if (lastLog !== msg) {
               addLog(msg, 'leader');
           }
@@ -233,52 +244,25 @@ export default function GamePage({ sport, roomId, onLeave }) {
           </div>
         </div>
       )}
-  
-      <button 
-        onClick={onLeave} 
-        style={{ 
-            background: '#ff4d4d', 
-            border: 'none', 
-            borderRadius: '50%', 
-            width: '40px', 
-            height: '40px', 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: 'white', 
-            fontSize: '24px',
-            marginBottom: '10px'
-        }}
-      >
-        ↩
-      </button>
+      <button onClick={onLeave} style={{ background: '#ff4d4d', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '24px', marginBottom: '10px' }}>↩</button>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '15px' }}>
         <h2 style={{ margin: 0 }}>Salle : {roomName}</h2>
-        <button 
-          onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} 
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}
-        >
-          <span style={whiteIconStyle}>➕</span>
-          <span style={{...whiteIconStyle, marginLeft: '4px'}}>👤</span>
+        <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' }}>
+          <span style={whiteIconStyle}>{icons.plus}</span>
+          <span style={{...whiteIconStyle, marginLeft: '4px'}}>{icons.add}</span>
         </button>
-  
+
         {playerPopup && (
             <div style={{ position: 'absolute', top: '40px', right: '0', zIndex: 4000, background: '#222', padding: '20px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', width: '250px' }}>
-                <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎱</div>
+                <div style={{ fontSize: '40px', marginBottom: '5px' }}>{icons.loss}</div>
                 <div style={{ fontSize: '16px' }}><span style={{ color: '#0f0' }}>{playerPopup}</span> a rejoint la salle</div>
             </div>
         )}
-  
+
         {isAddPlayerOpen && (
           <div style={{ position: 'absolute', top: '40px', right: '0', background: '#333', padding: '15px', borderRadius: '8px', zIndex: 3000, width: '200px', boxShadow: '0 4px 10px rgba(0,0,0,0.5)', border: '1px solid #555' }}>
-            <input 
-                value={newPlayerName} 
-                onChange={(e) => setNewPlayerName(e.target.value)} 
-                placeholder="Nom du joueur" 
-                style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} 
-            />
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du joueur" style={{width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: 'none', boxSizing: 'border-box'}} />
             <div style={{ display: 'flex', gap: '5px' }}>
                 <button onClick={addPlayer} style={{...modalBtnStyle, background: '#007bff', color: '#fff', fontSize: '14px'}}>Ajouter</button>
                 <button onClick={() => setIsAddPlayerOpen(false)} style={{...modalBtnStyle, background: '#666', color: '#fff', fontSize: '14px'}}>Fermer</button>
@@ -289,23 +273,23 @@ export default function GamePage({ sport, roomId, onLeave }) {
       
       <div style={{ background: '#333', padding: '15px', borderRadius: '5px', marginBottom: '20px', marginTop: '15px', position: 'relative' }}>
         <select value={winner} onChange={(e) => setWinner(e.target.value)} style={selectStyle}>
-          <option value="">👑 Vainqueur</option>
-          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>👑 {p.name}</option>)}
+          <option value="">{icons.win} Vainqueur</option>
+          {players.filter(p => p.id !== loser).map(p => <option key={p.id} value={p.id}>{icons.win} {p.name}</option>)}
         </select>
         <select value={loser} onChange={(e) => setLoser(e.target.value)} style={selectStyle}>
-          <option value="">🎱 Perdant</option>
-          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>🎱 {p.name}</option>)}
+          <option value="">{icons.loss} Perdant</option>
+          {players.filter(p => p.id !== winner).map(p => <option key={p.id} value={p.id}>{icons.loss} {p.name}</option>)}
         </select>
         <button onClick={declareMatch} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Déclarer Match</button>
         
         {matchPopup && (
           <div style={{ position: 'absolute', top: '-70px', left: '50%', transform: 'translateX(-50%)', background: '#222', padding: '15px', borderRadius: '15px', border: '2px solid #0f0', textAlign: 'center', color: '#fff', zIndex: 2000, minWidth: '220px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
-             <div style={{ fontSize: '30px', marginBottom: '5px' }}>🎱</div>
-             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}👑 vs {matchPopup.loser}🎱</h2>
+             <div style={{ fontSize: '30px', marginBottom: '5px' }}>{icons.loss}</div>
+             <h2 style={{ margin: '0', fontSize: '18px', whiteSpace: 'nowrap' }}>{matchPopup.winner}{icons.win} vs {matchPopup.loser}{icons.loss}</h2>
           </div>
         )}
       </div>
-  
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Classement :</h3>
         <div>
@@ -322,28 +306,28 @@ export default function GamePage({ sport, roomId, onLeave }) {
                 const winRate = total > 0 ? Math.round(((p.wins || 0) / total) * 100) : 0;
                 return (
                 <tr key={p.id} style={{ borderBottom: '1px solid #222' }}>
-                    <td>{i === 0 && '👑 '}{p.name}</td>
+                    <td>{i === 0 && icons.win + ' '}{p.name}</td>
                     <td>{p.wins || 0} 
                     <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
-                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>{icons.plus}</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'wins'}); setIsModalOpen(true); }} style={btnAction}>{icons.minus}</button>
                     </span>
                     </td>
                     <td>{p.losses || 0} 
                     <span style={{ display: 'inline-flex', flexDirection: 'column', marginLeft: '8px', verticalAlign: 'middle' }}>
-                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🟢</button>
-                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>🔴</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'plus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>{icons.plus}</button>
+                        <button onClick={() => { setModalAction({player: p, type: 'minus', field: 'losses'}); setIsModalOpen(true); }} style={btnAction}>{icons.minus}</button>
                     </span>
                     </td>
-                   <td>{winRate}%</td>
-                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>🎱</button></td>
+                  <td>{winRate}%</td>
+                    <td><button onClick={() => removePlayer(p.id, p.name)} style={{...btnAction, fontSize: '28px'}}>{icons.loss}</button></td>
                 </tr>
                 );
             })}
             </tbody>
         </table>
       )}
-  
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Suivi des rencontres :</h3>
         <div>
@@ -358,14 +342,14 @@ export default function GamePage({ sport, roomId, onLeave }) {
             const follower = m.w1 >= m.w2 ? { name: m.p2, score: m.w2 } : { name: m.p1, score: m.w1 };
             return (
                 <div key={id} style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>👑 {leader.name} ({leader.score}) vs 🎱 {follower.name} ({follower.score})</span>
-                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>🎱</button>
+                <span>{icons.win} {leader.name} ({leader.score}) vs {icons.loss} {follower.name} ({follower.score})</span>
+                <button onClick={() => { setModalAction({matchId: id, matchNames: `${m.p1} vs ${m.p2}`, p1Name: m.p1, p2Name: m.p2, w1: m.w1, w2: m.w2}); setIsModalOpen(true); }} style={{...btnAction, fontSize: '24px'}}>{icons.loss}</button>
                 </div>
             );
             })}
         </div>
       )}
-  
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
         <h3>Historique :</h3>
         <div>
@@ -379,7 +363,7 @@ export default function GamePage({ sport, roomId, onLeave }) {
             <div key={log.id} style={{ marginBottom: '5px' }}>
                 <span style={{ color: '#888' }}>{formatDate(log.timestamp)} </span>
                 {log.type === 'match' ? (
-                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}👑</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}🎱</span></span>
+                <span><span style={{ color: '#0f0' }}>{log.message.split('|')[0].replace('MATCH:', '')}{icons.win}</span> vs <span style={{ color: '#f00' }}>{log.message.split('|')[1]}{icons.loss}</span></span>
                 ) : (
                 <span style={{ 
                     color: log.type === 'error' ? '#EE82EE' : 
