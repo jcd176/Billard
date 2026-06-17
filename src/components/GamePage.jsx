@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ref, onValue, remove, push, update, set } from 'firebase/database';
 import { database } from '../services/firebase';
-import { SPORT_CONFIG } from '../data/sportConfig';
+import { SPORT_CONFIG } from './sportConfig';
 
 export default function GamePage({ sport, roomId, onLeave }) {
   const config = SPORT_CONFIG[sport] || { name: 'Jeu', icon: '🎮', label: 'Partie' };
