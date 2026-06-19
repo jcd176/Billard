@@ -3,39 +3,35 @@ import { ref, onValue, push, remove, set } from 'firebase/database';
 import { database } from '../services/firebase';
 
 const TRICKS_LIST = [
-  // --- GRINDS ---
-  { name: "50-50", type: "grind" }, { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
-  { name: "5-0", type: "grind" }, { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
-  { name: "Smith", type: "grind" }, { name: "FS Smith", type: "grind" }, { name: "BS Smith", type: "grind" },
-  { name: "Feeble", type: "grind" }, { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
-  { name: "Crooked", type: "grind" }, { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
-  { name: "Nosegrind", type: "grind" }, { name: "Overcrook", type: "grind" },
-  
-  // --- SLIDES ---
-  { name: "Boardslide", type: "slide" }, { name: "FS Boardslide", type: "slide" }, { name: "BS Boardslide", type: "slide" },
-  { name: "Lipslide", type: "slide" }, { name: "FS Lipslide", type: "slide" }, { name: "BS Lipslide", type: "slide" },
-  { name: "Bluntslide", type: "slide" }, { name: "FS Bluntslide", type: "slide" }, { name: "BS Bluntslide", type: "slide" },
-  { name: "Nosebluntslide", type: "slide" }, { name: "FS Noseblunt", type: "slide" }, { name: "BS Noseblunt", type: "slide" },
-  { name: "Tailslide", type: "slide" }, { name: "FS Tailslide", type: "slide" }, { name: "BS Tailslide", type: "slide" },
-  { name: "Noseslide", type: "slide" }, { name: "FS Noseslide", type: "slide" }, { name: "BS Noseslide", type: "slide" },
-
-  // --- STALLS ---
+  // GRINDS & SLIDES
+  { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
+  { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
+  { name: "FS Smith", type: "grind" }, { name: "BS Smith", type: "grind" },
+  { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
+  { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
+  { name: "FS Boardslide", type: "slide" }, { name: "BS Boardslide", type: "slide" },
+  { name: "FS Lipslide", type: "slide" }, { name: "BS Lipslide", type: "slide" },
+  { name: "FS Bluntslide", type: "slide" }, { name: "BS Bluntslide", type: "slide" },
+  { name: "FS Noseblunt", type: "slide" }, { name: "BS Noseblunt", type: "slide" },
+  { name: "FS Tailslide", type: "slide" }, { name: "BS Tailslide", type: "slide" },
+  { name: "FS Noseslide", type: "slide" }, { name: "BS Noseslide", type: "slide" },
+  // STALLS
   { name: "Axle Stall", type: "stall" }, { name: "Rock to Fakie", type: "stall" },
   { name: "Rock 'n' Roll", type: "stall" }, { name: "Blunt Stall", type: "stall" },
   { name: "Nosepick", type: "stall" }, { name: "Tail Stall", type: "stall" },
   { name: "FS Disaster", type: "stall" }, { name: "BS Disaster", type: "stall" },
-
-  // --- FLIPS ---
+  { name: "Sweeper", type: "stall" }, { name: "Pivot to Fakie", type: "stall" },
+  // FLIPS
   { name: "Ollie", type: "flip" }, { name: "Kickflip", type: "flip" }, { name: "Heelflip", type: "flip" },
-  { name: "FS 180", type: "flip" }, { name: "BS 180", type: "flip" }, { name: "Tre Flip", type: "flip" },
-  { name: "Hardflip", type: "flip" }, { name: "Caballerial", type: "flip" }, { name: "Half Cab", type: "flip" },
-
-  // --- GRABS ---
+  { name: "FS 180", type: "flip" }, { name: "BS 180", type: "flip" }, { name: "FS 360", type: "flip" },
+  { name: "BS 360", type: "flip" }, { name: "Tre Flip", type: "flip" }, { name: "Hardflip", type: "flip" },
+  { name: "Caballerial", type: "flip" }, { name: "Half Cab", type: "flip" }, { name: "Shove-it", type: "flip" },
+  // GRABS
   { name: "Indy Air", type: "grab" }, { name: "Melon Air", type: "grab" }, { name: "Mute Air", type: "grab" },
   { name: "Stalefish", type: "grab" }, { name: "Method Air", type: "grab" }, { name: "Crail Grab", type: "grab" },
-
-  // --- DIVERS ---
-  { name: "Boneless", type: "other" }, { name: "Manual", type: "other" }, { name: "Hippy Jump", type: "other" }
+  // DIVERS
+  { name: "Boneless", type: "other" }, { name: "Manual", type: "other" }, { name: "Nose Manual", type: "other" },
+  { name: "Hippy Jump", type: "other" }, { name: "Powerslide", type: "other" }
 ];
 
 const STANCES = ["Normal", "Fakie", "Nollie", "Switch"];
@@ -77,7 +73,7 @@ export default function SkatePage({ roomId, onLeave }) {
   };
 
   const resetLogs = () => {
-    if (prompt("Mot de passe root :") === 'root') set(ref(database, `${path}/logs`), null);
+    if (prompt("Saisissez le mot de passe.") === 'root') set(ref(database, `${path}/logs`), null);
   };
 
   const getLogColor = (type) => ({
