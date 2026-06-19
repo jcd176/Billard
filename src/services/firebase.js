@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth'; // AJOUTÉ
 import { getDatabase } from 'firebase/database';
 import { getAnalytics } from 'firebase/analytics';
 
@@ -14,10 +14,10 @@ const firebaseConfig = {
   databaseURL: "https://billard-17260-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
-// Initialisation de l'application
 export const app = initializeApp(firebaseConfig);
-
-// Exportation des instances pour les utiliser dans toute l'application
 export const auth = getAuth(app);
 export const database = getDatabase(app);
 export const analytics = getAnalytics(app);
+// Export des providers
+export const googleProvider = new GoogleAuthProvider();
+export const facebookProvider = new FacebookAuthProvider();
