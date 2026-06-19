@@ -54,7 +54,6 @@ export default function SkatePage({ roomId, onLeave }) {
       
       <h2>Session Mini-Rampe 🛹</h2>
 
-      {/* Bouton Ajouter Joueur */}
       <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ width: '100%', marginBottom: '10px' }}>
         {isAddPlayerOpen ? 'Fermer' : '+ Ajouter un Skateur'}
       </button>
@@ -66,23 +65,18 @@ export default function SkatePage({ roomId, onLeave }) {
         </div>
       )}
 
-      {/* Sélecteur de Trick */}
       <select style={{ width: '100%', padding: '10px', marginBottom: '20px' }}>
         <option value="">Sélectionner un Trick (Mini-rampe)</option>
         {TRICKS_LIST.map(trick => <option key={trick} value={trick}>{trick}</option>)}
       </select>
 
-      {/* Liste des Joueurs */}
       {players.map(p => (
         <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: '#222', marginBottom: '5px', borderRadius: '5px' }}>
           <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🛹</button>
-          
           <span style={{ flex: 1, marginLeft: '10px' }}>{p.name}</span>
-          
           <span style={{ color: '#ffcc00', fontWeight: 'bold', fontSize: '1.2rem', marginRight: '10px' }}>
             {"SKATE".substring(0, p.letters || 0)}
           </span>
-          
           <button onClick={() => addLetter(p.id, p.name)} style={{ background: '#dc3545', border: 'none', color: '#fff', padding: '5px 10px' }}>
             Bail ❌
           </button>
