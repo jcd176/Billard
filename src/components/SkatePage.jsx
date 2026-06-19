@@ -4,34 +4,42 @@ import { database } from '../services/firebase';
 
 const TRICKS_LIST = [
   // GRINDS & SLIDES
-  { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
-  { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
-  { name: "FS Smith", type: "grind" }, { name: "BS Smith", type: "grind" },
-  { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
-  { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
-  { name: "FS Boardslide", type: "slide" }, { name: "BS Boardslide", type: "slide" },
-  { name: "FS Lipslide", type: "slide" }, { name: "BS Lipslide", type: "slide" },
-  { name: "FS Bluntslide", type: "slide" }, { name: "BS Bluntslide", type: "slide" },
-  { name: "FS Noseblunt", type: "slide" }, { name: "BS Noseblunt", type: "slide" },
-  { name: "FS Tailslide", type: "slide" }, { name: "BS Tailslide", type: "slide" },
-  { name: "FS Noseslide", type: "slide" }, { name: "BS Noseslide", type: "slide" },
+  { name: "50-50", type: "grind" }, { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
+  { name: "5-0", type: "grind" }, { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
+  { name: "Smith", type: "grind" }, { name: "FS Smith", type: "grind" }, { name: "BS Smith", type: "grind" },
+  { name: "Feeble", type: "grind" }, { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
+  { name: "Crooked", type: "grind" }, { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
+  { name: "Nosegrind", type: "grind" }, { name: "FS Nosegrind", type: "grind" }, { name: "BS Nosegrind", type: "grind" },
+  { name: "Overcrook", type: "grind" }, { name: "Suski Grind", type: "grind" }, { name: "Salad Grind", type: "grind" },
+  { name: "Boardslide", type: "slide" }, { name: "FS Boardslide", type: "slide" }, { name: "BS Boardslide", type: "slide" },
+  { name: "Lipslide", type: "slide" }, { name: "FS Lipslide", type: "slide" }, { name: "BS Lipslide", type: "slide" },
+  { name: "Bluntslide", type: "slide" }, { name: "FS Bluntslide", type: "slide" }, { name: "BS Bluntslide", type: "slide" },
+  { name: "Nosebluntslide", type: "slide" }, { name: "FS Noseblunt", type: "slide" }, { name: "BS Noseblunt", type: "slide" },
+  { name: "Tailslide", type: "slide" }, { name: "FS Tailslide", type: "slide" }, { name: "BS Tailslide", type: "slide" },
+  { name: "Noseslide", type: "slide" }, { name: "FS Noseslide", type: "slide" }, { name: "BS Noseslide", type: "slide" },
+  { name: "Darkslide", type: "slide" }, { name: "Sushi Slide", type: "slide" },
   // STALLS
   { name: "Axle Stall", type: "stall" }, { name: "Rock to Fakie", type: "stall" },
-  { name: "Rock 'n' Roll", type: "stall" }, { name: "Blunt Stall", type: "stall" },
+  { name: "Rock 'n' Roll", type: "stall" }, { name: "FS Rock 'n' Roll", type: "stall" }, { name: "BS Rock 'n' Roll", type: "stall" },
+  { name: "Blunt Stall", type: "stall" }, { name: "FS Blunt Stall", type: "stall" }, { name: "BS Blunt Stall", type: "stall" },
   { name: "Nosepick", type: "stall" }, { name: "Tail Stall", type: "stall" },
   { name: "FS Disaster", type: "stall" }, { name: "BS Disaster", type: "stall" },
-  { name: "Sweeper", type: "stall" }, { name: "Pivot to Fakie", type: "stall" },
+  { name: "Sweeper", type: "stall" }, { name: "Pivot to Fakie", type: "stall" }, { name: "Invert", type: "stall" }, { name: "Eggplant", type: "stall" },
   // FLIPS
   { name: "Ollie", type: "flip" }, { name: "Kickflip", type: "flip" }, { name: "Heelflip", type: "flip" },
   { name: "FS 180", type: "flip" }, { name: "BS 180", type: "flip" }, { name: "FS 360", type: "flip" },
   { name: "BS 360", type: "flip" }, { name: "Tre Flip", type: "flip" }, { name: "Hardflip", type: "flip" },
-  { name: "Caballerial", type: "flip" }, { name: "Half Cab", type: "flip" }, { name: "Shove-it", type: "flip" },
+  { name: "Inward Heelflip", type: "flip" }, { name: "Varial Kickflip", type: "flip" }, { name: "Varial Heelflip", type: "flip" },
+  { name: "Caballerial", type: "flip" }, { name: "Half Cab", type: "flip" }, { name: "Full Cab", type: "flip" },
+  { name: "Shove-it", type: "flip" }, { name: "FS Shove-it", type: "flip" }, { name: "BS Shove-it", type: "flip" },
+  { name: "Laser Flip", type: "flip" }, { name: "Gazelle Flip", type: "flip" },
   // GRABS
   { name: "Indy Air", type: "grab" }, { name: "Melon Air", type: "grab" }, { name: "Mute Air", type: "grab" },
   { name: "Stalefish", type: "grab" }, { name: "Method Air", type: "grab" }, { name: "Crail Grab", type: "grab" },
+  { name: "Tail Grab", type: "grab" }, { name: "Nose Grab", type: "grab" }, { name: "Japan Air", type: "grab" }, { name: "Seatbelt Grab", type: "grab" },
   // DIVERS
-  { name: "Boneless", type: "other" }, { name: "Manual", type: "other" }, { name: "Nose Manual", type: "other" },
-  { name: "Hippy Jump", type: "other" }, { name: "Powerslide", type: "other" }
+  { name: "Boneless", type: "other" }, { name: "No Comply", type: "other" }, { name: "Manual", type: "other" },
+  { name: "Nose Manual", type: "other" }, { name: "Hippy Jump", type: "other" }, { name: "Powerslide", type: "other" }
 ];
 
 const STANCES = ["Normal", "Fakie", "Nollie", "Switch"];
