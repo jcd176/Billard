@@ -1,53 +1,63 @@
 import React, { useState } from 'react';
-import { auth, database, googleProvider, facebookProvider } from '../services/firebase';
-import { signInWithPopup, signInAnonymously, updateProfile } from 'firebase/auth';
-import { ref, get, child } from 'firebase/database';
+import { auth, database, googleProvider } from '../services/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
+import { ref, get, child, set } from 'firebase/database';
 
 export default function HomePage({ onUserLogin }) {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [pseudo, setPseudo] = useState('');
 
-  const handleLogin = async (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    if (!pseudo.trim()) return;
-
-    // 1. Vérification si le pseudo est déjà pris dans la base de données
-    const dbRef = ref(database);
-    const snapshot = await get(child(dbRef, 'users'));
-    if (snapshot.exists()) {
-      const users = Object.values(snapshot.val());
-      if (users.some(u => u.displayName === pseudo)) {
-        alert("Ce pseudo est déjà utilisé !");
-        return;
-      }
-    }
-
-    // 2. Connexion anonyme si le pseudo est libre
-    const { user } = await signInAnonymously(auth);
-    await updateProfile(user, { displayName: pseudo });
-    onUserLogin();
-  };
-
-  const handleSocialLogin = async (provider) => {
     try {
-      await signInWithPopup(auth, provider);
+      if (isRegistering) {
+        // 1. Vérification si le pseudo est déjà pris dans la BDD
+        const snapshot = await get(child(ref(database), 'users'));
+        if (snapshot.exists()) {
+          const users = Object.values(snapshot.val());
+          if (users.some(u => u.pseudo === pseudo)) {
+            alert("Ce pseudo est déjà utilisé !");
+            return;
+          }
+        }
+        // 2. Création compte Firebase
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(user, { displayName: pseudo });
+        // 3. Sauvegarde du pseudo lié à l'UID
+        await set(ref(database, `users/${user.uid}`), { pseudo, email });
+      } else {
+        // Connexion simple
+        await signInWithEmailAndPassword(auth, email, password);
+      }
       onUserLogin();
     } catch (err) {
-      alert("Erreur de connexion : " + err.message);
+      alert("Erreur : " + err.message);
     }
   };
 
   return (
     <div className="card">
-      <h2>Connexion</h2>
-      <form onSubmit={handleLogin} style={{ marginBottom: '20px' }}>
-        <input className="join-input" value={pseudo} onChange={(e) => setPseudo(e.target.value)} placeholder="Pseudo" required />
-        <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '10px' }}>Entrer</button>
+      <h2>{isRegistering ? "Créer un Joueur" : "Connexion"}</h2>
+      <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {isRegistering && (
+          <input className="join-input" value={pseudo} onChange={(e) => setPseudo(e.target.value)} placeholder="Pseudo" required />
+        )}
+        <input type="email" className="join-input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
+        <input type="password" className="join-input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" required />
+        <button type="submit" className="btn-primary">{isRegistering ? "Créer le compte" : "Se connecter"}</button>
       </form>
+      
+      <button onClick={() => setIsRegistering(!isRegistering)} style={{ marginTop: '10px', background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+        {isRegistering ? "Déjà un compte ? Connectez-vous" : "Pas de compte ? Créez-en un"}
+      </button>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <button onClick={() => handleSocialLogin(googleProvider)} className="btn-primary">Connexion Google</button>
-        <button onClick={() => handleSocialLogin(facebookProvider)} className="btn-primary">Connexion Facebook</button>
-      </div>
+      <hr style={{ margin: '20px 0' }} />
+      
+      <button onClick={() => signInWithPopup(auth, googleProvider).then(onUserLogin)} className="btn-primary" style={{ width: '100%' }}>
+        Connexion Google
+      </button>
     </div>
   );
 }
