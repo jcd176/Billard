@@ -4,11 +4,11 @@ import { database } from '../services/firebase';
 
 const TRICKS_LIST = [
   // --- GRINDS ---
-  { name: "50-50 Grind", type: "grind" }, { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
-  { name: "5-0 Grind", type: "grind" }, { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
-  { name: "Smith Grind", type: "grind" }, { name: "FS Smith Grind", type: "grind" }, { name: "BS Smith Grind", type: "grind" },
-  { name: "Feeble Grind", type: "grind" }, { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
-  { name: "Crooked Grind", type: "grind" }, { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
+  { name: "50-50", type: "grind" }, { name: "FS 50-50", type: "grind" }, { name: "BS 50-50", type: "grind" },
+  { name: "5-0", type: "grind" }, { name: "FS 5-0", type: "grind" }, { name: "BS 5-0", type: "grind" },
+  { name: "Smith", type: "grind" }, { name: "FS Smith", type: "grind" }, { name: "BS Smith", type: "grind" },
+  { name: "Feeble", type: "grind" }, { name: "FS Feeble", type: "grind" }, { name: "BS Feeble", type: "grind" },
+  { name: "Crooked", type: "grind" }, { name: "FS Crooked", type: "grind" }, { name: "BS Crooked", type: "grind" },
   { name: "Nosegrind", type: "grind" }, { name: "Overcrook", type: "grind" },
   
   // --- SLIDES ---
@@ -17,7 +17,7 @@ const TRICKS_LIST = [
   { name: "Bluntslide", type: "slide" }, { name: "FS Bluntslide", type: "slide" }, { name: "BS Bluntslide", type: "slide" },
   { name: "Nosebluntslide", type: "slide" }, { name: "FS Noseblunt", type: "slide" }, { name: "BS Noseblunt", type: "slide" },
   { name: "Tailslide", type: "slide" }, { name: "FS Tailslide", type: "slide" }, { name: "BS Tailslide", type: "slide" },
-  { name: "Noseslide", type: "slide" }, { name: "Darkslide", type: "slide" },
+  { name: "Noseslide", type: "slide" }, { name: "FS Noseslide", type: "slide" }, { name: "BS Noseslide", type: "slide" },
 
   // --- STALLS ---
   { name: "Axle Stall", type: "stall" }, { name: "Rock to Fakie", type: "stall" },
@@ -88,13 +88,13 @@ export default function SkatePage({ roomId, onLeave }) {
   return (
     <div style={{ minHeight: '100vh', backgroundImage: 'url("https://images.unsplash.com/photo-1547448415-e9f5b97e5112?w=1600")', backgroundSize: 'cover', backgroundAttachment: 'fixed', padding: '20px' }}>
       <div className="card" style={{ paddingTop: '80px', background: 'rgba(0,0,0,0.85)', color: '#fff', position: 'relative' }}>
-        <button onClick={onLeave} style={{ position: 'absolute', top: '20px', left: '20px', background: '#ff4d4d', color: '#fff', border: 'none', padding: '10px 15px', borderRadius: '5px' }}>↩</button>
+        <button onClick={onLeave} className="btn-danger" style={{ position: 'absolute', top: '20px', left: '20px' }}>↩</button>
         <h2 style={{ textAlign: 'center' }}>Mini-Rampe 🛹</h2>
 
         <button onClick={() => setIsAddOpen(!isAddOpen)} className="btn-primary" style={{ width: '100%', marginBottom: '10px' }}>{isAddOpen ? 'Fermer' : '+ Ajouter Skateur'}</button>
         {isAddOpen && (
           <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom..." style={{ flex: 1, padding: '10px' }} />
+            <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom..." style={{ flex: 1, padding: '10px', borderRadius: '4px' }} />
             <button onClick={addPlayer} className="btn-primary">OK</button>
           </div>
         )}
@@ -112,11 +112,13 @@ export default function SkatePage({ roomId, onLeave }) {
         <div style={{ background: '#111', padding: '10px', marginTop: '20px', borderRadius: '5px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Historique</h3>
-            <button onClick={resetLogs} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>🔄</button>
+            <button onClick={resetLogs} style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#000', color: '#fff', border: '1px solid #fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span>↶</span>
+            </button>
           </div>
           {logs.map((log, i) => (
             <p key={i} style={{ color: getLogColor(log.type), fontSize: '0.85rem' }}>
-              [{new Date(log.timestamp).toLocaleString()}] {log.message}
+              [{new Date(log.timestamp).toLocaleDateString()}] {log.message}
             </p>
           ))}
         </div>
