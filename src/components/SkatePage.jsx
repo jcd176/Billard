@@ -10,15 +10,25 @@ const TRICKS_LIST = [
 
 export default function SkatePage({ roomId, onLeave }) {
   const [players, setPlayers] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
   const path = `rooms/skate/${roomId}`;
 
   useEffect(() => {
     const playersRef = ref(database, `${path}/players`);
-    return onValue(playersRef, (s) => {
+    const logsRef = ref(database, `${path}/logs`);
+    
+    // Écoute des joueurs
+    onValue(playersRef, (s) => {
       const data = s.val() || {};
       setPlayers(Object.entries(data).map(([id, p]) => ({ id, ...p })));
+    });
+
+    // Écoute des logs (triés par timestamp si nécessaire côté UI)
+    onValue(logsRef, (s) => {
+      const data = s.val() || {};
+      setLogs(Object.values(data).reverse());
     });
   }, [roomId]);
 
@@ -34,7 +44,7 @@ export default function SkatePage({ roomId, onLeave }) {
       return alert("Ce joueur existe déjà !");
     }
 
-    push(ref(database, `${path}/players`), { name: trimmedName, letters: 0 });
+    push(ref(database, `${path}/players`), { name: trimmedName });
     addLog(`${trimmedName} a rejoint la session`);
     setNewPlayerName('');
     setIsAddPlayerOpen(false);
@@ -47,27 +57,18 @@ export default function SkatePage({ roomId, onLeave }) {
     }
   };
 
-  const addLetter = (playerId, playerName) => {
-    const player = players.find(p => p.id === playerId);
-    const newLetters = Math.min((player.letters || 0) + 1, 5);
-    update(ref(database, `${path}/players/${playerId}`), { letters: newLetters });
-    addLog(`${playerName} a pris une lettre (${"SKATE".substring(0, newLetters)})`);
+  const logTrick = (playerName, trick) => {
+    addLog(`${playerName} a rentré : ${trick}`);
   };
 
   return (
     <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
-      {/* Bouton retour rouge comme le Dashboard */}
-      <button 
-        onClick={onLeave} 
-        style={{
-          position: 'absolute', top: '20px', left: '20px', width: '45px', height: '45px',
-          borderRadius: '50%', background: '#ff4d4d', color: '#fff', border: 'none',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-          fontSize: '28px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-        }}
-      >
-        ↩
-      </button>
+      <button onClick={onLeave} style={{
+        position: 'absolute', top: '20px', left: '20px', width: '45px', height: '45px',
+        borderRadius: '50%', background: '#ff4d4d', color: '#fff', border: 'none',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        fontSize: '28px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+      }}>↩</button>
       
       <h2 style={{ textAlign: 'center', color: '#00d0ff' }}>Session Mini-Rampe 🛹</h2>
 
@@ -77,35 +78,34 @@ export default function SkatePage({ roomId, onLeave }) {
 
       {isAddPlayerOpen && (
         <div style={{ background: '#333', padding: '15px', marginBottom: '15px', borderRadius: '6px' }}>
-          <input 
-            className="join-input"
-            maxLength={13}
-            value={newPlayerName} 
-            onChange={(e) => setNewPlayerName(e.target.value)} 
-            placeholder="Nom (max 13 car.)" 
-            style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px'}} 
-          />
+          <input className="join-input" maxLength={13} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom (max 13 car.)" style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px'}} />
           <button onClick={addPlayer} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Valider</button>
         </div>
       )}
 
-      <select style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '6px' }}>
-        <option value="">Sélectionner un Trick (Mini-rampe)</option>
-        {TRICKS_LIST.map(trick => <option key={trick} value={trick}>{trick}</option>)}
-      </select>
+      {/* Sélecteur de Trick pour chaque joueur */}
+      <div style={{ marginBottom: '20px' }}>
+        {players.map(p => (
+          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '5px' }}>
+            <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🛹</button>
+            <span style={{ fontWeight: 'bold', width: '80px' }}>{p.name}</span>
+            <select onChange={(e) => e.target.value && logTrick(p.name, e.target.value)} style={{ flex: 1, padding: '5px' }}>
+              <option value="">Rentrer une figure...</option>
+              {TRICKS_LIST.map(trick => <option key={trick} value={trick}>{trick}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
 
-      {players.map(p => (
-        <div key={p.id} style={{ display: 'flex', alignItems: 'center', padding: '10px', background: '#222', marginBottom: '8px', borderRadius: '6px' }}>
-          <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>🛹</button>
-          <span style={{ flex: 1, marginLeft: '15px', fontWeight: 'bold' }}>{p.name}</span>
-          <span style={{ color: '#ffcc00', fontWeight: 'bold', fontSize: '1.5rem', marginRight: '15px' }}>
-            {"SKATE".substring(0, p.letters || 0)}
-          </span>
-          <button onClick={() => addLetter(p.id, p.name)} style={{ background: '#dc3545', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>
-            Bail ❌
-          </button>
-        </div>
-      ))}
+      {/* Section Logs */}
+      <div style={{ background: '#1a1a1a', padding: '15px', borderRadius: '6px', maxHeight: '300px', overflowY: 'auto' }}>
+        <h3 style={{ color: '#00d0ff', fontSize: '1.1rem', marginBottom: '10px' }}>Historique des figures</h3>
+        {logs.map((log, index) => (
+          <p key={index} style={{ fontSize: '0.9rem', borderBottom: '1px solid #333', paddingBottom: '5px', color: '#ccc' }}>
+            {log.message}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
