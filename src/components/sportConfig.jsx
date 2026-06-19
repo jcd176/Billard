@@ -4,5 +4,6 @@ export const SPORT_CONFIG = {
   babyfoot: { name: 'Baby Foot', icon: '⚽', label: 'Match' },
   palets: { name: 'Palets', icon: '🥏', label: 'Jeu' },
   petanque: { name: 'Pétanque', icon: '🔘', label: 'Jeu' },
-  tennis: { name: 'Tennis', icon: '🎾', label: 'Match' }
+  tennis: { name: 'Tennis', icon: '🎾', label: 'Match' },
+  skate: { name: 'Skate', icon: '🛹', label: 'Session' }
 };
