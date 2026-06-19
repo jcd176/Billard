@@ -4,6 +4,7 @@ import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
 import RoomListPage from './components/RoomListPage';
 import GamePage from './components/GamePage';
+import SkatePage from './components/SkatePage'; // Import de votre nouvelle page Skate
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -37,13 +38,25 @@ export default function App() {
       />
     );
     
-    if (view === 'game') return (
-      <GamePage 
-        roomId={selectedRoomId} 
-        sport={selectedSport} 
-        onLeave={() => setView('room-list')} 
-      />
-    );
+    if (view === 'game') {
+      // Condition pour basculer vers SkatePage si le sport est 'skate'
+      if (selectedSport === 'skate') {
+        return (
+          <SkatePage 
+            roomId={selectedRoomId} 
+            onLeave={() => setView('room-list')} 
+          />
+        );
+      }
+      // Sinon, on affiche le composant de jeu standard pour les autres sports
+      return (
+        <GamePage 
+          roomId={selectedRoomId} 
+          sport={selectedSport} 
+          onLeave={() => setView('room-list')} 
+        />
+      );
+    }
   };
 
   return <div className="container">{renderView()}</div>;
