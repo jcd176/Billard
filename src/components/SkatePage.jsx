@@ -27,9 +27,15 @@ export default function SkatePage({ roomId, onLeave }) {
   };
 
   const addPlayer = () => {
-    if (!newPlayerName.trim()) return;
-    push(ref(database, `${path}/players`), { name: newPlayerName, letters: 0 });
-    addLog(`${newPlayerName} a rejoint la session`);
+    const trimmedName = newPlayerName.trim();
+    if (!trimmedName) return;
+    if (trimmedName.length > 13) return alert("Le nom est trop long (max 13 car.)");
+    if (players.some(p => p.name.toLowerCase() === trimmedName.toLowerCase())) {
+      return alert("Ce joueur existe déjà !");
+    }
+
+    push(ref(database, `${path}/players`), { name: trimmedName, letters: 0 });
+    addLog(`${trimmedName} a rejoint la session`);
     setNewPlayerName('');
     setIsAddPlayerOpen(false);
   };
@@ -49,35 +55,53 @@ export default function SkatePage({ roomId, onLeave }) {
   };
 
   return (
-    <div className="card" style={{ paddingTop: '80px' }}>
-      <button onClick={onLeave} style={{ position: 'absolute', top: '20px', left: '20px' }}>↩</button>
+    <div className="card" style={{ position: 'relative', paddingTop: '80px' }}>
+      {/* Bouton retour rouge comme le Dashboard */}
+      <button 
+        onClick={onLeave} 
+        style={{
+          position: 'absolute', top: '20px', left: '20px', width: '45px', height: '45px',
+          borderRadius: '50%', background: '#ff4d4d', color: '#fff', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+          fontSize: '28px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+        }}
+      >
+        ↩
+      </button>
       
-      <h2>Session Mini-Rampe 🛹</h2>
+      <h2 style={{ textAlign: 'center', color: '#00d0ff' }}>Session Mini-Rampe 🛹</h2>
 
-      <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} style={{ width: '100%', marginBottom: '10px' }}>
+      <button onClick={() => setIsAddPlayerOpen(!isAddPlayerOpen)} className="btn-primary" style={{ width: '100%', marginBottom: '10px', padding: '12px', borderRadius: '6px' }}>
         {isAddPlayerOpen ? 'Fermer' : '+ Ajouter un Skateur'}
       </button>
 
       {isAddPlayerOpen && (
-        <div style={{ background: '#333', padding: '10px', marginBottom: '10px' }}>
-          <input value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Nom du skateur" style={{width: '100%', marginBottom: '5px'}} />
-          <button onClick={addPlayer} style={{ width: '100%' }}>Valider</button>
+        <div style={{ background: '#333', padding: '15px', marginBottom: '15px', borderRadius: '6px' }}>
+          <input 
+            className="join-input"
+            maxLength={13}
+            value={newPlayerName} 
+            onChange={(e) => setNewPlayerName(e.target.value)} 
+            placeholder="Nom (max 13 car.)" 
+            style={{width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px'}} 
+          />
+          <button onClick={addPlayer} className="btn-primary" style={{ width: '100%', padding: '10px' }}>Valider</button>
         </div>
       )}
 
-      <select style={{ width: '100%', padding: '10px', marginBottom: '20px' }}>
+      <select style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '6px' }}>
         <option value="">Sélectionner un Trick (Mini-rampe)</option>
         {TRICKS_LIST.map(trick => <option key={trick} value={trick}>{trick}</option>)}
       </select>
 
       {players.map(p => (
-        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: '#222', marginBottom: '5px', borderRadius: '5px' }}>
-          <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🛹</button>
-          <span style={{ flex: 1, marginLeft: '10px' }}>{p.name}</span>
-          <span style={{ color: '#ffcc00', fontWeight: 'bold', fontSize: '1.2rem', marginRight: '10px' }}>
+        <div key={p.id} style={{ display: 'flex', alignItems: 'center', padding: '10px', background: '#222', marginBottom: '8px', borderRadius: '6px' }}>
+          <button onClick={() => removePlayer(p.id, p.name)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>🛹</button>
+          <span style={{ flex: 1, marginLeft: '15px', fontWeight: 'bold' }}>{p.name}</span>
+          <span style={{ color: '#ffcc00', fontWeight: 'bold', fontSize: '1.5rem', marginRight: '15px' }}>
             {"SKATE".substring(0, p.letters || 0)}
           </span>
-          <button onClick={() => addLetter(p.id, p.name)} style={{ background: '#dc3545', border: 'none', color: '#fff', padding: '5px 10px' }}>
+          <button onClick={() => addLetter(p.id, p.name)} style={{ background: '#dc3545', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>
             Bail ❌
           </button>
         </div>
